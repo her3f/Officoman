@@ -1,0 +1,30 @@
+# Rust
+/target/
+**/target/
+Cargo.lock.bak
+
+# Node
+node_modules/
+dist/
+.pnpm-store/
+
+# Build output
+/build/
+*.msi
+*.dmg
+*.AppImage
+*.deb
+*.rpm
+*.flatpak
+
+# Local settings / logs
+logs/
+ui.json
+prefs.json
+
+# Editors & OS
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+desktop.ini

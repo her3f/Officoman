@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 270 80" width="270" height="80" role="img" aria-labelledby="rqw-title">
+  <title id="rqw-title">Raqqam</title>
+  <defs>
+    <linearGradient id="rqwTile" x1="0" y1="0" x2="0.55" y2="1">
+      <stop offset="0" stop-color="#1E242C"/>
+      <stop offset="1" stop-color="#0E1116"/>
+    </linearGradient>
+  </defs>
+
+  <g transform="translate(8 14) scale(0.85)">
+    <rect x="4" y="4" width="56" height="56" rx="15" fill="url(#rqwTile)"/>
+    <rect x="4.5" y="4.5" width="55" height="55" rx="14.5" fill="none"
+          stroke="#C9A227" stroke-opacity="0.38"/>
+    <path d="M32 55 L15.5 33.5 C15.5 22.5 22.5 13 32 13 C41.5 13 48.5 22.5 48.5 33.5 Z"
+          fill="#C9A227"/>
+    <circle cx="32" cy="37" r="3.6" fill="#101419"/>
+    <path d="M32 40.6 V52" stroke="#101419" stroke-width="2.6" stroke-linecap="round"/>
+  </g>
+
+  <text x="76" y="52"
+        font-family="Segoe UI, Inter, system-ui, -apple-system, sans-serif"
+        font-size="33" font-weight="700" letter-spacing="-0.6" fill="#14181D">Raqqam</text>
+</svg>

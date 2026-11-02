@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Officoman — brand proposals</title>
+<style>
+  :root{
+    --ink:#0F1433; --indigo:#33439B; --amber:#F2B33D; --paper:#F7F5EF;
+    --charcoal:#14181D; --gold:#C9A227; --bone:#EDE7DA;
+    --line:#E3E1D9; --muted:#6B6F7A;
+  }
+  *{box-sizing:border-box}
+  body{
+    margin:0; background:var(--paper); color:var(--ink);
+    font-family:"Segoe UI",Inter,system-ui,-apple-system,"Noto Sans Arabic",sans-serif;
+    line-height:1.6;
+  }
+  .wrap{max-width:960px;margin:0 auto;padding:56px 28px 96px}
+  h1{font-size:2rem;margin:0 0 6px;letter-spacing:-.5px}
+  .lede{color:var(--muted);margin:0 0 44px;font-size:1.02rem}
+  h2{font-size:.78rem;letter-spacing:.14em;text-transform:uppercase;
+     color:var(--muted);margin:52px 0 16px;font-weight:700}
+  h2:first-of-type{margin-top:0}
+
+  .option{border:1px solid var(--line);border-radius:16px;overflow:hidden;
+          background:#fff;margin-bottom:26px}
+  .option-head{padding:22px 26px 18px;border-bottom:1px solid var(--line)}
+  .option-head .tag{display:inline-block;font-size:.7rem;font-weight:700;
+          letter-spacing:.1em;text-transform:uppercase;color:var(--muted);
+          background:var(--paper);border:1px solid var(--line);border-radius:99px;
+          padding:2px 10px;margin-bottom:10px}
+  .option-head h3{margin:0;font-size:1.35rem;letter-spacing:-.4px}
+  .option-head p{margin:8px 0 0;color:var(--muted);font-size:.93rem;max-width:62ch}
+  .swatch-row{display:grid;grid-template-columns:1fr 1fr}
+  .panel{padding:34px 26px;display:flex;align-items:center;gap:20px;flex-wrap:wrap}
+  .panel.light{background:#fff}
+  .panel.dark{background:var(--ink)}
+  .panel.dark.alt{background:var(--charcoal)}
+  .panel.dark .name{color:#fff}
+  .name{font-size:1.5rem;font-weight:700;letter-spacing:-.5px}
+  .tagline{font-size:.86rem;color:var(--muted)}
+  .panel.dark .tagline{color:#9AA1B5}
+  .meta{padding:16px 26px;border-top:1px solid var(--line);font-size:.88rem;
+        color:var(--muted);background:#FCFBF8}
+
+  table{width:100%;border-collapse:collapse;font-size:.93rem;margin-bottom:8px}
+  th,td{text-align:left;padding:11px 12px;border-bottom:1px solid var(--line)}
+  th{font-size:.72rem;letter-spacing:.1em;text-transform:uppercase;
+     color:var(--muted);font-weight:700}
+  td.role{color:var(--muted);width:30%}
+  td.nm{font-weight:700}
+  td.why{color:var(--muted);font-size:.88rem}
+  code{background:#EFEDE5;padding:1px 6px;border-radius:5px;font-size:.86em}
+
+  .apps{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin:18px 0 6px}
+  .app{background:#fff;border:1px solid var(--line);border-radius:12px;
+       padding:16px 12px;text-align:center}
+  .app .tile{width:44px;height:44px;border-radius:11px;margin:0 auto 10px;
+       display:flex;align-items:center;justify-content:center;
+       font-weight:700;font-size:1.15rem;color:#fff}
+  .app .t{font-weight:700;font-size:.92rem}
+  .app .d{font-size:.76rem;color:var(--muted)}
+
+  .pal{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:10px}
+  .chip{width:96px;border-radius:10px;overflow:hidden;border:1px solid var(--line);background:#fff}
+  .chip .c{height:52px}
+  .chip .l{padding:6px 8px;font-size:.68rem;line-height:1.35}
+  .chip .l b{display:block;font-size:.72rem}
+
+  .note{background:#FFF8E8;border:1px solid #F0DCA8;border-radius:12px;
+        padding:18px 22px;font-size:.9rem;color:#6B5316}
+  .note b{color:#4A3A0E}
+  .note ul{margin:8px 0 0;padding-left:20px}
+  .note li{margin:4px 0}
+  .ar{direction:rtl;font-family:"Segoe UI","Noto Sans Arabic",sans-serif}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <h1>Officoman — brand proposals</h1>
+  <p class="lede">Two umbrella directions, each with a mark and an app naming set.
+     Everything here is original artwork drawn for this project — no ArtCraft assets were used.</p>
+
+  <h2>Option A — Officoman</h2>
+  <div class="option">
+    <div class="option-head">
+      <span class="tag">Recommended · zero collisions found</span>
+      <h3>Officoman</h3>
+      <p>A document tile with a folded page corner, the fold doubling as the counter of the “O”.
+         Reads at 16&nbsp;px, works in one colour, no lettering required.</p>
+    </div>
+    <div class="swatch-row">
+      <div class="panel light">
+        <svg viewBox="0 0 64 64" width="56" height="56" aria-label="Officoman mark">
+          <defs>
+            <linearGradient id="pa" x1="0" y1="0" x2=".55" y2="1">
+              <stop offset="0" stop-color="#33439B"/><stop offset="1" stop-color="#0F1433"/>
+            </linearGradient>
+            <clipPath id="pca"><rect x="4" y="4" width="56" height="56" rx="15"/></clipPath>
+          </defs>
+          <rect x="4" y="4" width="56" height="56" rx="15" fill="url(#pa)"/>
+          <g clip-path="url(#pca)"><path d="M36 4 H60 V28 Z" fill="#F2B33D" fill-opacity=".92"/></g>
+          <rect x="4.5" y="4.5" width="55" height="55" rx="14.5" fill="none"
+                stroke="#FFF" stroke-opacity=".16"/>
+          <circle cx="29" cy="35" r="11.5" fill="none" stroke="#F7F5EF" stroke-width="5.2"/>
+        </svg>
+        <div>
+          <div class="name" style="color:#0F1433">Officoman</div>
+          <div class="tagline">an office suite</div>
+        </div>
+      </div>
+      <div class="panel dark">
+        <svg viewBox="0 0 64 64" width="56" height="56" aria-label="Officoman mark on dark">
+          <defs>
+            <linearGradient id="pb" x1="0" y1="0" x2=".55" y2="1">
+              <stop offset="0" stop-color="#3E4FAD"/><stop offset="1" stop-color="#1A2250"/>
+            </linearGradient>
+            <clipPath id="pcb"><rect x="4" y="4" width="56" height="56" rx="15"/></clipPath>
+          </defs>
+          <rect x="4" y="4" width="56" height="56" rx="15" fill="url(#pb)"/>
+          <g clip-path="url(#pcb)"><path d="M36 4 H60 V28 Z" fill="#F2B33D" fill-opacity=".92"/></g>
+          <rect x="4.5" y="4.5" width="55" height="55" rx="14.5" fill="none"
+                stroke="#FFF" stroke-opacity=".18"/>
+          <circle cx="29" cy="35" r="11.5" fill="none" stroke="#F7F5EF" stroke-width="5.2"/>
+        </svg>
+        <div>
+          <div class="name">Officoman</div>
+          <div class="tagline">an office suite</div>
+        </div>
+      </div>
+    </div>
+    <div class="meta">Includes <code>brand/officoman-mark.svg</code> and
+      <code>brand/officoman-wordmark.svg</code>.</div>
+  </div>
+
+  <h2>Option B — Raqqam</h2>
+  <div class="option">
+    <div class="option-head">
+      <span class="tag">Alternative · zero collisions found</span>
+      <h3>Raqqam <span class="ar" style="font-weight:400">رقّام</span></h3>
+      <p>From <em>raqqam</em> — the scribe, the one who sets marks to paper. A pen nib inside a
+         charcoal tile. Sharper, more editorial, and unmistakably not part of anybody else’s family.</p>
+    </div>
+    <div class="swatch-row">
+      <div class="panel light">
+        <svg viewBox="0 0 64 64" width="56" height="56" aria-label="Raqqam mark">
+          <defs>
+            <linearGradient id="ra" x1="0" y1="0" x2=".55" y2="1">
+              <stop offset="0" stop-color="#1E242C"/><stop offset="1" stop-color="#0E1116"/>
+            </linearGradient>
+          </defs>
+          <rect x="4" y="4" width="56" height="56" rx="15" fill="url(#ra)"/>
+          <rect x="4.5" y="4.5" width="55" height="55" rx="14.5" fill="none"
+                stroke="#C9A227" stroke-opacity=".38"/>
+          <path d="M32 55 L15.5 33.5 C15.5 22.5 22.5 13 32 13 C41.5 13 48.5 22.5 48.5 33.5 Z"
+                fill="#C9A227"/>
+          <circle cx="32" cy="37" r="3.6" fill="#101419"/>
+          <path d="M32 40.6 V52" stroke="#101419" stroke-width="2.6" stroke-linecap="round"/>
+        </svg>
+        <div>
+          <div class="name" style="color:#14181D">Raqqam</div>
+          <div class="tagline">an office suite</div>
+        </div>
+      </div>
+      <div class="panel dark alt">
+        <svg viewBox="0 0 64 64" width="56" height="56" aria-label="Raqqam mark on dark">
+          <defs>
+            <linearGradient id="rb" x1="0" y1="0" x2=".55" y2="1">
+              <stop offset="0" stop-color="#2A313A"/><stop offset="1" stop-color="#171C22"/>
+            </linearGradient>
+          </defs>
+          <rect x="4" y="4" width="56" height="56" rx="15" fill="url(#rb)"/>
+          <rect x="4.5" y="4.5" width="55" height="55" rx="14.5" fill="none"
+                stroke="#C9A227" stroke-opacity=".38"/>
+          <path d="M32 55 L15.5 33.5 C15.5 22.5 22.5 13 32 13 C41.5 13 48.5 22.5 48.5 33.5 Z"
+                fill="#C9A227"/>
+          <circle cx="32" cy="37" r="3.6" fill="#101419"/>
+          <path d="M32 40.6 V52" stroke="#101419" stroke-width="2.6" stroke-linecap="round"/>
+        </svg>
+        <div>
+          <div class="name">Raqqam</div>
+          <div class="tagline">an office suite</div>
+        </div>
+      </div>
+    </div>
+    <div class="meta">Includes <code>brand/raqqam-mark.svg</code> and
+      <code>brand/raqqam-wordmark.svg</code>.</div>
+  </div>
+
+  <h2>App names — set 1 (English)</h2>
+  <table>
+    <thead><tr><th>Role</th><th>Name</th><th>Why</th></tr></thead>
+    <tbody>
+      <tr><td class="role">Documents</td><td class="nm">Nib</td><td class="why">The writing end of a pen.</td></tr>
+      <tr><td class="role">Spreadsheets</td><td class="nm">Tally</td><td class="why">A running count.</td></tr>
+      <tr><td class="role">Presentations</td><td class="nm">Podium</td><td class="why">Where you stand to present.</td></tr>
+      <tr><td class="role">PDF</td><td class="nm">Sheaf</td><td class="why">A bundle of loose pages.</td></tr>
+    </tbody>
+  </table>
+  <div class="apps">
+    <div class="app"><div class="tile" style="background:#33439B">N</div><div class="t">Nib</div><div class="d">documents</div></div>
+    <div class="app"><div class="tile" style="background:#1F7A6B">T</div><div class="t">Tally</div><div class="d">sheets</div></div>
+    <div class="app"><div class="tile" style="background:#B4502E">P</div><div class="t">Podium</div><div class="d">slides</div></div>
+    <div class="app"><div class="tile" style="background:#6B4E9E">S</div><div class="t">Sheaf</div><div class="d">PDF</div></div>
+  </div>
+
+  <h2>App names — set 2 (Arabic)</h2>
+  <table>
+    <thead><tr><th>Role</th><th>Name</th><th>Meaning</th></tr></thead>
+    <tbody>
+      <tr><td class="role">Documents</td><td class="nm">Safha</td><td class="why">صفحة — a page.</td></tr>
+      <tr><td class="role">Spreadsheets</td><td class="nm">Jadwal</td><td class="why">جدول — a table, a schedule.</td></tr>
+      <tr><td class="role">Presentations</td><td class="nm">Ard</td><td class="why">عرض — a presentation, a showing.</td></tr>
+      <tr><td class="role">PDF</td><td class="nm">Wathiq</td><td class="why">وثيق — firmly bound, secure.</td></tr>
+    </tbody>
+  </table>
+
+  <h2>Palette</h2>
+  <div class="pal">
+    <div class="chip"><div class="c" style="background:#0F1433"></div><div class="l"><b>Ink Navy</b>#0F1433</div></div>
+    <div class="chip"><div class="c" style="background:#33439B"></div><div class="l"><b>Indigo</b>#33439B</div></div>
+    <div class="chip"><div class="c" style="background:#F2B33D"></div><div class="l"><b>Amber</b>#F2B33D</div></div>
+    <div class="chip"><div class="c" style="background:#F7F5EF"></div><div class="l"><b>Paper</b>#F7F5EF</div></div>
+  </div>
+  <div class="pal">
+    <div class="chip"><div class="c" style="background:#14181D"></div><div class="l"><b>Charcoal</b>#14181D</div></div>
+    <div class="chip"><div class="c" style="background:#C9A227"></div><div class="l"><b>Gold</b>#C9A227</div></div>
+    <div class="chip"><div class="c" style="background:#EDE7DA"></div><div class="l"><b>Bone</b>#EDE7DA</div></div>
+  </div>
+
+  <h2>What is and isn’t final</h2>
+  <div class="note">
+    <b>Real:</b> the geometry, the palette, the naming.
+    <ul>
+      <li>The wordmark type is live text in <code>Segoe UI</code> — fine for a README, but before
+          you print it anywhere, convert it to outlines in a proper typeface.</li>
+      <li>App icons above are CSS placeholders, not finished artwork.</li>
+      <li>Neither name nor mark has been registered. A search found no existing use of either,
+          which is not the same as a trademark clearance.</li>
+    </ul>
+  </div>
+
+</div>
+</body>
+</html>

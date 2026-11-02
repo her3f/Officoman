@@ -1,0 +1,77 @@
+Officoman
+Copyright (c) 2026 her3f and the Officoman contributors.
+Licensed under the MIT License or the Apache License, Version 2.0, at your option
+(LICENSE-MIT, LICENSE-APACHE).
+
+
+This work is a modified derivative of the ArtCraft Crafting Apps
+===============================================================
+
+Officoman is based on the following upstream projects, each dual-licensed under the MIT
+License or the Apache License, Version 2.0, at your option:
+
+  DeckCraft   https://github.com/storytold/deckcraft
+  GridCraft   https://github.com/storytold/gridcraft
+  PdfCraft    https://github.com/storytold/pdfcraft
+  WordCraft   https://github.com/storytold/wordcraft
+
+  Copyright (c) 2026 ArtCraft Team and the DeckCraft, GridCraft, PdfCraft and WordCraft
+  contributors.
+
+Modifications: renamed, rebranded, restructured and modified by her3f and the Officoman
+contributors starting 2026. Imported files carry a prominent notice of modification in their
+headers and in the repository history, as required by Apache-2.0 section 4(b).
+
+
+Trademarks
+==========
+
+"ArtCraft", "DeckCraft", "GridCraft", "PdfCraft", "WordCraft", the "-Craft" application
+family naming, and the ArtCraft name, wordmark and logo are trademarks of the ArtCraft Team.
+They are not covered by the licenses above and are not used by this project. The upstream
+projects require forks and modified versions to remove the ArtCraft brand assets
+(docs/brand/ and the app icons), and Officoman does so.
+
+Officoman is not affiliated with, endorsed by, or sponsored by the ArtCraft Team.
+
+The Officoman name, wordmark and the marks under brand/ are this project's own work.
+
+
+Third-party material
+====================
+
+Not yet bundled. This repository currently contains only original project artwork and text.
+
+When application code is imported from the upstream projects, their NOTICE files and
+ATTRIBUTION.md must be carried over and merged into this file unmodified. Those cover, at
+minimum:
+
+  - Fonts embedded via craft-fonts, under the SIL Open Font License 1.1, including the
+    Licensed Font Name and Reserved Font Name terms of each face.
+  - Lucide icon paths (ISC License, Copyright (c) 2026 Lucide Icons and Contributors) and the
+    Feather-derived icons within them (MIT, Copyright (c) 2013-present Cole Bemis).
+  - Ubuntu Light (Ubuntu Font Licence 1.0); Hack, Noto Emoji and the egui icon font
+    (MIT, Bitstream Vera, OFL-1.1); emoji-icon-font by John Slegers (MIT).
+  - symphonia, used unmodified under the Mozilla Public License 2.0.
+  - Krilla, used through craft-pdf under MIT OR Apache-2.0, with its bundled Compact ICC
+    Profiles (CC0-1.0).
+  - ammo.js (zlib), normalize.css (MIT), three-dots (MIT), Font Awesome Free icons
+    (CC BY 4.0), Carter One (OFL-1.1), Inter/Archivo/Geist Mono (OFL-1.1), where those
+    assets are carried over.
+
+Per-file authorship, sources and license texts are in the upstream ATTRIBUTION.md files and
+must be preserved alongside the code that uses them.
+
+
+Material that must not be carried over
+======================================
+
+The ArtCraft repository (https://github.com/storytold/artcraft) ships files that are not
+covered by its license and are owned by third parties. None of it may be imported into
+Officoman:
+
+  - public/resources/sound/          sound effects from Nintendo games
+  - public/resources/memes/          meme images and likenesses
+  - public/resources/skybox/         third-party skybox textures
+  - public/resources/pose/           third-party MMD motion data
+  - public/resources/characters_gif/ renders of Mixamo animations
