@@ -1,0 +1,17 @@
+[package]
+name = "sheaf-xfdf"
+description = "Comment and form data exchange: XFDF (ISO 19444-1) and FDF import/export, form data as XML, CSV and tab-delimited text"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+
+[lints]
+workspace = true
+
+[dependencies]
+sheaf-cos = { workspace = true }
+sheaf-annot = { workspace = true }
+sheaf-forms = { workspace = true }
+sheaf-model = { workspace = true }
+roxmltree = "0.21"
+thiserror = { workspace = true }

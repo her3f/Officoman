@@ -1,0 +1,17 @@
+[package]
+name = "podium-model"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+description = "Podium document model: presentations, masters, layouts, slides, shapes, text, themes, transitions, animations"
+
+[lints]
+workspace = true
+
+[dependencies]
+podium-geom = { workspace = true }
+podium-color = { workspace = true }
+serde = { workspace = true }
+serde_json = { workspace = true }
+thiserror = { workspace = true }
+unicode-segmentation = { workspace = true }

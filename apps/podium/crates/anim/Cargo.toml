@@ -1,0 +1,14 @@
+[package]
+name = "podium-anim"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+description = "Podium slide show timing: animation sequences, per-shape animation state over time, and transition frame layouts"
+
+[lints]
+workspace = true
+
+[dependencies]
+podium-model = { workspace = true }
+podium-geom = { workspace = true }
+serde = { workspace = true }

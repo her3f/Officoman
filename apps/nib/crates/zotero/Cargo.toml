@@ -1,0 +1,21 @@
+[package]
+name = "nib-zotero"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+description = "Nib Zotero integration: Zotero's word-processor wire protocol, answered against an engine Session"
+
+[lints]
+workspace = true
+
+[dependencies]
+nib-doc = { workspace = true }
+nib-engine = { workspace = true }
+nib-formats = { workspace = true }
+serde_json = { workspace = true }
+thiserror = { workspace = true }
+log = { workspace = true }
+
+[dev-dependencies]
+nib-docx = { workspace = true }
+proptest = { workspace = true }

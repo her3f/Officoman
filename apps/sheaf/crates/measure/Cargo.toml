@@ -1,0 +1,20 @@
+[package]
+name = "sheaf-measure"
+description = "Calibrated 2D PDF measurements, viewports and snapping"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+
+[lints]
+workspace = true
+
+[dependencies]
+sheaf-cos = { workspace = true }
+sheaf-model = { workspace = true }
+sheaf-content = { workspace = true }
+sheaf-annot = { workspace = true }
+serde = { workspace = true }
+thiserror = { workspace = true }
+
+[dev-dependencies]
+sheaf-testkit = { workspace = true }

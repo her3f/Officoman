@@ -32,9 +32,7 @@ A document tile with a folded page corner; the fold doubles as the counter of th
 
 - Geometric, so it survives at 16 px and in one colour.
 - No lettering, so it does not depend on a font being installed.
-- The fold and the ring carry the two readings — *page* and *O* — at any size.
-
-Files:
+- The amber fold is the one constant across the suite — every app icon carries it.
 
 ```
 brand/officoman-mark.svg        64×64, primary
@@ -55,9 +53,18 @@ on anything printed or shipped.
 | Amber | `#F2B33D` | The fold — the one warm accent |
 | Paper | `#F7F5EF` | Page background |
 
+Each app takes one saturated colour so the four are told apart at a glance:
+
+| App | Colour |
+|---|---|
+| Nib — documents | Indigo `#33439B` |
+| Tally — spreadsheets | Teal `#1F7A6B` |
+| Podium — presentations | Rust `#B4502E` |
+| Sheaf — PDF | Violet `#6B4E9E` |
+
 ## App names
 
-| Role | Name | Note |
+| Role | Name | Why |
 |---|---|---|
 | Documents | **Nib** | The writing end of a pen |
 | Spreadsheets | **Tally** | A running count |
@@ -71,49 +78,44 @@ An Arabic set exists if the suite is ever aimed at an Arabic-first audience:
 
 1. Never use *ArtCraft*, *Crafting Apps*, *DeckCraft*, *GridCraft*, *PdfCraft* or *WordCraft*
    in any product-facing string, icon, package name or store listing.
-2. Naming upstream in `NOTICE`, `README` provenance and `LICENSE` is fine and required —
-   that is nominative use, describing where the code came from. It is not branding.
+2. Naming upstream in `NOTICE`, `README` provenance and the site's About page is fine and
+   required — that is nominative use, describing where the code came from. It is not branding.
 3. Never say or imply Officoman is made by, endorsed by, or affiliated with the ArtCraft Team.
 4. Do not reuse ArtCraft's app icons, `docs/brand/` assets, bundle identifiers or the
    `ai.storyteller.*` reverse-DNS prefix.
 
-## Import checklist
+## Import record
 
-Work through this per upstream repository as it is imported. Items marked **required** are
-licence or trademark obligations, not preferences.
+The four upstream repositories were imported by `tools/rebrand.py` and the result was audited.
 
-**Remove — required**
+**Done**
 
-- [ ] `docs/brand/` in full (ArtCraft wordmark and logo). Upstream terms state forks and
-      modified versions **must** remove these.
-- [ ] Every `assets/app-icon/**` icon and splash image.
-- [ ] Bundle identifier `ai.storyteller.<app>` → `io.github.her3f.<app>` everywhere:
-      Tauri config, `.desktop` files, MSI/WiX, Info.plist, Flatpak manifests, nfpm.
-- [ ] Any unlicensed asset paths, if present: `resources/sound/`, `resources/memes/`,
-      `resources/skybox/`, `resources/pose/`, `resources/characters_gif/`.
+- [x] `docs/brand/` deleted from all four trees (ArtCraft wordmarks and logos).
+- [x] Every app icon deleted and redrawn — PNG set, `.ico`, `.icns`, scalable SVG.
+- [x] Bundle identifier `ai.storyteller.*` → `io.github.her3f.*` across desktop files,
+      AppStream metainfo, Flatpak manifests, WiX, `Info.plist`, nfpm and `omastore.toml`.
+- [x] Product names replaced in every casing that occurs — including the `Pdfcraft*` WiX
+      identifiers, `Deckcraft`, and the all-caps constants.
+- [x] Crate names, binaries, CLI namespaces and the `repository` field.
+- [x] Site, store, Discord, YouTube, X and LinkedIn links now point at this project.
+- [x] `LICENSE-MIT`, `LICENSE-APACHE` and `NOTICE` carried over with upstream copyright lines.
 
-**Rename**
+**Left deliberately**
 
-- [ ] Crates: `deckcraft-*` → `podium-*`, `gridcraft-*` → `tally-*`, `pdfcraft-*` → `sheaf-*`,
-      `wordcraft-*` → `nib-*`. Watch the many `craft-*` shared crates — those come from
-      upstream too and carry the family name.
-- [ ] Binaries, CLI names and command namespaces.
-- [ ] File extensions if the app registers its own (e.g. `.deckcraft` → `.podium`).
-- [ ] UI strings, about boxes, window titles, crash-report text, `Cargo.toml` descriptions
-      and `authors` fields.
-- [ ] Links: `getartcraft.com`, `discord.gg/artcraft`, YouTube and X handles.
-- [ ] Updater endpoints, release URLs and code-signing keys — none of upstream's will work
-      for you, and some will actively misroute updates.
+| Item | Why |
+|---|---|
+| `storytold/craft-libs`, `storytold/egui`, `storytold/craft-fonts`, `storytold/craft-i18n`, `storytold/winprint.rs` | Third-party git dependencies pinned by revision. Renaming them breaks dependency resolution. They are libraries, not product branding. |
+| `craft-*` crate names inside the tree | Internal code identifiers of those dependencies. |
+| Historical dev notes in `docs/` that mention sibling Crafting Apps | Records of how the upstream code evolved; they name other projects, they do not brand this one. |
+| Test fixture fonts whose internal name table says `DeckCraft Legacy` | Binary `.ttf` fixtures; rewriting a font's name table safely needs a font tool, and they are test-only. |
 
-**Keep — required**
+## Regenerating
 
-- [ ] `LICENSE-MIT`, `LICENSE-APACHE` and `NOTICE`, with upstream copyright lines intact.
-- [ ] `ATTRIBUTION.md` and every per-asset licence file.
-- [ ] A prominent "modified from <upstream>" notice in the header of each changed file
-      (Apache-2.0 §4(b)).
+```sh
+python tools/rebrand.py      # _vendor/<upstream>  ->  apps/<product>
+python tools/make_icons.py   # draws every icon
+python tools/build_docs.py   # website + per-app READMEs
+```
 
-**Check**
-
-- [ ] Search the tree for `artcraft`, `craft`, `storytold`, `storyteller` before the first
-      public push.
-- [ ] Confirm no telemetry or API endpoint still points at upstream infrastructure.
+`_vendor/` is git-ignored. Re-running the whole chain is idempotent: `apps/<product>` is
+deleted and recopied from `_vendor/` each time.

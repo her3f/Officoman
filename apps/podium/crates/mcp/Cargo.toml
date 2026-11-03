@@ -1,0 +1,15 @@
+[package]
+name = "podium-mcp"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+description = "Podium MCP server: JSON-RPC 2.0 over stdio, driving a running app or a headless session"
+
+[lints]
+workspace = true
+
+[dependencies]
+podium-engine = { workspace = true }
+podium-render = { workspace = true }
+serde_json = { workspace = true }
+log = { workspace = true }

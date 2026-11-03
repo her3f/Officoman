@@ -1,0 +1,329 @@
+{
+  "id": "sheaf",
+  "name": "Sheaf",
+  "upgradeCode": "EA00C367-7270-4C50-9D8B-A7A5C88AD27F",
+  "sources": [
+    "sheaf.wxs",
+    "installer-ui.wxs"
+  ],
+  "icon": "assets/app-icon/sheaf.ico",
+  "localization": [],
+  "extensions": [],
+  "payloads": [
+    "LICENSE-APACHE",
+    "LICENSE-MIT",
+    "LICENSE-document.txt",
+    "NOTICE",
+    "sheaf-cli.exe",
+    "sheaf.exe"
+  ],
+  "registry": [
+    [
+      "-1",
+      "Software\\Microsoft\\Windows\\CurrentVersion\\App Paths\\sheaf.exe",
+      "",
+      "[#SheafExe]"
+    ],
+    [
+      "-1",
+      "Software\\Classes\\Sheaf.Document",
+      "",
+      "PDF Document"
+    ],
+    [
+      "-1",
+      "Software\\Classes\\Sheaf.Document\\DefaultIcon",
+      "",
+      "\"[#SheafExe]\",-2"
+    ],
+    [
+      "-1",
+      "Software\\Classes\\Sheaf.Document\\shell\\open\\command",
+      "",
+      "\"[#SheafExe]\" \"%1\""
+    ],
+    [
+      "-1",
+      "Software\\Classes\\Sheaf.Document",
+      "TypeOverlay",
+      ""
+    ],
+    [
+      "-1",
+      "Software\\Classes\\.pdf\\OpenWithProgids",
+      "Sheaf.Document",
+      ""
+    ],
+    [
+      "-1",
+      "Software\\Classes\\Applications\\sheaf.exe",
+      "FriendlyAppName",
+      "Sheaf"
+    ],
+    [
+      "-1",
+      "Software\\Classes\\Applications\\sheaf.exe\\DefaultIcon",
+      "",
+      "\"[#SheafExe]\",-2"
+    ],
+    [
+      "-1",
+      "Software\\Classes\\Applications\\sheaf.exe\\SupportedTypes",
+      ".pdf",
+      ""
+    ],
+    [
+      "-1",
+      "Software\\Classes\\Applications\\sheaf.exe\\shell\\open\\command",
+      "",
+      "\"[#SheafExe]\" \"%1\""
+    ],
+    [
+      "-1",
+      "Software\\Sheaf\\Capabilities",
+      "ApplicationName",
+      "Sheaf"
+    ],
+    [
+      "-1",
+      "Software\\Sheaf\\Capabilities",
+      "ApplicationDescription",
+      "Open-source PDF workbench"
+    ],
+    [
+      "-1",
+      "Software\\Sheaf\\Capabilities",
+      "ApplicationIcon",
+      "[#SheafExe],0"
+    ],
+    [
+      "-1",
+      "Software\\Sheaf\\Capabilities\\FileAssociations",
+      ".pdf",
+      "Sheaf.Document"
+    ],
+    [
+      "-1",
+      "Software\\RegisteredApplications",
+      "Sheaf",
+      "Software\\Sheaf\\Capabilities"
+    ],
+    [
+      "-1",
+      "Software\\Sheaf\\Shortcuts",
+      "StartMenu",
+      "#1"
+    ],
+    [
+      "-1",
+      "Software\\Sheaf\\Shortcuts",
+      "Desktop",
+      "#1"
+    ],
+    [
+      "-1",
+      "Software\\Classes\\SystemFileAssociations\\.pdf\\shell\\Sheaf.Edit",
+      "",
+      "Edit with Sheaf"
+    ],
+    [
+      "-1",
+      "Software\\Classes\\SystemFileAssociations\\.pdf\\shell\\Sheaf.Edit",
+      "Icon",
+      "\"[#SheafExe]\",0"
+    ],
+    [
+      "-1",
+      "Software\\Classes\\SystemFileAssociations\\.pdf\\shell\\Sheaf.Edit",
+      "MultiSelectModel",
+      "Document"
+    ],
+    [
+      "-1",
+      "Software\\Classes\\SystemFileAssociations\\.pdf\\shell\\Sheaf.Edit\\command",
+      "",
+      "\"[#SheafExe]\" \"%1\""
+    ],
+    [
+      "-1",
+      "Software\\Classes\\SystemFileAssociations\\.png\\shell\\Sheaf.CreatePdf",
+      "",
+      "Create PDF with Sheaf\u2026"
+    ],
+    [
+      "-1",
+      "Software\\Classes\\SystemFileAssociations\\.png\\shell\\Sheaf.CreatePdf",
+      "MultiSelectModel",
+      "Single"
+    ],
+    [
+      "-1",
+      "Software\\Classes\\SystemFileAssociations\\.png\\shell\\Sheaf.CreatePdf\\command",
+      "",
+      "\"[#SheafExe]\" --create-images \"%1\""
+    ],
+    [
+      "-1",
+      "Software\\Classes\\SystemFileAssociations\\.jpg\\shell\\Sheaf.CreatePdf",
+      "",
+      "Create PDF with Sheaf\u2026"
+    ],
+    [
+      "-1",
+      "Software\\Classes\\SystemFileAssociations\\.jpg\\shell\\Sheaf.CreatePdf",
+      "MultiSelectModel",
+      "Single"
+    ],
+    [
+      "-1",
+      "Software\\Classes\\SystemFileAssociations\\.jpg\\shell\\Sheaf.CreatePdf\\command",
+      "",
+      "\"[#SheafExe]\" --create-images \"%1\""
+    ],
+    [
+      "-1",
+      "Software\\Classes\\SystemFileAssociations\\.jpeg\\shell\\Sheaf.CreatePdf",
+      "",
+      "Create PDF with Sheaf\u2026"
+    ],
+    [
+      "-1",
+      "Software\\Classes\\SystemFileAssociations\\.jpeg\\shell\\Sheaf.CreatePdf",
+      "MultiSelectModel",
+      "Single"
+    ],
+    [
+      "-1",
+      "Software\\Classes\\SystemFileAssociations\\.jpeg\\shell\\Sheaf.CreatePdf\\command",
+      "",
+      "\"[#SheafExe]\" --create-images \"%1\""
+    ],
+    [
+      "-1",
+      "Software\\Classes\\SystemFileAssociations\\.tif\\shell\\Sheaf.CreatePdf",
+      "",
+      "Create PDF with Sheaf\u2026"
+    ],
+    [
+      "-1",
+      "Software\\Classes\\SystemFileAssociations\\.tif\\shell\\Sheaf.CreatePdf",
+      "MultiSelectModel",
+      "Single"
+    ],
+    [
+      "-1",
+      "Software\\Classes\\SystemFileAssociations\\.tif\\shell\\Sheaf.CreatePdf\\command",
+      "",
+      "\"[#SheafExe]\" --create-images \"%1\""
+    ],
+    [
+      "-1",
+      "Software\\Classes\\SystemFileAssociations\\.tiff\\shell\\Sheaf.CreatePdf",
+      "",
+      "Create PDF with Sheaf\u2026"
+    ],
+    [
+      "-1",
+      "Software\\Classes\\SystemFileAssociations\\.tiff\\shell\\Sheaf.CreatePdf",
+      "MultiSelectModel",
+      "Single"
+    ],
+    [
+      "-1",
+      "Software\\Classes\\SystemFileAssociations\\.tiff\\shell\\Sheaf.CreatePdf\\command",
+      "",
+      "\"[#SheafExe]\" --create-images \"%1\""
+    ],
+    [
+      "-1",
+      "Software\\Classes\\SystemFileAssociations\\.gif\\shell\\Sheaf.CreatePdf",
+      "",
+      "Create PDF with Sheaf\u2026"
+    ],
+    [
+      "-1",
+      "Software\\Classes\\SystemFileAssociations\\.gif\\shell\\Sheaf.CreatePdf",
+      "MultiSelectModel",
+      "Single"
+    ],
+    [
+      "-1",
+      "Software\\Classes\\SystemFileAssociations\\.gif\\shell\\Sheaf.CreatePdf\\command",
+      "",
+      "\"[#SheafExe]\" --create-images \"%1\""
+    ],
+    [
+      "-1",
+      "Software\\Classes\\SystemFileAssociations\\.bmp\\shell\\Sheaf.CreatePdf",
+      "",
+      "Create PDF with Sheaf\u2026"
+    ],
+    [
+      "-1",
+      "Software\\Classes\\SystemFileAssociations\\.bmp\\shell\\Sheaf.CreatePdf",
+      "MultiSelectModel",
+      "Single"
+    ],
+    [
+      "-1",
+      "Software\\Classes\\SystemFileAssociations\\.bmp\\shell\\Sheaf.CreatePdf\\command",
+      "",
+      "\"[#SheafExe]\" --create-images \"%1\""
+    ],
+    [
+      "-1",
+      "Software\\Classes\\SystemFileAssociations\\.jp2\\shell\\Sheaf.CreatePdf",
+      "",
+      "Create PDF with Sheaf\u2026"
+    ],
+    [
+      "-1",
+      "Software\\Classes\\SystemFileAssociations\\.jp2\\shell\\Sheaf.CreatePdf",
+      "MultiSelectModel",
+      "Single"
+    ],
+    [
+      "-1",
+      "Software\\Classes\\SystemFileAssociations\\.jp2\\shell\\Sheaf.CreatePdf\\command",
+      "",
+      "\"[#SheafExe]\" --create-images \"%1\""
+    ],
+    [
+      "-1",
+      "Software\\Classes\\SystemFileAssociations\\.j2k\\shell\\Sheaf.CreatePdf",
+      "",
+      "Create PDF with Sheaf\u2026"
+    ],
+    [
+      "-1",
+      "Software\\Classes\\SystemFileAssociations\\.j2k\\shell\\Sheaf.CreatePdf",
+      "MultiSelectModel",
+      "Single"
+    ],
+    [
+      "-1",
+      "Software\\Classes\\SystemFileAssociations\\.j2k\\shell\\Sheaf.CreatePdf\\command",
+      "",
+      "\"[#SheafExe]\" --create-images \"%1\""
+    ],
+    [
+      "-1",
+      "Software\\Classes\\SystemFileAssociations\\.jpx\\shell\\Sheaf.CreatePdf",
+      "",
+      "Create PDF with Sheaf\u2026"
+    ],
+    [
+      "-1",
+      "Software\\Classes\\SystemFileAssociations\\.jpx\\shell\\Sheaf.CreatePdf",
+      "MultiSelectModel",
+      "Single"
+    ],
+    [
+      "-1",
+      "Software\\Classes\\SystemFileAssociations\\.jpx\\shell\\Sheaf.CreatePdf\\command",
+      "",
+      "\"[#SheafExe]\" --create-images \"%1\""
+    ]
+  ],
+  "mode": "dualScope"
+}

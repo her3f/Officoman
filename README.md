@@ -6,61 +6,97 @@
 ---
 
 **Officoman** is a suite of four standalone office applications — documents, spreadsheets,
-presentations and PDF — built on a shared foundation.
+presentations and PDF — each a full program in its own right, all written in Rust and all
+sharing one set of conventions.
 
 > [!IMPORTANT]
-> **Status: scaffold.** This repository currently holds the project's identity, licensing and
-> layout. The applications have **not** been imported yet. See [BRAND.md](BRAND.md) for the
-> naming decisions and the import checklist.
+> **Status: imported, not yet built.** All four applications are in the repository and fully
+> rebranded. The rebranded trees have **not** been compiled or tested yet — build each app
+> before trusting it with real work. See [apps/podium](apps/podium) and its siblings.
 
 ## The apps
 
-| | App | Role | Upstream project it will be built from |
+| | App | Role | Files |
 |:-:|---|---|---|
-| <span title="documents">📄</span> | **Nib** | Word processing and documents | [WordCraft](https://github.com/storytold/wordcraft) |
-| <span title="sheets">▦</span> | **Tally** | Spreadsheets and data | [GridCraft](https://github.com/storytold/gridcraft) |
-| <span title="slides">▶</span> | **Podium** | Presentations and slide shows | [DeckCraft](https://github.com/storytold/deckcraft) |
-| <span title="pdf">◫</span> | **Sheaf** | Reading, organizing and protecting PDFs | [PdfCraft](https://github.com/storytold/pdfcraft) |
+| <img src="apps/nib/assets/app-icon/hicolor/64x64/apps/io.github.her3f.nib.png" width="28" alt=""> | **[Nib](apps/nib)** | Word processing and documents | `.docx`, `.doc`, `.odt`, `.rtf`, `.md`, `.tex` |
+| <img src="apps/tally/assets/app-icon/hicolor/64x64/apps/io.github.her3f.tally.png" width="28" alt=""> | **[Tally](apps/tally)** | Spreadsheets and data | `.xlsx`, `.xls` |
+| <img src="apps/podium/assets/app-icon/hicolor/64x64/apps/io.github.her3f.podium.png" width="28" alt=""> | **[Podium](apps/podium)** | Presentations and slide shows | `.pptx`, PDF/PNG/JPEG export |
+| <img src="apps/sheaf/assets/app-icon/hicolor/64x64/apps/io.github.her3f.sheaf.png" width="28" alt=""> | **[Sheaf](apps/sheaf)** | Reading, organizing and protecting PDFs | PDF |
+
+## The website
+
+The project site lives in [`docs/`](docs) and is published from that folder with GitHub Pages:
+
+**<https://her3f.github.io/officoman>**
+
+| Page | What it covers |
+|---|---|
+| [Home](docs/index.html) | What the suite is, the four apps, what they share |
+| [Apps](docs/apps/index.html) | One page per app with its features and file formats |
+| [About](docs/about.html) | Upstream provenance, what changed, trademark position |
+
+To point GitHub Pages at it: **Settings → Pages → Source: Deploy from a branch →
+`main` / `/docs`**.
+
+## Repository layout
+
+```
+apps/nib/        Nib — documents          (own Cargo workspace)
+apps/tally/      Tally — spreadsheets     (own Cargo workspace)
+apps/podium/     Podium — presentations   (own Cargo workspace)
+apps/sheaf/      Sheaf — PDF              (own Cargo workspace)
+brand/           Officoman marks, palette, proposal page
+docs/            The website (GitHub Pages source)
+tools/           The scripts that produced this tree
+NOTICE           Upstream attribution — required, read it
+```
+
+Each app is an independent Rust workspace with its own `Cargo.toml`, its own releases and its
+own packaging. Building one does not build the others.
+
+## Building
+
+You need a Rust toolchain (`rustup`, stable):
+
+```sh
+cd apps/podium
+cargo build --release
+cargo test --workspace
+```
+
+Repeat for `apps/nib`, `apps/tally`, `apps/sheaf`. The desktop binary and the CLI are the two
+`apps/*` packages inside each workspace.
+
+## How this tree was made
+
+The rebrand is scripted, not hand-edited, so it can be re-run or audited:
+
+| Script | What it does |
+|---|---|
+| [`tools/rebrand.py`](tools/rebrand.py) | Copies each upstream repo into `apps/<name>`, renames every product name, moves bundle identifiers to `io.github.her3f.*`, rewrites links, removes the upstream brand assets |
+| [`tools/make_icons.py`](tools/make_icons.py) | Draws every app icon — PNG set, `.ico`, `.icns` and the scalable SVG |
+| [`tools/build_docs.py`](tools/build_docs.py) | Generates the website and the four app READMEs from one data table |
+
+Run them in that order to regenerate the tree from `_vendor/`.
 
 ## Where this comes from
 
 Officoman is a **fork and rebrand** of the four open-source *Crafting Apps* published by the
 [ArtCraft](https://getartcraft.com/) team. Those projects are dual-licensed **MIT or Apache-2.0**,
-which permits exactly this: copying, modifying, renaming and redistributing, including commercially.
+which permits exactly this: copying, modifying, renaming and redistributing, including
+commercially.
 
 In return the licences ask for attribution, which this project keeps in full — see
 [NOTICE](NOTICE). The ArtCraft names, the `-Craft` app family and its logos are **trademarks**
 and are explicitly *not* licensed; upstream requires forks to remove them, and Officoman does
-not use them anywhere.
+not use them anywhere. Every upstream icon and brand asset has been deleted and replaced.
 
 Nothing here is affiliated with, endorsed by, or sponsored by the ArtCraft Team.
-
-## Status and roadmap
-
-- [x] Identity: name, marks, palette, app names
-- [x] Licensing and provenance (`LICENSE-MIT`, `LICENSE-APACHE`, `NOTICE`)
-- [ ] Import the four upstream codebases
-- [ ] Apply the rebrand checklist in [BRAND.md](BRAND.md#import-checklist)
-- [ ] Build and test each app independently
-- [ ] Publish first builds
-
-## Building
-
-Each app will be a Rust workspace. You will need a Rust toolchain (**not currently installed
-on this machine** — `cargo` is missing):
-
-```sh
-# once the Rust toolchain is installed
-rustup toolchain install stable
-cargo build --release
-```
-
-The upstream projects target macOS, Windows, Linux and FreeBSD, with a WebAssembly build of
-DeckCraft.
 
 ## License
 
 Dual-licensed under [MIT](LICENSE-MIT) or [Apache-2.0](LICENSE-APACHE), at your option.
+
 Copyright (c) 2026 her3f and the Officoman contributors, and the upstream ArtCraft Team and
 Crafting App contributors. Required notices are in [NOTICE](NOTICE).
 

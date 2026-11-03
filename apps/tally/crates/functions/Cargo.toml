@@ -1,0 +1,13 @@
+[package]
+name = "tally-functions"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+description = "Tally worksheet function library: math, statistics, text, dates, lookup, financial, engineering"
+
+[lints]
+workspace = true
+
+[dependencies]
+tally-core = { workspace = true }
+regex = { workspace = true }

@@ -1,0 +1,14 @@
+[Desktop Entry]
+Type=Application
+Name=Sheaf
+GenericName=PDF Editor
+Comment=Read, organize, combine, split and secure PDFs
+Exec=sheaf %U
+TryExec=sheaf
+Icon=io.github.her3f.sheaf
+Terminal=false
+StartupNotify=true
+StartupWMClass=io.github.her3f.sheaf
+Categories=Office;Viewer;
+Keywords=pdf;viewer;editor;annotate;sign;forms;merge;split;
+MimeType=application/pdf;

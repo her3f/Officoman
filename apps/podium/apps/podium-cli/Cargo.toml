@@ -1,0 +1,22 @@
+[package]
+name = "podium-cli"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+description = "Podium on the command line: render, convert, run commands, inspect, and serve MCP"
+publish = false
+
+[lints]
+workspace = true
+
+[[bin]]
+name = "podium-cli"
+path = "src/main.rs"
+
+[dependencies]
+podium-engine = { workspace = true }
+podium-mcp = { workspace = true }
+serde_json = { workspace = true }
+
+[dev-dependencies]
+zip = { workspace = true }

@@ -3,6 +3,9 @@
 **/target/
 Cargo.lock.bak
 
+# Upstream clones used by tools/rebrand.py (not part of the repository)
+/_vendor/
+
 # Node
 node_modules/
 dist/
@@ -21,6 +24,12 @@ dist/
 logs/
 ui.json
 prefs.json
+
+# Scratch files from the tooling
+_shot_*.png
+_icons.png
+_sheet.py
+_dbg_*
 
 # Editors & OS
 .vscode/

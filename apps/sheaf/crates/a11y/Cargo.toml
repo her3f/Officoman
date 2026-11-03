@@ -1,0 +1,19 @@
+[package]
+name = "sheaf-a11y"
+description = "Accessibility: the Accessibility Checker (32 rules), its report and fixes"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+rust-version.workspace = true
+repository.workspace = true
+
+[lints]
+workspace = true
+
+[dependencies]
+sheaf-cos = { workspace = true }
+sheaf-model = { workspace = true }
+sheaf-content = { workspace = true }
+sheaf-filters = { workspace = true }
+sheaf-fonts = { workspace = true }
+thiserror.workspace = true

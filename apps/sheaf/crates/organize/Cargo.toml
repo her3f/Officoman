@@ -1,0 +1,18 @@
+[package]
+name = "sheaf-organize"
+description = "Page and document-structure edits: rotate, delete, move, insert pages; document info"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+
+[lints]
+workspace = true
+
+[dependencies]
+sheaf-content = { workspace = true }
+sheaf-cos = { workspace = true }
+thiserror = { workspace = true }
+
+[dev-dependencies]
+sheaf-oracle = { workspace = true }
+hayro-syntax = { workspace = true }

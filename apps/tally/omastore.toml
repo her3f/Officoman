@@ -1,0 +1,11 @@
+kind = "app"
+categories = ["Office"]
+icon = "assets/app-icon/hicolor/256x256/apps/io.github.her3f.tally.png"
+
+[linux.x86_64]
+asset = "tally-{version}-linux-x86_64.tar.gz"
+exec = "tally-{version}-linux-x86_64/bin/tally"
+
+[linux.aarch64]
+asset = "tally-{version}-linux-aarch64.tar.gz"
+exec = "tally-{version}-linux-aarch64/bin/tally"

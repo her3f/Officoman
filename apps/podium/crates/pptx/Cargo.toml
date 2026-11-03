@@ -1,0 +1,26 @@
+[package]
+name = "podium-pptx"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+description = "Podium PPTX: Office Open XML (PresentationML/DrawingML) import and export, written from the public ECMA-376 standard"
+
+[lints]
+workspace = true
+
+[dependencies]
+podium-model = { workspace = true }
+podium-geom = { workspace = true }
+podium-color = { workspace = true }
+quick-xml = { workspace = true }
+zip = { workspace = true }
+thiserror = { workspace = true }
+log = { workspace = true }
+
+[dev-dependencies]
+podium-engine = { workspace = true }
+serde_json = { workspace = true }
+podium-color = { workspace = true }
+podium-geom = { workspace = true }
+image = { workspace = true }
+zip = { workspace = true }

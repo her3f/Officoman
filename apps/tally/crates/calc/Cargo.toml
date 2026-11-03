@@ -1,0 +1,17 @@
+[package]
+name = "tally-calc"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+description = "Tally calculation engine: dependency graph, recalculation, evaluator, dynamic arrays"
+
+[lints]
+workspace = true
+
+[dependencies]
+tally-core = { workspace = true }
+tally-formula = { workspace = true }
+tally-functions = { workspace = true }
+tally-numfmt = { workspace = true }
+tally-model = { workspace = true }
+log = { workspace = true }

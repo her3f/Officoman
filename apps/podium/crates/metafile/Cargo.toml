@@ -1,0 +1,14 @@
+[package]
+name = "podium-metafile"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+description = "Podium metafiles (ported from Nib): parses Windows WMF and EMF records into a neutral vector model (paths and bitmaps)"
+
+[lints]
+workspace = true
+
+[dependencies]
+kurbo = { workspace = true }
+thiserror = { workspace = true }
+image = { workspace = true }

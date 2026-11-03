@@ -1,0 +1,11 @@
+kind = "app"
+categories = ["Office"]
+icon = "assets/app-icon/hicolor/256x256/apps/io.github.her3f.podium.png"
+
+[linux.x86_64]
+asset = "podium-{version}-linux-x86_64.tar.gz"
+exec = "podium-{version}-linux-x86_64/bin/podium"
+
+[linux.aarch64]
+asset = "podium-{version}-linux-aarch64.tar.gz"
+exec = "podium-{version}-linux-aarch64/bin/podium"

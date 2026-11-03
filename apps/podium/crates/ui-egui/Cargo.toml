@@ -1,0 +1,39 @@
+[package]
+name = "podium-ui-egui"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+description = "Podium egui frontend (PowerPoint-style UI); swappable — nothing below depends on it"
+
+[lints]
+workspace = true
+
+[dependencies]
+podium-geom = { workspace = true }
+podium-color = { workspace = true }
+podium-model = { workspace = true }
+podium-fonts = { workspace = true }
+podium-text = { workspace = true }
+podium-render = { workspace = true }
+podium-anim = { workspace = true }
+podium-engine = { workspace = true }
+podium-media = { workspace = true }
+egui = { workspace = true, features = ["default_fonts", "monochrome_emoji_fonts"] }
+craft-ui = { workspace = true }
+serde = { workspace = true }
+serde_json = { workspace = true }
+log = { workspace = true }
+web-time = { workspace = true }
+
+[target.'cfg(not(target_arch = "wasm32"))'.dependencies]
+craft-update = { workspace = true }
+
+[dev-dependencies]
+skrifa = { workspace = true }
+# kittest's own dev-dependencies do not propagate; tests need both font features explicitly.
+egui = { workspace = true, features = ["default_fonts", "monochrome_emoji_fonts"] }
+egui_kittest = { workspace = true, features = ["wgpu", "snapshot"] }
+
+[build-dependencies]
+serde_json = { workspace = true }
+toml = "1"

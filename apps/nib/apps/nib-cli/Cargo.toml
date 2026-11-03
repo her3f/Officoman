@@ -1,0 +1,23 @@
+[package]
+name = "nib-cli"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+publish = false
+description = "Nib command line: convert, inspect, render, run commands, MCP server"
+
+[[bin]]
+name = "nib-cli"
+path = "src/main.rs"
+
+[lints]
+workspace = true
+
+[dependencies]
+nib-doc = { workspace = true }
+nib-engine = { workspace = true }
+nib-render = { workspace = true }
+nib-mcp = { workspace = true }
+nib-zotero = { workspace = true }
+serde_json = { workspace = true }
+sys-locale = "0.3"

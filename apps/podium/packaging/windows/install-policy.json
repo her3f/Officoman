@@ -1,0 +1,81 @@
+{
+  "id": "podium",
+  "name": "Podium",
+  "upgradeCode": "6F9C69E7-7825-40D2-BF26-C274DA676425",
+  "sources": [
+    "podium.wxs"
+  ],
+  "icon": "assets/app-icon/podium.ico",
+  "localization": [],
+  "extensions": [
+    "UI"
+  ],
+  "payloads": [
+    "NOTICE",
+    "podium-cli.exe",
+    "podium.exe"
+  ],
+  "registry": [
+    [
+      "-1",
+      "Software\\Classes\\Applications\\podium.exe",
+      "FriendlyAppName",
+      "Podium"
+    ],
+    [
+      "-1",
+      "Software\\Classes\\Applications\\podium.exe\\shell\\open\\command",
+      "",
+      "\"[#PodiumExe]\" \"%1\""
+    ],
+    [
+      "-1",
+      "Software\\Classes\\Applications\\podium.exe\\SupportedTypes",
+      ".podium",
+      ""
+    ],
+    [
+      "-1",
+      "Software\\Classes\\Applications\\podium.exe\\SupportedTypes",
+      ".pptx",
+      ""
+    ],
+    [
+      "-1",
+      "Software\\Classes\\Applications\\podium.exe\\SupportedTypes",
+      ".potx",
+      ""
+    ],
+    [
+      "-1",
+      "Software\\Classes\\Applications\\podium.exe\\SupportedTypes",
+      ".ppsx",
+      ""
+    ],
+    [
+      "-1",
+      "Software\\Classes\\.pptx\\OpenWithProgids",
+      "Podium.Presentation",
+      ""
+    ],
+    [
+      "-1",
+      "Software\\Classes\\.potx\\OpenWithProgids",
+      "Podium.Presentation",
+      ""
+    ],
+    [
+      "-1",
+      "Software\\Classes\\.ppsx\\OpenWithProgids",
+      "Podium.Presentation",
+      ""
+    ],
+    [
+      "-1",
+      "Software\\Microsoft\\Windows\\CurrentVersion\\App Paths\\podium.exe",
+      "",
+      "[#PodiumExe]"
+    ]
+  ],
+  "mode": "dualScope"
+}

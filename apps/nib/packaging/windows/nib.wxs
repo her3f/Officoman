@@ -1,0 +1,149 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Wix xmlns="http://wixtoolset.org/schemas/v4/wxs" xmlns:ui="http://wixtoolset.org/schemas/v4/wxs/ui">
+  <?ifndef HasCraftFontLicences ?>
+  <?define HasCraftFontLicences=0 ?>
+  <?endif?>
+  <Package Name="Nib" Manufacturer="Learning Machines LLC" Version="$(var.Version)" UpgradeCode="075497F9-E861-45D0-9C7F-A74F8C34E6BA" Scope="perUserOrMachine" Compressed="yes" Language="1033">
+    <SummaryInformation Description="Nib word processor" Manufacturer="Learning Machines LLC" />
+    <?include $(sys.SOURCEFILEDIR)install-policy.wxi?>
+    <!-- Same-version upgrades let successive pre-releases of one X.Y.Z replace each other
+         (MSI versions are numeric, so 1.2.3-rc.1 and 1.2.3-rc.2 are both 1.2.3). -->
+    <MajorUpgrade AllowSameVersionUpgrades="yes" DowngradeErrorMessage="A newer version of Nib is already installed." />
+    <MediaTemplate EmbedCab="yes" CompressionLevel="high" />
+
+    <Icon Id="NibIcon.ico" SourceFile="$(var.IconPath)" />
+    <Property Id="ARPPRODUCTICON" Value="NibIcon.ico" />
+    <Property Id="ARPURLINFOABOUT" Value="https://her3f.github.io/officoman/apps/nib.html" />
+    <Property Id="ARPURLUPDATEINFO" Value="https://her3f.github.io/officoman/apps/nib.html" />
+    <Property Id="ARPHELPLINK" Value="https://github.com/her3f/officoman/discussions" />
+
+    <!-- Installer UI (#198): WixUI_Minimal is welcome + license, progress, then a finish page so
+         people can see the install worked. Its dialogs and bitmaps are WiX's own
+         (WixToolset.UI.wixext); package.ps1 builds the license RTF from LICENSE-MIT and
+         LICENSE-APACHE. The finish page offers to launch Nib (ticked by default) through
+         WixShellExec (WixToolset.Util.wixext); silent installs (/qn) never show it. -->
+    <WixVariable Id="WixUILicenseRtf" Value="$(var.LicenseRtf)" />
+    <Property Id="WIXUI_EXITDIALOGOPTIONALCHECKBOXTEXT" Value="Launch Nib" />
+    <Property Id="WIXUI_EXITDIALOGOPTIONALCHECKBOX" Value="1" />
+    <Property Id="WixShellExecTarget" Value="[#NibExe]" />
+    <CustomAction Id="LaunchNib" BinaryRef="Wix4UtilCA_$(sys.BUILDARCHSHORT)" DllEntry="WixShellExec" Impersonate="yes" Return="ignore" />
+    <UI>
+      <ui:WixUI Id="WixUI_Minimal" />
+      <Publish Dialog="ExitDialog" Control="Finish" Event="DoAction" Value="LaunchNib" Condition="WIXUI_EXITDIALOGOPTIONALCHECKBOX = 1 AND NOT Installed" />
+    </UI>
+
+    <StandardDirectory Id="ProgramFiles6432Folder">
+      <Directory Id="CraftSuiteFolder" Name="Officoman">
+        <Directory Id="INSTALLFOLDER" Name="Nib" />
+      </Directory>
+    </StandardDirectory>
+    <StandardDirectory Id="ProgramMenuFolder" />
+
+    <Feature Id="Main" Title="Nib" Level="1">
+      <ComponentGroupRef Id="AppNotices" />
+      <?if $(var.HasCraftFontLicences) = 1 ?>
+      <ComponentGroupRef Id="CraftFontLicences" />
+      <?endif?>
+      <ComponentGroupRef Id="NibFiles" />
+    </Feature>
+  </Package>
+
+  <Fragment>
+    <ComponentGroup Id="AppNotices" Directory="INSTALLFOLDER">
+      <Files Include="$(var.AppNoticesDir)\**" />
+    </ComponentGroup>
+    <?if $(var.HasCraftFontLicences) = 1 ?>
+    <ComponentGroup Id="CraftFontLicences" Directory="INSTALLFOLDER">
+      <Files Include="$(var.DocsDir)\**" />
+    </ComponentGroup>
+    <?endif?>
+    <ComponentGroup Id="NibFiles" Directory="INSTALLFOLDER">
+      <Component Id="NibApp" Guid="855DCEC6-9285-444F-9382-9654B83B34F6">
+        <File Id="NibExe" Source="$(var.BinDir)\nib.exe" KeyPath="yes">
+          <Shortcut Id="StartMenuShortcut" Directory="ProgramMenuFolder" Name="Nib" Description="Nib word processor" WorkingDirectory="INSTALLFOLDER" Advertise="yes" Icon="NibIcon.ico" IconIndex="0" />
+        </File>
+
+        <RegistryValue Root="HKMU" Key="Software\Microsoft\Windows\CurrentVersion\App Paths\nib.exe" Value="[#NibExe]" Type="string" />
+      <RegistryValue Root="HKMU" Key="Software\Nib" Name="InstallDir" Value="[INSTALLFOLDER]" Type="string" />
+      </Component>
+
+      <!-- File associations (#295). Each document type gets a Nib ProgId (name, icon, open
+           command) and is listed under the extension's OpenWithProgids, so Nib shows in
+           Explorer's "Open with". The Word, RTF and ODT types are also Nib's Capabilities
+           (RegisteredApplications), so it appears in Settings › Default apps, where the user
+           makes it the default (File › Options › General opens that page). Nothing here sets an
+           extension's default: the installer never takes over .docx from another app. Markdown and
+           plain text are only "Open with" candidates. Removed again on uninstall. -->
+      <Component Id="NibFileTypes" Guid="EFF89E6A-F9B8-49F9-B3AE-E243347484B4">
+        <RegistryValue Root="HKMU" Key="Software\RegisteredApplications" Name="Nib" Value="Software\Nib\Capabilities" Type="string" KeyPath="yes" />
+        <RegistryValue Root="HKMU" Key="Software\Nib\Capabilities" Name="ApplicationName" Value="Nib" Type="string" />
+        <RegistryValue Root="HKMU" Key="Software\Nib\Capabilities" Name="ApplicationDescription" Value="Write and design documents; open and save Word files." Type="string" />
+        <RegistryValue Root="HKMU" Key="Software\Nib\Capabilities" Name="ApplicationIcon" Value="&quot;[#NibExe]&quot;,0" Type="string" />
+        <RegistryValue Root="HKMU" Key="Software\Classes\Applications\nib.exe" Name="FriendlyAppName" Value="Nib" Type="string" />
+        <RegistryValue Root="HKMU" Key="Software\Classes\Applications\nib.exe\shell\open\command" Value="&quot;[#NibExe]&quot; &quot;%1&quot;" Type="string" />
+
+        <ProgId Id="Nib.Document" Description="Word Document" Icon="NibExe" IconIndex="0" />
+        <RegistryValue Root="HKMU" Key="Software\Classes\Nib.Document\shell\open\command" Value="&quot;[#NibExe]&quot; &quot;%1&quot;" Type="string" />
+        <RegistryValue Root="HKMU" Key="Software\Classes\.docx\OpenWithProgids" Name="Nib.Document" Value="" Type="string" />
+        <RegistryValue Root="HKMU" Key="Software\Classes\Applications\nib.exe\SupportedTypes" Name=".docx" Value="" Type="string" />
+        <RegistryValue Root="HKMU" Key="Software\Nib\Capabilities\FileAssociations" Name=".docx" Value="Nib.Document" Type="string" />
+
+        <ProgId Id="Nib.DocumentMacroEnabled" Description="Word Macro-Enabled Document" Icon="NibExe" IconIndex="0" />
+        <RegistryValue Root="HKMU" Key="Software\Classes\Nib.DocumentMacroEnabled\shell\open\command" Value="&quot;[#NibExe]&quot; &quot;%1&quot;" Type="string" />
+        <RegistryValue Root="HKMU" Key="Software\Classes\.docm\OpenWithProgids" Name="Nib.DocumentMacroEnabled" Value="" Type="string" />
+        <RegistryValue Root="HKMU" Key="Software\Classes\Applications\nib.exe\SupportedTypes" Name=".docm" Value="" Type="string" />
+        <RegistryValue Root="HKMU" Key="Software\Nib\Capabilities\FileAssociations" Name=".docm" Value="Nib.DocumentMacroEnabled" Type="string" />
+
+        <ProgId Id="Nib.Template" Description="Word Template" Icon="NibExe" IconIndex="0" />
+        <RegistryValue Root="HKMU" Key="Software\Classes\Nib.Template\shell\open\command" Value="&quot;[#NibExe]&quot; &quot;%1&quot;" Type="string" />
+        <RegistryValue Root="HKMU" Key="Software\Classes\.dotx\OpenWithProgids" Name="Nib.Template" Value="" Type="string" />
+        <RegistryValue Root="HKMU" Key="Software\Classes\Applications\nib.exe\SupportedTypes" Name=".dotx" Value="" Type="string" />
+        <RegistryValue Root="HKMU" Key="Software\Nib\Capabilities\FileAssociations" Name=".dotx" Value="Nib.Template" Type="string" />
+
+        <ProgId Id="Nib.TemplateMacroEnabled" Description="Word Macro-Enabled Template" Icon="NibExe" IconIndex="0" />
+        <RegistryValue Root="HKMU" Key="Software\Classes\Nib.TemplateMacroEnabled\shell\open\command" Value="&quot;[#NibExe]&quot; &quot;%1&quot;" Type="string" />
+        <RegistryValue Root="HKMU" Key="Software\Classes\.dotm\OpenWithProgids" Name="Nib.TemplateMacroEnabled" Value="" Type="string" />
+        <RegistryValue Root="HKMU" Key="Software\Classes\Applications\nib.exe\SupportedTypes" Name=".dotm" Value="" Type="string" />
+        <RegistryValue Root="HKMU" Key="Software\Nib\Capabilities\FileAssociations" Name=".dotm" Value="Nib.TemplateMacroEnabled" Type="string" />
+
+        <ProgId Id="Nib.LegacyDocument" Description="Legacy Word Document" Icon="NibExe" IconIndex="0" />
+        <RegistryValue Root="HKMU" Key="Software\Classes\Nib.LegacyDocument\shell\open\command" Value="&quot;[#NibExe]&quot; &quot;%1&quot;" Type="string" />
+        <RegistryValue Root="HKMU" Key="Software\Classes\.doc\OpenWithProgids" Name="Nib.LegacyDocument" Value="" Type="string" />
+        <RegistryValue Root="HKMU" Key="Software\Classes\Applications\nib.exe\SupportedTypes" Name=".doc" Value="" Type="string" />
+        <RegistryValue Root="HKMU" Key="Software\Nib\Capabilities\FileAssociations" Name=".doc" Value="Nib.LegacyDocument" Type="string" />
+
+        <ProgId Id="Nib.LegacyTemplate" Description="Legacy Word Template" Icon="NibExe" IconIndex="0" />
+        <RegistryValue Root="HKMU" Key="Software\Classes\Nib.LegacyTemplate\shell\open\command" Value="&quot;[#NibExe]&quot; &quot;%1&quot;" Type="string" />
+        <RegistryValue Root="HKMU" Key="Software\Classes\.dot\OpenWithProgids" Name="Nib.LegacyTemplate" Value="" Type="string" />
+        <RegistryValue Root="HKMU" Key="Software\Classes\Applications\nib.exe\SupportedTypes" Name=".dot" Value="" Type="string" />
+        <RegistryValue Root="HKMU" Key="Software\Nib\Capabilities\FileAssociations" Name=".dot" Value="Nib.LegacyTemplate" Type="string" />
+
+        <ProgId Id="Nib.RichText" Description="Rich Text Document" Icon="NibExe" IconIndex="0" />
+        <RegistryValue Root="HKMU" Key="Software\Classes\Nib.RichText\shell\open\command" Value="&quot;[#NibExe]&quot; &quot;%1&quot;" Type="string" />
+        <RegistryValue Root="HKMU" Key="Software\Classes\.rtf\OpenWithProgids" Name="Nib.RichText" Value="" Type="string" />
+        <RegistryValue Root="HKMU" Key="Software\Classes\Applications\nib.exe\SupportedTypes" Name=".rtf" Value="" Type="string" />
+        <RegistryValue Root="HKMU" Key="Software\Nib\Capabilities\FileAssociations" Name=".rtf" Value="Nib.RichText" Type="string" />
+
+        <ProgId Id="Nib.OpenDocumentText" Description="OpenDocument Text" Icon="NibExe" IconIndex="0" />
+        <RegistryValue Root="HKMU" Key="Software\Classes\Nib.OpenDocumentText\shell\open\command" Value="&quot;[#NibExe]&quot; &quot;%1&quot;" Type="string" />
+        <RegistryValue Root="HKMU" Key="Software\Classes\.odt\OpenWithProgids" Name="Nib.OpenDocumentText" Value="" Type="string" />
+        <RegistryValue Root="HKMU" Key="Software\Classes\Applications\nib.exe\SupportedTypes" Name=".odt" Value="" Type="string" />
+        <RegistryValue Root="HKMU" Key="Software\Nib\Capabilities\FileAssociations" Name=".odt" Value="Nib.OpenDocumentText" Type="string" />
+
+        <ProgId Id="Nib.Markdown" Description="Markdown Document" Icon="NibExe" IconIndex="0" />
+        <RegistryValue Root="HKMU" Key="Software\Classes\Nib.Markdown\shell\open\command" Value="&quot;[#NibExe]&quot; &quot;%1&quot;" Type="string" />
+        <RegistryValue Root="HKMU" Key="Software\Classes\.md\OpenWithProgids" Name="Nib.Markdown" Value="" Type="string" />
+        <RegistryValue Root="HKMU" Key="Software\Classes\Applications\nib.exe\SupportedTypes" Name=".md" Value="" Type="string" />
+
+        <ProgId Id="Nib.PlainText" Description="Text Document" Icon="NibExe" IconIndex="0" />
+        <RegistryValue Root="HKMU" Key="Software\Classes\Nib.PlainText\shell\open\command" Value="&quot;[#NibExe]&quot; &quot;%1&quot;" Type="string" />
+        <RegistryValue Root="HKMU" Key="Software\Classes\.txt\OpenWithProgids" Name="Nib.PlainText" Value="" Type="string" />
+        <RegistryValue Root="HKMU" Key="Software\Classes\Applications\nib.exe\SupportedTypes" Name=".txt" Value="" Type="string" />
+      </Component>
+
+      <Component Id="NibCli">
+        <File Id="NibCliExe" Source="$(var.BinDir)\nib-cli.exe" KeyPath="yes" />
+      </Component>
+    </ComponentGroup>
+  </Fragment>
+</Wix>

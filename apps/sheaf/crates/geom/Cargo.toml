@@ -1,0 +1,11 @@
+[package]
+name = "sheaf-geom"
+description = "Geometry primitives for Sheaf (points, rects, page transforms)"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+
+[lints]
+workspace = true
+
+[dependencies]

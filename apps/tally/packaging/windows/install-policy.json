@@ -1,0 +1,150 @@
+{
+  "id": "tally",
+  "name": "Tally",
+  "upgradeCode": "5511327B-F305-41BE-92D0-EB84944E7C4D",
+  "sources": [
+    "tally.wxs"
+  ],
+  "icon": "assets/app-icon/tally.ico",
+  "localization": [],
+  "extensions": [],
+  "payloads": [
+    "tally-cli.exe",
+    "tally.exe"
+  ],
+  "registry": [
+    [
+      "-1",
+      "Software\\Microsoft\\Windows\\CurrentVersion\\App Paths\\tally.exe",
+      "",
+      "[#TallyExe]"
+    ],
+    [
+      "-1",
+      "Software\\Classes\\Tally.Workbook",
+      "",
+      "Tally Workbook"
+    ],
+    [
+      "-1",
+      "Software\\Classes\\Tally.Workbook\\DefaultIcon",
+      "",
+      "\"[#TallyExe]\",0"
+    ],
+    [
+      "-1",
+      "Software\\Classes\\Tally.Workbook\\shell\\open\\command",
+      "",
+      "\"[#TallyExe]\" \"%1\""
+    ],
+    [
+      "-1",
+      "Software\\Classes\\Tally.TextData",
+      "",
+      "Tally Text Data"
+    ],
+    [
+      "-1",
+      "Software\\Classes\\Tally.TextData\\DefaultIcon",
+      "",
+      "\"[#TallyExe]\",0"
+    ],
+    [
+      "-1",
+      "Software\\Classes\\Tally.TextData\\shell\\open\\command",
+      "",
+      "\"[#TallyExe]\" \"%1\""
+    ],
+    [
+      "-1",
+      "Software\\Classes\\.xlsx\\OpenWithProgids",
+      "Tally.Workbook",
+      "Tally.Workbook"
+    ],
+    [
+      "-1",
+      "Software\\Classes\\.xlsm\\OpenWithProgids",
+      "Tally.Workbook",
+      "Tally.Workbook"
+    ],
+    [
+      "-1",
+      "Software\\Classes\\.xlsb\\OpenWithProgids",
+      "Tally.Workbook",
+      "Tally.Workbook"
+    ],
+    [
+      "-1",
+      "Software\\Classes\\.ods\\OpenWithProgids",
+      "Tally.Workbook",
+      "Tally.Workbook"
+    ],
+    [
+      "-1",
+      "Software\\Classes\\.csv\\OpenWithProgids",
+      "Tally.TextData",
+      "Tally.TextData"
+    ],
+    [
+      "-1",
+      "Software\\Classes\\.tsv\\OpenWithProgids",
+      "Tally.TextData",
+      "Tally.TextData"
+    ],
+    [
+      "-1",
+      "Software\\Tally\\Capabilities",
+      "ApplicationName",
+      "Tally"
+    ],
+    [
+      "-1",
+      "Software\\Tally\\Capabilities",
+      "ApplicationDescription",
+      "Open-source spreadsheet for .xlsx, CSV and TSV files"
+    ],
+    [
+      "-1",
+      "Software\\Tally\\Capabilities\\FileAssociations",
+      ".xlsx",
+      "Tally.Workbook"
+    ],
+    [
+      "-1",
+      "Software\\Tally\\Capabilities\\FileAssociations",
+      ".xlsm",
+      "Tally.Workbook"
+    ],
+    [
+      "-1",
+      "Software\\Tally\\Capabilities\\FileAssociations",
+      ".csv",
+      "Tally.TextData"
+    ],
+    [
+      "-1",
+      "Software\\Tally\\Capabilities\\FileAssociations",
+      ".tsv",
+      "Tally.TextData"
+    ],
+    [
+      "-1",
+      "Software\\RegisteredApplications",
+      "Tally",
+      "Software\\Tally\\Capabilities"
+    ],
+    [
+      "-1",
+      "Software\\Tally\\Installer",
+      "DesktopShortcut",
+      "[DESKTOPSHORTCUT]"
+    ],
+    [
+      "-1",
+      "Software\\Tally\\Installer",
+      "DesktopShortcutComponent",
+      "#1"
+    ]
+  ],
+  "mode": "dualScope"
+}
