@@ -99,6 +99,8 @@ The four upstream repositories were imported by `tools/rebrand.py` and the resul
 - [x] Crate names, binaries, CLI namespaces and the `repository` field.
 - [x] Site, store, Discord, YouTube, X and LinkedIn links now point at this project.
 - [x] `LICENSE-MIT`, `LICENSE-APACHE` and `NOTICE` carried over with upstream copyright lines.
+- [x] macOS DMG `.DS_Store` layout blobs regenerated, so the mounted volume no longer
+      announces the upstream name in Finder.
 
 **Left deliberately**
 
@@ -119,3 +121,11 @@ python tools/build_docs.py   # website + per-app READMEs
 
 `_vendor/` is git-ignored. Re-running the whole chain is idempotent: `apps/<product>` is
 deleted and recopied from `_vendor/` each time.
+
+One step is not covered by those three: the macOS DMG layout blob is a binary Finder file, so
+`tools/rebrand.py` cannot rewrite it as text. After a re-run, regenerate it per app:
+
+```sh
+pip install ds_store==1.3.3 mac_alias==2.2.3
+python apps/<app>/packaging/macos/dmg/generate.py   # also needs resvg, for background.tiff
+```
