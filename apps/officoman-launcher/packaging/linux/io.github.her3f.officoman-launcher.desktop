@@ -1,0 +1,13 @@
+[Desktop Entry]
+Type=Application
+Name=Officoman Launcher
+GenericName=App Launcher
+Comment=Install, update and launch the Craft App Suite
+Exec=officoman-launcher
+TryExec=officoman-launcher
+Icon=io.github.her3f.officoman-launcher
+Terminal=false
+StartupNotify=true
+StartupWMClass=io.github.her3f.officoman-launcher
+Categories=Utility;PackageManager;
+Keywords=officoman;craft;launcher;installer;updater;photocraft;filmcraft;apps;

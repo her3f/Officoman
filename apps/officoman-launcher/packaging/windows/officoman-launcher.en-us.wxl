@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Overrides for the setup wizard's WixUI strings, so its pages name the version being installed
+  ([OfficomanLauncherVersion] is the full version, pre-release tag included, set in
+  officoman-launcher.wxs) and say what the launcher is for.
+-->
+<WixLocalization Culture="en-US" xmlns="http://wixtoolset.org/schemas/v4/wxl">
+  <String Id="WelcomeDlgTitle" Value="{\WixUI_Font_Bigger}Welcome to [ProductName] [OfficomanLauncherVersion]" />
+  <String Id="WelcomeDlgDescription" Value="Officoman Launcher installs, updates and opens the Craft App Suite: PhotoCraft, VectorCraft, FilmCraft and the rest of the open-source Officoman apps.&#13;&#10;&#13;&#10;It installs for you only, so no administrator rights are needed. Click Next to continue." />
+  <!-- The folder page (OfficomanInstallDirDlg). -->
+  <String Id="InstallDirDlgTitle" Value="{\WixUI_Font_Title}Choose where to install" />
+  <String Id="InstallDirDlgDescription" Value="Click Next to install to the default folder, or click Change to pick another." />
+  <String Id="OfficomanInstallDirNote" Value="Officoman Launcher installs for you only, without administrator rights, so pick a folder you can write to (not Program Files). Updates install into the same folder." />
+  <String Id="OfficomanDesktopShortcut" Value="Create a desktop shortcut" />
+  <String Id="VerifyReadyDlgInstallTitle" Value="{\WixUI_Font_Title}Ready to install [ProductName] [OfficomanLauncherVersion]" />
+  <!-- Also shown after a repair or removal from the same wizard, so it doesn't say "installed". -->
+  <String Id="ExitDialogTitle" Value="{\WixUI_Font_Bigger}Completed the [ProductName] [OfficomanLauncherVersion] Setup Wizard" />
+</WixLocalization>

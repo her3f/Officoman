@@ -23,6 +23,25 @@ sharing one set of conventions.
 | <img src="apps/podium/assets/app-icon/hicolor/64x64/apps/io.github.her3f.podium.png" width="28" alt=""> | **[Podium](apps/podium)** | Presentations and slide shows | `.pptx`, PDF/PNG/JPEG export |
 | <img src="apps/sheaf/assets/app-icon/hicolor/64x64/apps/io.github.her3f.sheaf.png" width="28" alt=""> | **[Sheaf](apps/sheaf)** | Reading, organizing and protecting PDFs | PDF |
 
+### The launcher
+
+[`apps/officoman-launcher`](apps/officoman-launcher) is the suite's front end: it lists the four
+apps, installs the right build for your machine from this repository's releases, and keeps them
+up to date.
+
+```sh
+cd apps/officoman-launcher
+cargo build --release
+```
+
+Its catalog is **our four apps only** — the upstream launcher ships seventeen. Each row points at
+`github.com/her3f/officoman`, so the four app builds have to be published as release assets named
+`<app>-<version>-windows-x64.msi` (or `-portable.zip`) with a `SHA256SUMS.txt` beside them; the
+launcher verifies every download against that file before installing it.
+
+Until those releases exist the launcher will show each app as unavailable — that is expected, not
+a bug.
+
 ## The website
 
 The project site lives in [`docs/`](docs) and is published from that folder with GitHub Pages:

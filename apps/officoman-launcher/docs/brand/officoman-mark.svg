@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64" role="img" aria-labelledby="om-title">
+  <title id="om-title">Officoman</title>
+  <defs>
+    <linearGradient id="omTile" x1="0" y1="0" x2="0.55" y2="1">
+      <stop offset="0" stop-color="#33439B"/>
+      <stop offset="1" stop-color="#0F1433"/>
+    </linearGradient>
+    <clipPath id="omClip">
+      <rect x="4" y="4" width="56" height="56" rx="15"/>
+    </clipPath>
+  </defs>
+
+  <rect x="4" y="4" width="56" height="56" rx="15" fill="url(#omTile)"/>
+
+  <!-- folded page corner -->
+  <g clip-path="url(#omClip)">
+    <path d="M36 4 H60 V28 Z" fill="#F2B33D" fill-opacity="0.92"/>
+  </g>
+
+  <rect x="4.5" y="4.5" width="55" height="55" rx="14.5" fill="none"
+        stroke="#FFFFFF" stroke-opacity="0.16"/>
+
+  <!-- the O -->
+  <circle cx="29" cy="35" r="11.5" fill="none" stroke="#F7F5EF" stroke-width="5.2"/>
+</svg>

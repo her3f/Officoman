@@ -453,7 +453,7 @@ def build_downloads() -> None:
     if dist.is_dir():
         for pat, key in (("*-windows-x64.msi", "msi"), ("*-windows-x64-portable.zip", "zip")):
             for f in sorted(dist.glob(pat)):
-                m = re.match(r"(Nib|Tally|Podium|Sheaf)-(.+)-windows-x64", f.name)
+                m = re.match(r"(nib|tally|podium|sheaf)-(.+)-windows-x64", f.name)
                 if not m:
                     continue
                 slug = m.group(1).lower()
@@ -464,6 +464,18 @@ def build_downloads() -> None:
 
     if found:
         rows = []
+        launcher = next(iter(sorted(dist.glob("officoman-launcher-*-windows-x64-portable.zip"))), None)
+        if launcher:
+            lv = launcher.name.split("-windows-x64")[0].replace("officoman-launcher-", "")
+            rows.append(
+                f"""<tr style="background:#FCFBF8">
+              <td><b>Launcher</b></td>
+              <td>Installs all four</td>
+              <td><code>{lv}</code></td>
+              <td>zip {launcher.stat().st_size / 1e6:.1f} MB</td>
+              <td><a class="btn ghost" href="{REPO}/releases/latest">.zip</a></td>
+            </tr>"""
+            )
         for a in APPS:
             e = found.get(a["slug"])
             if not e:

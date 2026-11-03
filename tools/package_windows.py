@@ -81,7 +81,7 @@ def main() -> int:
         print(f"missing build output: {exe}", file=sys.stderr)
         return 1
 
-    out = DIST / f"{name}-{ver}-windows-x64"
+    out = DIST / f"{slug}-{ver}-windows-x64"
     if out.exists():
         shutil.rmtree(out)
     out.mkdir(parents=True)
@@ -114,7 +114,7 @@ def main() -> int:
         encoding="utf-8",
     )
 
-    zpath = DIST / f"{name}-{ver}-windows-x64-portable.zip"
+    zpath = DIST / f"{slug}-{ver}-windows-x64-portable.zip"
     if zpath.exists():
         zpath.unlink()
     with zipfile.ZipFile(zpath, "w", zipfile.ZIP_DEFLATED, compresslevel=9) as z:

@@ -24,3 +24,12 @@ foreach ($app in $Apps) {
 Write-Host ""
 Write-Host "refreshing the site's download page"
 & $python (Join-Path $root 'tools\build_docs.py')
+
+# The launcher verifies every download against this file, so the release must carry it.
+$sums = Join-Path $root 'dist\SHA256SUMS.txt'
+$lines = Get-ChildItem (Join-Path $root 'dist') -File |
+    Where-Object { $_.Extension -in '.msi', '.zip' } |
+    Sort-Object Name |
+    ForEach-Object { "{0}  {1}" -f (Get-FileHash $_.FullName -Algorithm SHA256).Hash.ToLower(), $_.Name }
+$lines | Set-Content -Path $sums -Encoding ascii
+Write-Host ("wrote dist\SHA256SUMS.txt with " + $lines.Count + " entries")
