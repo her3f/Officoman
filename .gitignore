@@ -41,3 +41,6 @@ desktop.ini
 dist/
 
 _build_*.log
+
+_l.txt
+_le.txt
