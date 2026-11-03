@@ -202,6 +202,7 @@ def page(title: str, body: str, root: str = "", description: str = "") -> str:
     </a>
     <nav class="site">
       <a href="{root}apps/index.html">Apps</a>
+      <a href="{root}download.html">Download</a>
       <a href="{root}about.html">About</a>
       <a href="{REPO}">GitHub</a>
     </nav>
@@ -441,6 +442,77 @@ def build_pages() -> None:
     )
 
 
+def build_downloads() -> None:
+    """A download page built from whatever is sitting in dist/."""
+    import hashlib
+    import re
+
+    dist = ROOT / "dist"
+    found: dict[str, dict] = {}
+    if dist.is_dir():
+        for z in sorted(dist.glob("*.zip")):
+            m = re.match(r"(Nib|Tally|Podium|Sheaf)-(.+)-windows-x64-portable\.zip$", z.name)
+            if not m:
+                continue
+            found[m.group(1).lower()] = {
+                "version": m.group(2),
+                "file": z.name,
+                "mb": z.stat().st_size / 1e6,
+                "sha": hashlib.sha256(z.read_bytes()).hexdigest()[:16],
+            }
+
+    if found:
+        rows = "\n".join(
+            f"""<tr>
+              <td><b>{a['name']}</b></td>
+              <td>{a['role']}</td>
+              <td><code>{found[a['slug']]['version']}</code></td>
+              <td>{found[a['slug']]['mb']:.1f} MB</td>
+              <td><a class="btn" href="{REPO}/releases/latest">Download</a></td>
+              <td><code>{found[a['slug']]['sha']}…</code></td>
+            </tr>"""
+            for a in APPS if a["slug"] in found
+        )
+        table = f"""<table>
+          <thead><tr><th>App</th><th>Role</th><th>Version</th><th>Size</th><th></th><th>SHA-256</th></tr></thead>
+          <tbody>{rows}</tbody>
+        </table>"""
+        note = ("Portable builds: unzip anywhere and run the `.exe`. Nothing is installed and no "
+                "registry keys are written. They are unsigned, so Windows SmartScreen may warn on "
+                "first run.")
+    else:
+        table = """<div class="note"><b>No builds yet.</b> Run
+          <code>tools/package_windows.py</code> for each app and this page fills itself in.</div>"""
+        note = ""
+
+    body = f"""<main>
+<div class="wrap hero">
+  <p class="eyebrow">Download</p>
+  <h1>Take them for a <em>spin</em>.</h1>
+  <p class="lede">Windows x64 portable builds. Unzip, run, delete the folder when you are done —
+     there is no installer to clean up after.</p>
+</div>
+<div class="wrap"><section>
+  <h2 class="section">Windows x64</h2>
+  {table}
+  <p style="color:var(--muted);font-size:.9rem;margin-top:18px">{note}</p>
+</section></div>
+
+<div class="wrap"><section>
+  <h2 class="section">Other platforms</h2>
+  <p style="color:var(--muted);max-width:66ch">
+    macOS, Linux and FreeBSD builds are produced by each app's own packaging scripts under
+    <code>apps/&lt;app&gt;/packaging/</code>. They need a macOS or Linux host; they cannot be
+    cross-built from Windows.
+  </p>
+</section></div>
+</main>"""
+    (SITE / "download.html").write_text(
+        page("Download — Officoman", body, description="Windows x64 portable builds of the four Officoman apps."),
+        encoding="utf-8",
+    )
+
+
 def build_readmes() -> None:
     for app in APPS:
         feats = "\n".join(f"| **{t}** | {d} |" for t, d in app["features"])
@@ -502,6 +574,7 @@ Officoman itself is MIT or Apache-2.0, at your option.
 
 def main() -> int:
     build_pages()
+    build_downloads()
     build_readmes()
     print(f"site:   {SITE.relative_to(ROOT)}/ ({len(list(SITE.rglob('*.html')))} pages)")
     print(f"readmes: {len(APPS)} rewritten")

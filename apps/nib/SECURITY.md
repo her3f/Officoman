@@ -3,7 +3,7 @@
 ## Reporting a vulnerability
 
 Please report security problems privately through GitHub:
-**[Report a vulnerability](https://https://github.com/her3f/officoman/security/advisories/new)**
+**[Report a vulnerability](https://github.com/her3f/officoman/security/advisories/new)**
 (Security tab › Advisories › Report a vulnerability).
 
 Don't open a public issue or pull request for a vulnerability until a fix is released.

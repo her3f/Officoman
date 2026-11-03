@@ -31,7 +31,7 @@ fn home_screen_links() {
     for (label, url) in [
         ("Join our Discord", links::DISCORD),
         ("Sheaf web page", "https://her3f.github.io/officoman/apps/sheaf.html"),
-        ("Sheaf on GitHub", "https://https://github.com/her3f/officoman"),
+        ("Sheaf on GitHub", "https://github.com/her3f/officoman"),
         ("Officoman website", "https://her3f.github.io/officoman"),
     ] {
         let mut h = harness(|_| {});

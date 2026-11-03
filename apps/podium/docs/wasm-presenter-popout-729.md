@@ -1,6 +1,6 @@
 # WASM presenter-view popout (#729)
 
-Tracks https://https://github.com/her3f/officoman/issues/729 (the reporter moved duplicate #726 here).
+Tracks https://github.com/her3f/officoman/issues/729 (the reporter moved duplicate #726 here).
 
 ## Implementation
 

@@ -8,11 +8,20 @@
 
 /// Tally as craft-update knows it, with its 128 px icon and accent colour: the update
 /// prompt shows both, and an AppImage's menu entry gets the icon.
+///
+/// Spelled out rather than taken from `craft_update::suite`, which describes the upstream
+/// Crafting Apps and points their updates at the upstream repositories.
 #[cfg(not(target_arch = "wasm32"))]
 pub const UPDATE_APP: craft_update::app::App = craft_update::app::App {
     icon_png: Some(include_bytes!("../../../assets/app-icon/hicolor/128x128/apps/io.github.her3f.tally.png")),
-    accent: Some([0x1f, 0x9d, 0x55]),
-    ..craft_update::suite::TALLY
+    accent: Some([0x1f, 0x7a, 0x6b]),
+    developer: "Officoman",
+    ..craft_update::app::App::new(
+        "tally",
+        "Tally",
+        "Spreadsheets and data",
+        "her3f/officoman",
+    )
 };
 
 pub mod backstage;

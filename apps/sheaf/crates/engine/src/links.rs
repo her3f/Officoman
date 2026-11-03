@@ -10,7 +10,7 @@ pub const APP: &str = "sheaf";
 pub const DISCORD: &str = "https://github.com/her3f/officoman/discussions";
 pub const WEBSITE: &str = "https://her3f.github.io/officoman";
 pub const APP_PAGE: &str = "https://her3f.github.io/officoman/apps/sheaf.html";
-pub const GITHUB: &str = "https://https://github.com/her3f/officoman";
+pub const GITHUB: &str = "https://github.com/her3f/officoman";
 
 /// A link and the registry command that opens it.
 #[derive(Clone, Copy, Debug)]

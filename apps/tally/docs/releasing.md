@@ -209,7 +209,7 @@ shows a `::warning::`. Never store these as org- or repo-level Actions secrets (
 
 | Secret | Used for |
 |---|---|
-| `APPLE_CERTIFICATE` | single-line base64 `.p12`: "Developer ID Application: Learning Machines LLC (DJ6XS33FX8)" |
+| `APPLE_CERTIFICATE` | single-line base64 `.p12`: "Developer ID Application: Officoman (DJ6XS33FX8)" |
 | `APPLE_CERTIFICATE_PASSWORD` | password for that `.p12` |
 | `KEYCHAIN_PASSWORD` | password for the temporary CI keychain (random if unset) |
 | `APPLE_ID` | Apple ID used by `notarytool` |
@@ -218,7 +218,7 @@ shows a `::warning::`. Never store these as org- or repo-level Actions secrets (
 | `WINDOWS_CERTIFICATE`, `WINDOWS_CERTIFICATE_PASSWORD` | `.pfx` signing (unused by storytold; Azure is used) |
 | `AZURE_TENANT_ID`, `AZURE_CLIENT_ID`, `AZURE_CLIENT_SECRET` | service principal for Azure Trusted Signing |
 | `AZURE_SIGNING_ENDPOINT` | `https://eus.codesigning.azure.net` |
-| `AZURE_SIGNING_ACCOUNT`, `AZURE_CERT_PROFILE` | `LearningMachinesInc`, `learningmachines` |
+| `AZURE_SIGNING_ACCOUNT`, `AZURE_CERT_PROFILE` | `Officoman`, `officoman` |
 
 `GITHUB_TOKEN` creates the release; only the final job gets `contents: write`.
 

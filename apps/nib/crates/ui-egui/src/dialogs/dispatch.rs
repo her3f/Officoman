@@ -1092,7 +1092,7 @@ fn about_dialog(ui: &mut Ui, d: &mut Dialog) -> bool {
             ui.add_space(6.0);
             ui.hyperlink_to(tl!("her3f.github.io/officoman/apps/nib"), "https://her3f.github.io/officoman/apps/nib.html");
             ui.hyperlink_to(tl!("Join us on Discord: github.com/her3f/officoman/discussions"), "https://github.com/her3f/officoman/discussions");
-            ui.hyperlink_to(tl!("Source code: https://github.com/her3f/officoman"), "https://https://github.com/her3f/officoman");
+            ui.hyperlink_to(tl!("Source code: https://github.com/her3f/officoman"), "https://github.com/her3f/officoman");
             ui.add_space(6.0);
             ui.label(egui::RichText::new(tl!("MIT OR Apache-2.0. Copyright (c) 2026 Officoman Team and the Nib contributors.")).small().weak());
         }

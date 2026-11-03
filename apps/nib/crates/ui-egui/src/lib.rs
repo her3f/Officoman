@@ -7,11 +7,20 @@
 
 /// Nib as craft-update knows it, with its 128 px icon and accent colour: the update
 /// prompt shows both, and an AppImage's menu entry gets the icon.
+///
+/// Spelled out rather than taken from `craft_update::suite`, which describes the upstream
+/// Crafting Apps and points their updates at the upstream repositories.
 #[cfg(not(target_arch = "wasm32"))]
 pub const UPDATE_APP: craft_update::app::App = craft_update::app::App {
     icon_png: Some(include_bytes!("../../../assets/app-icon/hicolor/128x128/apps/io.github.her3f.nib.png")),
-    accent: Some([0x3f, 0x5f, 0xe0]),
-    ..craft_update::suite::NIB
+    accent: Some([0x33, 0x43, 0x9b]),
+    developer: "Officoman",
+    ..craft_update::app::App::new(
+        "nib",
+        "Nib",
+        "Word processing and documents",
+        "her3f/officoman",
+    )
 };
 
 /// An English UI string in the current interface language ([`i18n::t`]).

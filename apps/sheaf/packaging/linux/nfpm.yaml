@@ -15,7 +15,7 @@ release: ${RELEASE}
 section: graphics
 priority: optional
 maintainer: ${SHEAF_MAINTAINER}
-vendor: Learning Machines LLC
+vendor: Officoman
 homepage: https://her3f.github.io/officoman/apps/sheaf.html
 license: MIT OR Apache-2.0
 description: |-

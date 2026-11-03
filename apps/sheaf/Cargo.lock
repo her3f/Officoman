@@ -4207,542 +4207,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "sheaf"
-version = "0.18.0"
-dependencies = [
- "chrono",
- "craft-update",
- "eframe",
- "egui",
- "fmv-macos-events",
- "log",
- "sheaf-engine",
- "sheaf-ui-egui",
- "pollster 1.0.1",
- "raw-window-handle",
- "serde_json",
- "uds_windows",
- "wayland-client",
- "wayland-protocols",
- "windows",
- "winit",
- "winresource",
- "winsafe",
-]
-
-[[package]]
-name = "sheaf-a11y"
-version = "0.18.0"
-dependencies = [
- "sheaf-content",
- "sheaf-cos",
- "sheaf-filters",
- "sheaf-fonts",
- "sheaf-model",
- "thiserror 2.0.21",
-]
-
-[[package]]
-name = "sheaf-annot"
-version = "0.18.0"
-dependencies = [
- "hayro-syntax",
- "sheaf-cos",
- "sheaf-fonts",
- "sheaf-model",
- "thiserror 2.0.21",
-]
-
-[[package]]
-name = "sheaf-audit"
-version = "0.18.0"
-dependencies = [
- "sheaf-content",
- "sheaf-cos",
- "sheaf-edit",
- "sheaf-model",
- "thiserror 2.0.21",
-]
-
-[[package]]
-name = "sheaf-automation"
-version = "0.18.0"
-dependencies = [
- "base64 0.23.1",
- "flate2",
- "image",
- "sheaf-cos",
- "sheaf-engine",
- "sheaf-fonts",
- "sheaf-model",
- "sheaf-organize",
- "sheaf-platform",
- "sheaf-render",
- "sheaf-xfa",
- "png 0.18.1",
- "rustix 1.1.5",
- "serde_json",
- "sha2 0.11.1",
- "tempfile",
-]
-
-[[package]]
-name = "sheaf-cli"
-version = "0.18.0"
-dependencies = [
- "base64 0.23.1",
- "sheaf-audit",
- "sheaf-automation",
- "sheaf-cos",
- "sheaf-engine",
- "sheaf-platform",
- "sheaf-preflight",
- "sheaf-render",
- "png 0.18.1",
- "rustix 1.1.5",
- "serde_json",
- "winresource",
-]
-
-[[package]]
-name = "sheaf-compare"
-version = "0.18.0"
-
-[[package]]
-name = "sheaf-content"
-version = "0.18.0"
-dependencies = [
- "hayro-syntax",
- "sheaf-cos",
-]
-
-[[package]]
-name = "sheaf-cos"
-version = "0.18.0"
-dependencies = [
- "chrono",
- "hayro-syntax",
- "sheaf-crypt",
- "sheaf-filters",
- "sheaf-oracle",
- "sheaf-testkit",
- "proptest",
- "serde_json",
- "thiserror 2.0.21",
-]
-
-[[package]]
-name = "sheaf-create"
-version = "0.18.0"
-dependencies = [
- "encoding_rs",
- "hayro-ccitt",
- "hayro-syntax",
- "image",
- "sheaf-cos",
- "sheaf-filters",
- "sheaf-fonts",
- "sheaf-model",
- "sheaf-xfa",
- "png 0.18.1",
- "thiserror 2.0.21",
- "tiff",
- "zune-jpeg",
-]
-
-[[package]]
-name = "sheaf-crypt"
-version = "0.18.0"
-dependencies = [
- "aes",
- "md-5",
- "proptest",
- "sha2 0.11.1",
- "stringprep",
- "thiserror 2.0.21",
-]
-
-[[package]]
-name = "sheaf-edit"
-version = "0.18.0"
-dependencies = [
- "hayro-syntax",
- "kurbo 0.13.1",
- "sheaf-annot",
- "sheaf-content",
- "sheaf-cos",
- "sheaf-fonts",
- "sheaf-model",
- "sheaf-render",
- "proptest",
- "sha2 0.11.1",
- "thiserror 2.0.21",
- "unicode-bidi",
-]
-
-[[package]]
-name = "sheaf-engine"
-version = "0.18.0"
-dependencies = [
- "chrono",
- "craft-docpath",
- "getrandom 0.4.3",
- "icu_properties",
- "idna",
- "image",
- "sheaf-a11y",
- "sheaf-annot",
- "sheaf-audit",
- "sheaf-compare",
- "sheaf-content",
- "sheaf-cos",
- "sheaf-create",
- "sheaf-edit",
- "sheaf-export",
- "sheaf-filters",
- "sheaf-fonts",
- "sheaf-forms",
- "sheaf-geom",
- "sheaf-js",
- "sheaf-measure",
- "sheaf-model",
- "sheaf-ocr",
- "sheaf-optimize",
- "sheaf-organize",
- "sheaf-preflight",
- "sheaf-print",
- "sheaf-redact",
- "sheaf-render",
- "sheaf-sign",
- "sheaf-testkit",
- "sheaf-xfa",
- "sheaf-xfdf",
- "png 0.18.1",
- "thiserror 2.0.21",
- "tiff",
- "unicode-segmentation",
- "url",
-]
-
-[[package]]
-name = "sheaf-export"
-version = "0.18.0"
-dependencies = [
- "flate2",
-]
-
-[[package]]
-name = "sheaf-filters"
-version = "0.18.0"
-dependencies = [
- "fax",
- "flate2",
- "hayro-ccitt",
- "hayro-jbig2",
- "proptest",
- "thiserror 2.0.21",
- "weezl 0.2.1",
-]
-
-[[package]]
-name = "sheaf-fonts"
-version = "0.18.0"
-dependencies = [
- "harfrust",
- "sheaf-cos",
- "skrifa 0.44.0",
- "unicode-bidi",
-]
-
-[[package]]
-name = "sheaf-forms"
-version = "0.18.0"
-dependencies = [
- "hayro-syntax",
- "sheaf-content",
- "sheaf-cos",
- "sheaf-fonts",
- "sheaf-model",
- "proptest",
- "thiserror 2.0.21",
-]
-
-[[package]]
-name = "sheaf-geom"
-version = "0.18.0"
-
-[[package]]
-name = "sheaf-js"
-version = "0.18.0"
-dependencies = [
- "boa_engine",
- "chrono",
-]
-
-[[package]]
-name = "sheaf-measure"
-version = "0.18.0"
-dependencies = [
- "sheaf-annot",
- "sheaf-content",
- "sheaf-cos",
- "sheaf-model",
- "sheaf-testkit",
- "serde",
- "thiserror 2.0.21",
-]
-
-[[package]]
-name = "sheaf-model"
-version = "0.18.0"
-dependencies = [
- "sheaf-cos",
-]
-
-[[package]]
-name = "sheaf-ocr"
-version = "0.18.0"
-dependencies = [
- "ocrs",
- "sheaf-fonts",
- "rten",
- "tempfile",
- "thiserror 2.0.21",
-]
-
-[[package]]
-name = "sheaf-optimize"
-version = "0.18.0"
-dependencies = [
- "image",
- "sheaf-annot",
- "sheaf-content",
- "sheaf-cos",
- "sheaf-filters",
- "sheaf-model",
- "sheaf-render",
- "proptest",
- "thiserror 2.0.21",
- "zune-jpeg",
-]
-
-[[package]]
-name = "sheaf-oracle"
-version = "0.18.0"
-
-[[package]]
-name = "sheaf-organize"
-version = "0.18.0"
-dependencies = [
- "hayro-syntax",
- "sheaf-content",
- "sheaf-cos",
- "sheaf-oracle",
- "thiserror 2.0.21",
-]
-
-[[package]]
-name = "sheaf-platform"
-version = "0.18.0"
-dependencies = [
- "async-channel",
- "futures-lite",
- "rustix 1.1.5",
- "zbus",
-]
-
-[[package]]
-name = "sheaf-preflight"
-version = "0.18.0"
-dependencies = [
- "flate2",
- "sheaf-content",
- "sheaf-cos",
- "sheaf-model",
- "roxmltree 0.21.2",
-]
-
-[[package]]
-name = "sheaf-print"
-version = "0.18.0"
-dependencies = [
- "craft-print",
- "sheaf-content",
- "sheaf-cos",
- "sheaf-model",
- "sheaf-render",
- "thiserror 2.0.21",
-]
-
-[[package]]
-name = "sheaf-redact"
-version = "0.18.0"
-dependencies = [
- "sheaf-annot",
- "sheaf-content",
- "sheaf-cos",
- "sheaf-edit",
- "sheaf-filters",
- "sheaf-fonts",
- "sheaf-forms",
- "sheaf-model",
- "sheaf-testkit",
- "sheaf-xfa",
- "thiserror 2.0.21",
-]
-
-[[package]]
-name = "sheaf-render"
-version = "0.18.0"
-dependencies = [
- "bytemuck",
- "flate2",
- "getrandom 0.4.3",
- "hayro",
- "hayro-syntax",
- "kurbo 0.13.1",
- "log",
- "lopdf",
- "sheaf-cos",
- "sheaf-fonts",
- "serde",
- "skrifa 0.44.0",
- "thiserror 2.0.21",
-]
-
-[[package]]
-name = "sheaf-sign"
-version = "0.18.0"
-dependencies = [
- "aes",
- "aws-lc-rs",
- "base64 0.23.1",
- "bp256",
- "bp384",
- "cbc",
- "chrono",
- "crypto-bigint",
- "des",
- "ecdsa",
- "ed25519-dalek",
- "getrandom 0.4.3",
- "hmac",
- "p256",
- "p384",
- "p521",
- "pbkdf2",
- "sheaf-annot",
- "sheaf-cos",
- "sheaf-fonts",
- "sheaf-model",
- "rc2",
- "ripemd",
- "rsa",
- "rustls-cng",
- "security-framework",
- "sha1 0.11.0",
- "sha2 0.11.1",
- "sha3",
- "thiserror 2.0.21",
-]
-
-[[package]]
-name = "sheaf-testkit"
-version = "0.18.0"
-
-[[package]]
-name = "sheaf-ui-egui"
-version = "0.18.0"
-dependencies = [
- "arboard",
- "base64 0.23.1",
- "block2 0.6.2",
- "bytemuck",
- "chrono",
- "craft-keymap",
- "craft-menu",
- "craft-quit",
- "craft-ui",
- "craft-update",
- "eframe",
- "egui",
- "egui_extras",
- "egui_kittest",
- "fontconfig-parser",
- "getrandom 0.4.3",
- "image",
- "js-sys",
- "log",
- "objc2 0.6.5",
- "objc2-app-kit 0.3.2",
- "objc2-foundation 0.3.2",
- "sheaf-content",
- "sheaf-cos",
- "sheaf-engine",
- "sheaf-fonts",
- "sheaf-model",
- "sheaf-platform",
- "sheaf-render",
- "sheaf-xfa",
- "plist",
- "png 0.18.1",
- "pollster 1.0.1",
- "proptest",
- "rfd",
- "rustix 1.1.5",
- "serde",
- "serde_json",
- "skrifa 0.44.0",
- "sys-locale",
- "toml",
- "unicode-bidi",
- "wasm-bindgen",
- "wasm-bindgen-futures",
- "web-sys",
- "web-time",
- "winsafe",
- "xattr",
-]
-
-[[package]]
-name = "sheaf-web"
-version = "0.18.0"
-dependencies = [
- "eframe",
- "egui",
- "js-sys",
- "sheaf-ui-egui",
- "wasm-bindgen-futures",
- "web-sys",
-]
-
-[[package]]
-name = "sheaf-xfa"
-version = "0.18.0"
-dependencies = [
- "base64 0.23.1",
- "image",
- "sheaf-cos",
- "sheaf-fonts",
- "png 0.18.1",
- "roxmltree 0.21.2",
- "sha2 0.11.1",
- "thiserror 2.0.21",
-]
-
-[[package]]
-name = "sheaf-xfdf"
-version = "0.18.0"
-dependencies = [
- "sheaf-annot",
- "sheaf-cos",
- "sheaf-forms",
- "sheaf-model",
- "roxmltree 0.21.2",
- "thiserror 2.0.21",
-]
-
-[[package]]
 name = "pem"
 version = "3.0.6"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -6173,6 +5637,542 @@ dependencies = [
  "digest 0.11.3",
  "keccak",
  "sponge-cursor",
+]
+
+[[package]]
+name = "sheaf"
+version = "0.18.0"
+dependencies = [
+ "chrono",
+ "craft-update",
+ "eframe",
+ "egui",
+ "fmv-macos-events",
+ "log",
+ "pollster 1.0.1",
+ "raw-window-handle",
+ "serde_json",
+ "sheaf-engine",
+ "sheaf-ui-egui",
+ "uds_windows",
+ "wayland-client",
+ "wayland-protocols",
+ "windows",
+ "winit",
+ "winresource",
+ "winsafe",
+]
+
+[[package]]
+name = "sheaf-a11y"
+version = "0.18.0"
+dependencies = [
+ "sheaf-content",
+ "sheaf-cos",
+ "sheaf-filters",
+ "sheaf-fonts",
+ "sheaf-model",
+ "thiserror 2.0.21",
+]
+
+[[package]]
+name = "sheaf-annot"
+version = "0.18.0"
+dependencies = [
+ "hayro-syntax",
+ "sheaf-cos",
+ "sheaf-fonts",
+ "sheaf-model",
+ "thiserror 2.0.21",
+]
+
+[[package]]
+name = "sheaf-audit"
+version = "0.18.0"
+dependencies = [
+ "sheaf-content",
+ "sheaf-cos",
+ "sheaf-edit",
+ "sheaf-model",
+ "thiserror 2.0.21",
+]
+
+[[package]]
+name = "sheaf-automation"
+version = "0.18.0"
+dependencies = [
+ "base64 0.23.1",
+ "flate2",
+ "image",
+ "png 0.18.1",
+ "rustix 1.1.5",
+ "serde_json",
+ "sha2 0.11.1",
+ "sheaf-cos",
+ "sheaf-engine",
+ "sheaf-fonts",
+ "sheaf-model",
+ "sheaf-organize",
+ "sheaf-platform",
+ "sheaf-render",
+ "sheaf-xfa",
+ "tempfile",
+]
+
+[[package]]
+name = "sheaf-cli"
+version = "0.18.0"
+dependencies = [
+ "base64 0.23.1",
+ "png 0.18.1",
+ "rustix 1.1.5",
+ "serde_json",
+ "sheaf-audit",
+ "sheaf-automation",
+ "sheaf-cos",
+ "sheaf-engine",
+ "sheaf-platform",
+ "sheaf-preflight",
+ "sheaf-render",
+ "winresource",
+]
+
+[[package]]
+name = "sheaf-compare"
+version = "0.18.0"
+
+[[package]]
+name = "sheaf-content"
+version = "0.18.0"
+dependencies = [
+ "hayro-syntax",
+ "sheaf-cos",
+]
+
+[[package]]
+name = "sheaf-cos"
+version = "0.18.0"
+dependencies = [
+ "chrono",
+ "hayro-syntax",
+ "proptest",
+ "serde_json",
+ "sheaf-crypt",
+ "sheaf-filters",
+ "sheaf-oracle",
+ "sheaf-testkit",
+ "thiserror 2.0.21",
+]
+
+[[package]]
+name = "sheaf-create"
+version = "0.18.0"
+dependencies = [
+ "encoding_rs",
+ "hayro-ccitt",
+ "hayro-syntax",
+ "image",
+ "png 0.18.1",
+ "sheaf-cos",
+ "sheaf-filters",
+ "sheaf-fonts",
+ "sheaf-model",
+ "sheaf-xfa",
+ "thiserror 2.0.21",
+ "tiff",
+ "zune-jpeg",
+]
+
+[[package]]
+name = "sheaf-crypt"
+version = "0.18.0"
+dependencies = [
+ "aes",
+ "md-5",
+ "proptest",
+ "sha2 0.11.1",
+ "stringprep",
+ "thiserror 2.0.21",
+]
+
+[[package]]
+name = "sheaf-edit"
+version = "0.18.0"
+dependencies = [
+ "hayro-syntax",
+ "kurbo 0.13.1",
+ "proptest",
+ "sha2 0.11.1",
+ "sheaf-annot",
+ "sheaf-content",
+ "sheaf-cos",
+ "sheaf-fonts",
+ "sheaf-model",
+ "sheaf-render",
+ "thiserror 2.0.21",
+ "unicode-bidi",
+]
+
+[[package]]
+name = "sheaf-engine"
+version = "0.18.0"
+dependencies = [
+ "chrono",
+ "craft-docpath",
+ "getrandom 0.4.3",
+ "icu_properties",
+ "idna",
+ "image",
+ "png 0.18.1",
+ "sheaf-a11y",
+ "sheaf-annot",
+ "sheaf-audit",
+ "sheaf-compare",
+ "sheaf-content",
+ "sheaf-cos",
+ "sheaf-create",
+ "sheaf-edit",
+ "sheaf-export",
+ "sheaf-filters",
+ "sheaf-fonts",
+ "sheaf-forms",
+ "sheaf-geom",
+ "sheaf-js",
+ "sheaf-measure",
+ "sheaf-model",
+ "sheaf-ocr",
+ "sheaf-optimize",
+ "sheaf-organize",
+ "sheaf-preflight",
+ "sheaf-print",
+ "sheaf-redact",
+ "sheaf-render",
+ "sheaf-sign",
+ "sheaf-testkit",
+ "sheaf-xfa",
+ "sheaf-xfdf",
+ "thiserror 2.0.21",
+ "tiff",
+ "unicode-segmentation",
+ "url",
+]
+
+[[package]]
+name = "sheaf-export"
+version = "0.18.0"
+dependencies = [
+ "flate2",
+]
+
+[[package]]
+name = "sheaf-filters"
+version = "0.18.0"
+dependencies = [
+ "fax",
+ "flate2",
+ "hayro-ccitt",
+ "hayro-jbig2",
+ "proptest",
+ "thiserror 2.0.21",
+ "weezl 0.2.1",
+]
+
+[[package]]
+name = "sheaf-fonts"
+version = "0.18.0"
+dependencies = [
+ "harfrust",
+ "sheaf-cos",
+ "skrifa 0.44.0",
+ "unicode-bidi",
+]
+
+[[package]]
+name = "sheaf-forms"
+version = "0.18.0"
+dependencies = [
+ "hayro-syntax",
+ "proptest",
+ "sheaf-content",
+ "sheaf-cos",
+ "sheaf-fonts",
+ "sheaf-model",
+ "thiserror 2.0.21",
+]
+
+[[package]]
+name = "sheaf-geom"
+version = "0.18.0"
+
+[[package]]
+name = "sheaf-js"
+version = "0.18.0"
+dependencies = [
+ "boa_engine",
+ "chrono",
+]
+
+[[package]]
+name = "sheaf-measure"
+version = "0.18.0"
+dependencies = [
+ "serde",
+ "sheaf-annot",
+ "sheaf-content",
+ "sheaf-cos",
+ "sheaf-model",
+ "sheaf-testkit",
+ "thiserror 2.0.21",
+]
+
+[[package]]
+name = "sheaf-model"
+version = "0.18.0"
+dependencies = [
+ "sheaf-cos",
+]
+
+[[package]]
+name = "sheaf-ocr"
+version = "0.18.0"
+dependencies = [
+ "ocrs",
+ "rten",
+ "sheaf-fonts",
+ "tempfile",
+ "thiserror 2.0.21",
+]
+
+[[package]]
+name = "sheaf-optimize"
+version = "0.18.0"
+dependencies = [
+ "image",
+ "proptest",
+ "sheaf-annot",
+ "sheaf-content",
+ "sheaf-cos",
+ "sheaf-filters",
+ "sheaf-model",
+ "sheaf-render",
+ "thiserror 2.0.21",
+ "zune-jpeg",
+]
+
+[[package]]
+name = "sheaf-oracle"
+version = "0.18.0"
+
+[[package]]
+name = "sheaf-organize"
+version = "0.18.0"
+dependencies = [
+ "hayro-syntax",
+ "sheaf-content",
+ "sheaf-cos",
+ "sheaf-oracle",
+ "thiserror 2.0.21",
+]
+
+[[package]]
+name = "sheaf-platform"
+version = "0.18.0"
+dependencies = [
+ "async-channel",
+ "futures-lite",
+ "rustix 1.1.5",
+ "zbus",
+]
+
+[[package]]
+name = "sheaf-preflight"
+version = "0.18.0"
+dependencies = [
+ "flate2",
+ "roxmltree 0.21.2",
+ "sheaf-content",
+ "sheaf-cos",
+ "sheaf-model",
+]
+
+[[package]]
+name = "sheaf-print"
+version = "0.18.0"
+dependencies = [
+ "craft-print",
+ "sheaf-content",
+ "sheaf-cos",
+ "sheaf-model",
+ "sheaf-render",
+ "thiserror 2.0.21",
+]
+
+[[package]]
+name = "sheaf-redact"
+version = "0.18.0"
+dependencies = [
+ "sheaf-annot",
+ "sheaf-content",
+ "sheaf-cos",
+ "sheaf-edit",
+ "sheaf-filters",
+ "sheaf-fonts",
+ "sheaf-forms",
+ "sheaf-model",
+ "sheaf-testkit",
+ "sheaf-xfa",
+ "thiserror 2.0.21",
+]
+
+[[package]]
+name = "sheaf-render"
+version = "0.18.0"
+dependencies = [
+ "bytemuck",
+ "flate2",
+ "getrandom 0.4.3",
+ "hayro",
+ "hayro-syntax",
+ "kurbo 0.13.1",
+ "log",
+ "lopdf",
+ "serde",
+ "sheaf-cos",
+ "sheaf-fonts",
+ "skrifa 0.44.0",
+ "thiserror 2.0.21",
+]
+
+[[package]]
+name = "sheaf-sign"
+version = "0.18.0"
+dependencies = [
+ "aes",
+ "aws-lc-rs",
+ "base64 0.23.1",
+ "bp256",
+ "bp384",
+ "cbc",
+ "chrono",
+ "crypto-bigint",
+ "des",
+ "ecdsa",
+ "ed25519-dalek",
+ "getrandom 0.4.3",
+ "hmac",
+ "p256",
+ "p384",
+ "p521",
+ "pbkdf2",
+ "rc2",
+ "ripemd",
+ "rsa",
+ "rustls-cng",
+ "security-framework",
+ "sha1 0.11.0",
+ "sha2 0.11.1",
+ "sha3",
+ "sheaf-annot",
+ "sheaf-cos",
+ "sheaf-fonts",
+ "sheaf-model",
+ "thiserror 2.0.21",
+]
+
+[[package]]
+name = "sheaf-testkit"
+version = "0.18.0"
+
+[[package]]
+name = "sheaf-ui-egui"
+version = "0.18.0"
+dependencies = [
+ "arboard",
+ "base64 0.23.1",
+ "block2 0.6.2",
+ "bytemuck",
+ "chrono",
+ "craft-keymap",
+ "craft-menu",
+ "craft-quit",
+ "craft-ui",
+ "craft-update",
+ "eframe",
+ "egui",
+ "egui_extras",
+ "egui_kittest",
+ "fontconfig-parser",
+ "getrandom 0.4.3",
+ "image",
+ "js-sys",
+ "log",
+ "objc2 0.6.5",
+ "objc2-app-kit 0.3.2",
+ "objc2-foundation 0.3.2",
+ "plist",
+ "png 0.18.1",
+ "pollster 1.0.1",
+ "proptest",
+ "rfd",
+ "rustix 1.1.5",
+ "serde",
+ "serde_json",
+ "sheaf-content",
+ "sheaf-cos",
+ "sheaf-engine",
+ "sheaf-fonts",
+ "sheaf-model",
+ "sheaf-platform",
+ "sheaf-render",
+ "sheaf-xfa",
+ "skrifa 0.44.0",
+ "sys-locale",
+ "toml",
+ "unicode-bidi",
+ "wasm-bindgen",
+ "wasm-bindgen-futures",
+ "web-sys",
+ "web-time",
+ "winsafe",
+ "xattr",
+]
+
+[[package]]
+name = "sheaf-web"
+version = "0.18.0"
+dependencies = [
+ "eframe",
+ "egui",
+ "js-sys",
+ "sheaf-ui-egui",
+ "wasm-bindgen-futures",
+ "web-sys",
+]
+
+[[package]]
+name = "sheaf-xfa"
+version = "0.18.0"
+dependencies = [
+ "base64 0.23.1",
+ "image",
+ "png 0.18.1",
+ "roxmltree 0.21.2",
+ "sha2 0.11.1",
+ "sheaf-cos",
+ "sheaf-fonts",
+ "thiserror 2.0.21",
+]
+
+[[package]]
+name = "sheaf-xfdf"
+version = "0.18.0"
+dependencies = [
+ "roxmltree 0.21.2",
+ "sheaf-annot",
+ "sheaf-cos",
+ "sheaf-forms",
+ "sheaf-model",
+ "thiserror 2.0.21",
 ]
 
 [[package]]
@@ -8374,12 +8374,12 @@ dependencies = [
  "anyhow",
  "chrono",
  "lopdf",
- "sheaf-cos",
- "sheaf-oracle",
  "png 0.18.1",
  "serde",
  "serde_json",
  "sha2 0.11.1",
+ "sheaf-cos",
+ "sheaf-oracle",
  "toml",
 ]
 

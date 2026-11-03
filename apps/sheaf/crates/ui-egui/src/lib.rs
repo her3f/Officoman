@@ -11,11 +11,20 @@
 
 /// Sheaf as craft-update knows it, with its 128 px icon and accent colour: the update
 /// prompt shows both, and an AppImage's menu entry gets the icon.
+///
+/// Spelled out rather than taken from `craft_update::suite`, which describes the upstream
+/// Crafting Apps and points their updates at the upstream repositories.
 #[cfg(not(target_arch = "wasm32"))]
 pub const UPDATE_APP: craft_update::app::App = craft_update::app::App {
     icon_png: Some(include_bytes!("../../../assets/app-icon/hicolor/128x128/apps/io.github.her3f.sheaf.png")),
-    accent: Some([0xb7, 0x02, 0x28]),
-    ..craft_update::suite::SHEAF
+    accent: Some([0x6b, 0x4e, 0x9e]),
+    developer: "Officoman",
+    ..craft_update::app::App::new(
+        "sheaf",
+        "Sheaf",
+        "Reading, organizing and protecting PDFs",
+        "her3f/officoman",
+    )
 };
 
 use crate::control::Host as _;

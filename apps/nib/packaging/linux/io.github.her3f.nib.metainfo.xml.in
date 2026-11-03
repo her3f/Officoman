@@ -8,7 +8,7 @@
   <name>Nib</name>
   <summary>Write and design documents; open and save Word files</summary>
   <developer id="io.github.her3f">
-    <name>Learning Machines LLC</name>
+    <name>Officoman</name>
   </developer>
   <description>
     <p>
@@ -19,8 +19,8 @@
   <icon type="stock">io.github.her3f.nib</icon>
   <!-- Only url types known to appstream 0.15 (Ubuntu 22.04, where CI validates): no vcs-browser. -->
   <url type="homepage">https://her3f.github.io/officoman/apps/nib.html</url>
-  <url type="bugtracker">https://https://github.com/her3f/officoman/issues</url>
-  <url type="help">https://https://github.com/her3f/officoman</url>
+  <url type="bugtracker">https://github.com/her3f/officoman/issues</url>
+  <url type="help">https://github.com/her3f/officoman</url>
   <url type="contact">https://github.com/her3f/officoman/discussions</url>
   <categories>
     <category>Office</category>

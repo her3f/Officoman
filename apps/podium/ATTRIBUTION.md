@@ -2,7 +2,6 @@
 
 Every asset Podium includes, bundles, embeds at build time or shows in its documentation, with
 its author, source and licence. The policy is in [AGENTS.md](AGENTS.md) §1. `cargo xtask assets`
-fails if a file under `assets/`, `docs/images/` or `docs/brand/` is missing from this table.
 
 Podium contains **no Microsoft, Adobe, Avid or Autodesk iconography, images, fonts, themes,
 templates or other assets**. Its themes, colour schemes, layouts, preset-shape geometry, sample
@@ -14,11 +13,6 @@ artwork. The ribbon and menu icons stay original drawings.
 
 | Asset | Author | Source | Licence | Used for |
 |---|---|---|---|---|
-| `docs/brand/officoman-logo.svg`, `docs/brand/officoman-logo.png` | Officoman Team | Officoman brand kit (project owner) | Officoman trademark, `docs/brand/LICENSE-brand.txt` (not open source) | README header |
-| `docs/brand/officoman-logo-white.svg`, `docs/brand/officoman-logo-white.png` | Officoman Team | Officoman brand kit | Officoman trademark, `docs/brand/LICENSE-brand.txt` | README header (dark mode) |
-| `docs/brand/officoman-mark.svg`, `docs/brand/officoman-mark.png` | Officoman Team | Officoman brand kit | Officoman trademark, `docs/brand/LICENSE-brand.txt` | README footer, About |
-| `docs/brand/officoman-mark-black.svg`, `docs/brand/officoman-mark-black.png` | Officoman Team | Officoman brand kit | Officoman trademark, `docs/brand/LICENSE-brand.txt` | Mark for light backgrounds |
-| `docs/brand/LICENSE-brand.txt` | Officoman Team | Officoman brand kit | — (licence text) | Terms for the Officoman marks |
 | `assets/app-icon/podium-1024.png`, `assets/app-icon/hicolor/*/apps/io.github.her3f.podium.png` | Podium contributors | rendered by Podium from `assets/app-icon/icon-source.podium` (shapes only) | MIT OR Apache-2.0 | Placeholder app icon (presentation board) until the mascot icon is drawn |
 | `packaging/macos/dmg/background.svg` | @XusBadia | Podium macOS DMG window background, original work for this repository (2026-10-08), derived from the Podium app icon `assets/app-icon/podium-1024.png` (referenced via `<image>`, not copied); text is outlined Inter / JetBrains Mono glyph paths | MIT OR Apache-2.0 (`LICENSE-MIT`, `LICENSE-APACHE`) | Finder window of the macOS DMG; `packaging/macos/dmg/generate.py` renders it to `background.tiff` |
 | `packaging/macos/dmg/background.tiff` | @XusBadia | Rendered from `packaging/macos/dmg/background.svg` by `packaging/macos/dmg/generate.py` | MIT OR Apache-2.0 (`LICENSE-MIT`, `LICENSE-APACHE`) | 1x + 2x HiDPI TIFF for the macOS DMG window; includes the app icon (see its row) and LittleCMS's built-in sRGB profile ("No copyright, use freely") |

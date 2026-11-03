@@ -13,7 +13,7 @@ release: 1
 section: graphics
 priority: optional
 maintainer: ${NIB_MAINTAINER}
-vendor: Learning Machines LLC
+vendor: Officoman
 homepage: https://her3f.github.io/officoman/apps/nib.html
 license: MIT OR Apache-2.0
 description: |-

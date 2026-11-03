@@ -10,7 +10,7 @@ use craft_update::{CheckResultDialog, CheckResultResponse};
 use crate::SheafApp;
 
 /// Where every Sheaf release is listed.
-pub const RELEASES_PAGE: &str = "https://https://github.com/her3f/officoman/releases";
+pub const RELEASES_PAGE: &str = "https://github.com/her3f/officoman/releases";
 
 /// Stands in for the network in tests.
 #[cfg(not(target_arch = "wasm32"))]

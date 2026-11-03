@@ -1968,221 +1968,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "tally"
-version = "0.16.0"
-dependencies = [
- "arboard",
- "chrono",
- "craft-print",
- "craft-update",
- "eframe",
- "egui",
- "fmv-macos-events",
- "getrandom 0.4.3",
- "tally-engine",
- "tally-mcp",
- "tally-ui-egui",
- "image",
- "log",
- "muda",
- "objc2 0.6.5",
- "objc2-app-kit 0.3.2",
- "pollster 1.0.1",
- "rfd",
- "serde_json",
- "winit",
- "winresource",
-]
-
-[[package]]
-name = "tally-calc"
-version = "0.16.0"
-dependencies = [
- "tally-core",
- "tally-formula",
- "tally-functions",
- "tally-model",
- "tally-numfmt",
- "log",
-]
-
-[[package]]
-name = "tally-chart"
-version = "0.16.0"
-dependencies = [
- "tally-calc",
- "tally-core",
- "tally-model",
- "tally-numfmt",
- "serde",
-]
-
-[[package]]
-name = "tally-cli"
-version = "0.16.0"
-dependencies = [
- "tally-engine",
- "tally-mcp",
- "log",
- "quick-xml 0.41.0",
- "serde_json",
- "zip 3.0.0",
-]
-
-[[package]]
-name = "tally-core"
-version = "0.16.0"
-dependencies = [
- "chrono",
- "js-sys",
- "serde",
- "serde_json",
- "thiserror 2.0.21",
-]
-
-[[package]]
-name = "tally-engine"
-version = "0.16.0"
-dependencies = [
- "tally-calc",
- "tally-chart",
- "tally-core",
- "tally-formula",
- "tally-functions",
- "tally-math",
- "tally-model",
- "tally-numfmt",
- "tally-pdf",
- "tally-xlsx",
- "image",
- "log",
- "serde",
- "serde_json",
- "thiserror 2.0.21",
- "web-time",
- "zip 3.0.0",
-]
-
-[[package]]
-name = "tally-formula"
-version = "0.16.0"
-dependencies = [
- "tally-core",
- "serde",
- "thiserror 2.0.21",
-]
-
-[[package]]
-name = "tally-functions"
-version = "0.16.0"
-dependencies = [
- "tally-core",
- "regex",
-]
-
-[[package]]
-name = "tally-math"
-version = "0.16.0"
-dependencies = [
- "ratex-font",
- "ratex-layout",
- "ratex-parser",
- "ratex-types",
-]
-
-[[package]]
-name = "tally-mcp"
-version = "0.16.0"
-dependencies = [
- "tally-engine",
- "log",
- "serde_json",
-]
-
-[[package]]
-name = "tally-model"
-version = "0.16.0"
-dependencies = [
- "tally-core",
- "tally-formula",
- "tally-math",
- "serde",
- "serde_json",
- "sha2 0.11.1",
- "thiserror 2.0.21",
-]
-
-[[package]]
-name = "tally-numfmt"
-version = "0.16.0"
-dependencies = [
- "tally-core",
-]
-
-[[package]]
-name = "tally-pdf"
-version = "0.16.0"
-
-[[package]]
-name = "tally-ui-egui"
-version = "0.16.0"
-dependencies = [
- "craft-ui",
- "craft-update",
- "craft-window",
- "egui",
- "egui_kittest",
- "epaint_default_fonts",
- "tally-chart",
- "tally-engine",
- "tally-xlsx",
- "image",
- "log",
- "serde",
- "serde_json",
- "skrifa",
- "sys-locale",
- "toml",
- "web-sys",
- "web-time",
- "zbus",
-]
-
-[[package]]
-name = "tally-web"
-version = "0.16.0"
-dependencies = [
- "eframe",
- "egui",
- "tally-engine",
- "tally-ui-egui",
- "js-sys",
- "log",
- "rfd",
- "serde_json",
- "wasm-bindgen",
- "wasm-bindgen-futures",
- "web-sys",
-]
-
-[[package]]
-name = "tally-xlsx"
-version = "0.16.0"
-dependencies = [
- "aes",
- "tally-core",
- "tally-formula",
- "tally-functions",
- "tally-math",
- "tally-model",
- "quick-xml 0.41.0",
- "sha1 0.11.0",
- "sha2 0.11.1",
- "thiserror 2.0.21",
- "zip 3.0.0",
-]
-
-[[package]]
 name = "guillotiere"
 version = "0.7.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -5138,6 +4923,221 @@ dependencies = [
 ]
 
 [[package]]
+name = "tally"
+version = "0.16.0"
+dependencies = [
+ "arboard",
+ "chrono",
+ "craft-print",
+ "craft-update",
+ "eframe",
+ "egui",
+ "fmv-macos-events",
+ "getrandom 0.4.3",
+ "image",
+ "log",
+ "muda",
+ "objc2 0.6.5",
+ "objc2-app-kit 0.3.2",
+ "pollster 1.0.1",
+ "rfd",
+ "serde_json",
+ "tally-engine",
+ "tally-mcp",
+ "tally-ui-egui",
+ "winit",
+ "winresource",
+]
+
+[[package]]
+name = "tally-calc"
+version = "0.16.0"
+dependencies = [
+ "log",
+ "tally-core",
+ "tally-formula",
+ "tally-functions",
+ "tally-model",
+ "tally-numfmt",
+]
+
+[[package]]
+name = "tally-chart"
+version = "0.16.0"
+dependencies = [
+ "serde",
+ "tally-calc",
+ "tally-core",
+ "tally-model",
+ "tally-numfmt",
+]
+
+[[package]]
+name = "tally-cli"
+version = "0.16.0"
+dependencies = [
+ "log",
+ "quick-xml 0.41.0",
+ "serde_json",
+ "tally-engine",
+ "tally-mcp",
+ "zip 3.0.0",
+]
+
+[[package]]
+name = "tally-core"
+version = "0.16.0"
+dependencies = [
+ "chrono",
+ "js-sys",
+ "serde",
+ "serde_json",
+ "thiserror 2.0.21",
+]
+
+[[package]]
+name = "tally-engine"
+version = "0.16.0"
+dependencies = [
+ "image",
+ "log",
+ "serde",
+ "serde_json",
+ "tally-calc",
+ "tally-chart",
+ "tally-core",
+ "tally-formula",
+ "tally-functions",
+ "tally-math",
+ "tally-model",
+ "tally-numfmt",
+ "tally-pdf",
+ "tally-xlsx",
+ "thiserror 2.0.21",
+ "web-time",
+ "zip 3.0.0",
+]
+
+[[package]]
+name = "tally-formula"
+version = "0.16.0"
+dependencies = [
+ "serde",
+ "tally-core",
+ "thiserror 2.0.21",
+]
+
+[[package]]
+name = "tally-functions"
+version = "0.16.0"
+dependencies = [
+ "regex",
+ "tally-core",
+]
+
+[[package]]
+name = "tally-math"
+version = "0.16.0"
+dependencies = [
+ "ratex-font",
+ "ratex-layout",
+ "ratex-parser",
+ "ratex-types",
+]
+
+[[package]]
+name = "tally-mcp"
+version = "0.16.0"
+dependencies = [
+ "log",
+ "serde_json",
+ "tally-engine",
+]
+
+[[package]]
+name = "tally-model"
+version = "0.16.0"
+dependencies = [
+ "serde",
+ "serde_json",
+ "sha2 0.11.1",
+ "tally-core",
+ "tally-formula",
+ "tally-math",
+ "thiserror 2.0.21",
+]
+
+[[package]]
+name = "tally-numfmt"
+version = "0.16.0"
+dependencies = [
+ "tally-core",
+]
+
+[[package]]
+name = "tally-pdf"
+version = "0.16.0"
+
+[[package]]
+name = "tally-ui-egui"
+version = "0.16.0"
+dependencies = [
+ "craft-ui",
+ "craft-update",
+ "craft-window",
+ "egui",
+ "egui_kittest",
+ "epaint_default_fonts",
+ "image",
+ "log",
+ "serde",
+ "serde_json",
+ "skrifa",
+ "sys-locale",
+ "tally-chart",
+ "tally-engine",
+ "tally-xlsx",
+ "toml",
+ "web-sys",
+ "web-time",
+ "zbus",
+]
+
+[[package]]
+name = "tally-web"
+version = "0.16.0"
+dependencies = [
+ "eframe",
+ "egui",
+ "js-sys",
+ "log",
+ "rfd",
+ "serde_json",
+ "tally-engine",
+ "tally-ui-egui",
+ "wasm-bindgen",
+ "wasm-bindgen-futures",
+ "web-sys",
+]
+
+[[package]]
+name = "tally-xlsx"
+version = "0.16.0"
+dependencies = [
+ "aes",
+ "quick-xml 0.41.0",
+ "sha1 0.11.0",
+ "sha2 0.11.1",
+ "tally-core",
+ "tally-formula",
+ "tally-functions",
+ "tally-math",
+ "tally-model",
+ "thiserror 2.0.21",
+ "zip 3.0.0",
+]
+
+[[package]]
 name = "tar"
 version = "0.4.46"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -6620,8 +6620,8 @@ checksum = "e450f9b2ed1dff33c94c12589a87338689467b9c4f5d8a5710bd09a847d2c8a7"
 name = "xtask"
 version = "0.16.0"
 dependencies = [
- "tally-engine",
  "serde_json",
+ "tally-engine",
 ]
 
 [[package]]

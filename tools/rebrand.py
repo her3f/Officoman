@@ -95,9 +95,11 @@ def build_rules() -> list[tuple[str, str]]:
         ("https://www.linkedin.com/company/artcraft-ai", MONO),
     ]
 
-    # 3. references to these repositories themselves
+    # 3. references to these repositories themselves (the scheme-carrying form first, or
+    #    the bare replacement would double the scheme)
     for old in REPOS:
         rules += [
+            (f"https://github.com/storytold/{old}", MONO),
             (f"github.com/storytold/{old}", MONO),
             (f"storytold/{old}", "her3f/officoman"),
             (f"storytold_{old}", "her3f_officoman"),

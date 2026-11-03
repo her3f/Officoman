@@ -16,7 +16,7 @@ fn main() {
     res.set_icon("../../assets/app-icon/podium.ico")
         .set("ProductName", "Podium")
         .set("FileDescription", "Podium presentations")
-        .set("CompanyName", "Learning Machines LLC")
+        .set("CompanyName", "Officoman")
         .set("LegalCopyright", "Copyright (c) the Podium authors. MIT OR Apache-2.0.")
         .set("OriginalFilename", "podium.exe")
         .set("InternalName", "podium");

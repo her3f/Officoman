@@ -110,13 +110,15 @@ The four upstream repositories were imported by `tools/rebrand.py` and the resul
 | `craft-*` crate names inside the tree | Internal code identifiers of those dependencies. |
 | Historical dev notes in `docs/` that mention sibling Crafting Apps | Records of how the upstream code evolved; they name other projects, they do not brand this one. |
 | Test fixture fonts whose internal name table says `DeckCraft Legacy` | Binary `.ttf` fixtures; rewriting a font's name table safely needs a font tool, and they are test-only. |
+| `docs/brand/` under `apps/sheaf` | Recreated with **our** mark, because Sheaf's About dialog `include_bytes!`s it. The files are Officoman's own artwork, not upstream's. |
 
 ## Regenerating
 
 ```sh
-python tools/rebrand.py      # _vendor/<upstream>  ->  apps/<product>
-python tools/make_icons.py   # draws every icon
-python tools/build_docs.py   # website + per-app READMEs
+python tools/rebrand.py       # _vendor/<upstream>  ->  apps/<product>
+python tools/scrub_vendor.py  # upstream legal entity + stale attribution rows
+python tools/make_icons.py    # draws every icon
+python tools/build_docs.py    # website + per-app READMEs
 ```
 
 `_vendor/` is git-ignored. Re-running the whole chain is idempotent: `apps/<product>` is

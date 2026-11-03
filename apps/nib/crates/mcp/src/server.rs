@@ -185,7 +185,7 @@ impl Server {
                     "capabilities": {"tools": {}, "resources": {}},
                     "serverInfo": {"name": "nib", "title": "Nib", "version": env!("CARGO_PKG_VERSION"), "websiteUrl": "https://her3f.github.io/officoman/apps/nib.html"},
                     "instructions": format!(
-                        "{INSTRUCTIONS} Backend: {}. Community: https://github.com/her3f/officoman/discussions · https://her3f.github.io/officoman/apps/nib.html · https://https://github.com/her3f/officoman",
+                        "{INSTRUCTIONS} Backend: {}. Community: https://github.com/her3f/officoman/discussions · https://her3f.github.io/officoman/apps/nib.html · https://github.com/her3f/officoman",
                         self.backend.describe()
                     ),
                 }))

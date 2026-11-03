@@ -37,3 +37,7 @@ _dbg_*
 .DS_Store
 Thumbs.db
 desktop.ini
+
+dist/
+
+_build_*.log

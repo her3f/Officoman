@@ -67,6 +67,29 @@ cargo test --workspace
 Repeat for `apps/nib`, `apps/tally`, `apps/sheaf`. The desktop binary and the CLI are the two
 `apps/*` packages inside each workspace.
 
+### Windows x64 builds
+
+The Windows builds in `dist/` were produced with the **MinGW-w64** toolchain rather than MSVC,
+because the machine that built them has no Visual Studio C++ build tools. Both scripts are in
+[`tools/`](tools):
+
+```sh
+pwsh -File tools/build_windows.ps1     # cargo build --release, all four apps
+pwsh -File tools/package_all.ps1       # portable folder + zip per app, into dist/
+```
+
+The zips are self-contained — no runtime DLLs to copy, nothing to install, delete the folder to
+uninstall. They are **unsigned**, so Windows SmartScreen warns on first run.
+
+| App | Version | Portable zip |
+|---|---|---|
+| Nib | 0.15.0 | `dist/Nib-0.15.0-windows-x64-portable.zip` |
+| Tally | 0.16.0 | `dist/Tally-0.16.0-windows-x64-portable.zip` |
+| Podium | 0.15.0 | `dist/Podium-0.15.0-windows-x64-portable.zip` |
+| Sheaf | 0.18.0 | `dist/Sheaf-0.18.0-windows-x64-portable.zip` |
+
+`dist/` is git-ignored; attach those zips to a GitHub release to publish them.
+
 ## How this tree was made
 
 The rebrand is scripted, not hand-edited, so it can be re-run or audited:

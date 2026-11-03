@@ -249,7 +249,7 @@ release does.
 ## Scanner detections
 
 Antivirus and reputation scanners sometimes flag a released file. Check the facts before you change
-code or answer publicly. The first report was [issue #747](https://https://github.com/her3f/officoman/issues/747),
+code or answer publicly. The first report was [issue #747](https://github.com/her3f/officoman/issues/747),
 a match of the `CobaltStrikeBeacon` family rule.
 
 1. **Confirm the file is the release.** Compare its SHA-256 with `SHA256SUMS.txt` on the GitHub
@@ -285,4 +285,4 @@ a match of the `CobaltStrikeBeacon` family rule.
    nothing about the software.
 7. **Report.** To the scanner, send the file's SHA-256, the release URL, the rule name and revision,
    and the matched identifiers and offsets. Report Sheaf problems at
-   <https://https://github.com/her3f/officoman/issues> with the same facts.
+   <https://github.com/her3f/officoman/issues> with the same facts.
