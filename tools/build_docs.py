@@ -205,7 +205,6 @@ def page(title: str, body: str, root: str = "", description: str = "") -> str:
       <a href="{root}apps/index.html">Apps</a>
       <a href="{root}download.html">Download</a>
       <a href="{root}about.html">About</a>
-      <a href="{REPO}">GitHub</a>
     </nav>
   </div>
 </header>
@@ -264,7 +263,7 @@ def build_pages() -> None:
      each one is native and fast, and together they cover the work you actually do.</p>
   <div class="cta">
     <a class="btn" href="apps/index.html">See the apps</a>
-    <a class="btn ghost" href="{REPO}">Source on GitHub</a>
+    <a class="btn ghost" href="download.html">Download</a>
   </div>
 </div>
 
@@ -473,16 +472,16 @@ def build_downloads() -> None:
               <td>Installs all four</td>
               <td><code>{lv}</code></td>
               <td>zip {launcher.stat().st_size / 1e6:.1f} MB</td>
-              <td><a class="btn ghost" href="{REPO}/releases/latest">.zip</a></td>
+              <td><a class="btn ghost" href="/dl/{launcher.name}">.zip</a></td>
             </tr>"""
             )
         for a in APPS:
             e = found.get(a["slug"])
             if not e:
                 continue
-            msi = (f'<a class="btn" href="{REPO}/releases/latest">.msi</a>'
+            msi = (f'<a class="btn" href="/dl/{e["msi"].name}">.msi</a>'
                    if "msi" in e else '<span class="pill">—</span>')
-            zp = (f'<a class="btn ghost" href="{REPO}/releases/latest">.zip</a>'
+            zp = (f'<a class="btn ghost" href="/dl/{e["zip"].name}">.zip</a>'
                   if "zip" in e else '<span class="pill">—</span>')
             sizes = []
             if "msi" in e:

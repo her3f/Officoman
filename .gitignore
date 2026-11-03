@@ -44,3 +44,6 @@ _build_*.log
 
 _l.txt
 _le.txt
+
+# private deployment notes
+/_server/

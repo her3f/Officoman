@@ -1081,12 +1081,32 @@ fn feed_url_override_allowed(url: &str, allow_https: bool) -> bool {
 
 use crate::http::is_loopback;
 
+/// Where this project publishes its release feed and the builds it lists. Baked in at build time,
+/// so one source tree can serve any domain:
+///
+/// ```sh
+/// OFFICOMAN_LAUNCHER_MIRROR=https://officoman.example/dl/ cargo build --release
+/// ```
+///
+/// While it is set, releases come only from there (never GitHub), and download links under it are
+/// trusted. Every download is still checked against the SHA-256 the feed publishes.
+const BUILT_IN_MIRROR: Option<&str> = option_env!("OFFICOMAN_LAUNCHER_MIRROR");
+
 /// `OFFICOMAN_LAUNCHER_DOWNLOAD_BASE`: a mirror on this machine (`cargo xtask local serve`) that
 /// serves `release_info.json` and the builds it lists. While it's set, releases come only from
 /// there (never GitHub or Officoman's API), and its download links are trusted. Loopback only, so
 /// nothing but the developer's own builds can be installed this way, and only in builds with the
 /// `local-mirror` feature: release builds ignore the variable.
+///
+/// A mirror compiled in with [`BUILT_IN_MIRROR`] takes precedence over it.
 fn local_mirror() -> Option<String> {
+    if let Some(base) = BUILT_IN_MIRROR {
+        let base = base.trim();
+        if base.starts_with("https://") && !base.contains(['?', '#', '\\']) {
+            return Some(if base.ends_with('/') { base.to_string() } else { format!("{base}/") });
+        }
+        log::warn!("ignoring the built-in mirror {base}: it must be an https:// base URL");
+    }
     if !cfg!(feature = "local-mirror") {
         return None;
     }
