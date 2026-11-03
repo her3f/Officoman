@@ -30,9 +30,9 @@ fn discord_button_in_the_top_bar_opens_discord() {
 fn home_screen_links() {
     for (label, url) in [
         ("Join our Discord", links::DISCORD),
-        ("Sheaf web page", "https://her3f.github.io/officoman/apps/sheaf.html"),
+        ("Sheaf web page", "https://officoman.whitebearom.com/apps/sheaf.html"),
         ("Sheaf on GitHub", "https://github.com/her3f/officoman"),
-        ("Officoman website", "https://her3f.github.io/officoman"),
+        ("Officoman website", "https://officoman.whitebearom.com"),
     ] {
         let mut h = harness(|_| {});
         h.get_by_label("Join the Officoman community");

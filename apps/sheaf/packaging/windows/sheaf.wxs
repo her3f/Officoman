@@ -17,8 +17,8 @@
          Add/Remove Programs show a blank icon (#57). -->
     <Icon Id="SheafIcon.ico" SourceFile="$(var.IconPath)" />
     <Property Id="ARPPRODUCTICON" Value="SheafIcon.ico" />
-    <Property Id="ARPURLINFOABOUT" Value="https://her3f.github.io/officoman/apps/sheaf.html" />
-    <Property Id="ARPURLUPDATEINFO" Value="https://her3f.github.io/officoman/apps/sheaf.html" />
+    <Property Id="ARPURLINFOABOUT" Value="https://officoman.whitebearom.com/apps/sheaf.html" />
+    <Property Id="ARPURLUPDATEINFO" Value="https://officoman.whitebearom.com/apps/sheaf.html" />
     <Property Id="ARPHELPLINK" Value="https://github.com/her3f/officoman/discussions" />
     <!-- Desktop shortcut (#143): on by default for a first install, a checkbox in the full-UI
          welcome dialog, and INSTALLDESKTOPSHORTCUT=0 on the msiexec command line for unattended

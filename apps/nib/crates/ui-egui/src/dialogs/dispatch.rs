@@ -1090,7 +1090,7 @@ fn about_dialog(ui: &mut Ui, d: &mut Dialog) -> bool {
             ui.label(crate::i18n::fmt(tl!("Version {version} ({build})"), &[("version", env!("CARGO_PKG_VERSION")), ("build", build)]));
             ui.label(tl!("A free, open-source word processor written from scratch in Rust.\nPart of the Crafting Apps from the Officoman team."));
             ui.add_space(6.0);
-            ui.hyperlink_to(tl!("her3f.github.io/officoman/apps/nib"), "https://her3f.github.io/officoman/apps/nib.html");
+            ui.hyperlink_to(tl!("officoman.whitebearom.com/apps/nib"), "https://officoman.whitebearom.com/apps/nib.html");
             ui.hyperlink_to(tl!("Join us on Discord: github.com/her3f/officoman/discussions"), "https://github.com/her3f/officoman/discussions");
             ui.hyperlink_to(tl!("Source code: https://github.com/her3f/officoman"), "https://github.com/her3f/officoman");
             ui.add_space(6.0);

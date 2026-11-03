@@ -34,9 +34,9 @@ mod tests {
 
     #[test]
     fn lang_comes_from_the_query_not_the_fragment() {
-        assert_eq!(lang_params("https://her3f.github.io/officoman/launcher/?lang=de"), ["de"]);
-        assert_eq!(lang_params("https://her3f.github.io/officoman/launcher/?x=1&lang=pt-BR#apps"), ["pt-BR"]);
-        assert!(lang_params("https://her3f.github.io/officoman/launcher/#apps?lang=de").is_empty());
-        assert!(lang_params("https://her3f.github.io/officoman/launcher/?lang=").is_empty());
+        assert_eq!(lang_params("https://officoman.whitebearom.com/launcher/?lang=de"), ["de"]);
+        assert_eq!(lang_params("https://officoman.whitebearom.com/launcher/?x=1&lang=pt-BR#apps"), ["pt-BR"]);
+        assert!(lang_params("https://officoman.whitebearom.com/launcher/#apps?lang=de").is_empty());
+        assert!(lang_params("https://officoman.whitebearom.com/launcher/?lang=").is_empty());
     }
 }

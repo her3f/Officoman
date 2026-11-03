@@ -29,7 +29,7 @@ xtask/                                  cargo xtask ci | wasm | version | ico
 packaging/                              macOS, Windows, Linux, FreeBSD and web packaging scripts
 assets/app-icon/                        the launcher's own icon (master SVG, renders, tray icons)
 assets/app-icons/                       the Craft apps' icons, copied from each app's repo
-assets/fonts/                           Archivo, Inter, Geist Mono (OFL-1.1): her3f.github.io/officoman's faces
+assets/fonts/                           Archivo, Inter, Geist Mono (OFL-1.1): officoman.whitebearom.com's faces
 ```
 
 Layering: `core` depends on no other workspace crate and must build for `wasm32-unknown-unknown`.
@@ -80,7 +80,7 @@ settings file must produce an error the user can act on, never a panic.
 
 ### Look and feel
 
-The UI matches the apps page on her3f.github.io/officoman (`officoman-website-next` in `officoman-services`):
+The UI matches the apps page on officoman.whitebearom.com (`officoman-website-next` in `officoman-services`):
 hard square corners, 1 px hairlines instead of shadows, Archivo (620, 118 % width) for headings
 and app names, Inter for body text, upper-case Geist Mono labels and buttons, and the site's
 colour tokens by name (`theme::Tokens`). Build new UI from `widgets.rs`; never hard-code a colour.

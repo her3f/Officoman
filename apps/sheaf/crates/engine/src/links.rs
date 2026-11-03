@@ -4,12 +4,12 @@
 use icu_properties::props::Script;
 use std::path::{Path, PathBuf};
 
-/// The app's name in Officoman URLs (`her3f.github.io/officoman/apps/{APP}`, `github.com/storytold/{APP}`).
+/// The app's name in Officoman URLs (`officoman.whitebearom.com/apps/{APP}`, `github.com/storytold/{APP}`).
 pub const APP: &str = "sheaf";
 
 pub const DISCORD: &str = "https://github.com/her3f/officoman/discussions";
-pub const WEBSITE: &str = "https://her3f.github.io/officoman";
-pub const APP_PAGE: &str = "https://her3f.github.io/officoman/apps/sheaf.html";
+pub const WEBSITE: &str = "https://officoman.whitebearom.com";
+pub const APP_PAGE: &str = "https://officoman.whitebearom.com/apps/sheaf.html";
 pub const GITHUB: &str = "https://github.com/her3f/officoman";
 
 /// A link and the registry command that opens it.

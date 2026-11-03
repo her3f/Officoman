@@ -14,7 +14,7 @@ section: graphics
 priority: optional
 maintainer: ${NIB_MAINTAINER}
 vendor: Officoman
-homepage: https://her3f.github.io/officoman/apps/nib.html
+homepage: https://officoman.whitebearom.com/apps/nib.html
 license: MIT OR Apache-2.0
 description: |-
   Open-source, native word processor that works the way Word users expect.

@@ -22,7 +22,7 @@ pub struct CraftApp {
     pub name: &'static str,
     /// What it's for, in a few words (English; the UI translates it by app id).
     pub tagline: &'static str,
-    /// Brand colour (sRGB), for surfaces: her3f.github.io/officoman's `--app`.
+    /// Brand colour (sRGB), for surfaces: officoman.whitebearom.com's `--app`.
     pub color: [u8; 3],
     /// The brand colour for text on a light background (the site's light `--app-ink`).
     pub ink_light: [u8; 3],
@@ -43,7 +43,7 @@ pub struct CraftApp {
     pub bundle: Option<&'static str>,
     /// Older bundle ids its Flatpak shipped under (SolidCraft was `io.github.her3f.solidcraft`).
     pub former_bundles: &'static [&'static str],
-    /// Its website, when it isn't a page on her3f.github.io/officoman (a community app has its own).
+    /// Its website, when it isn't a page on officoman.whitebearom.com (a community app has its own).
     pub site: Option<&'static str>,
     /// The Apple Developer team whose Developer ID signature its macOS build must carry. `None`
     /// while those builds carry no signature the launcher can check: it then opens a copy that's
@@ -65,9 +65,9 @@ impl CraftApp {
         format!("https://github.com/{}", self.repo)
     }
 
-    /// The app's website: its page on her3f.github.io/officoman, or a community app's own site.
+    /// The app's website: its page on officoman.whitebearom.com, or a community app's own site.
     pub fn website(&self) -> String {
-        self.site.map_or_else(|| format!("https://her3f.github.io/officoman/apps/{}", self.id), str::to_string)
+        self.site.map_or_else(|| format!("https://officoman.whitebearom.com/apps/{}", self.id), str::to_string)
     }
 
     /// Whether the launcher installs this app from a `kind` package.
@@ -123,7 +123,7 @@ const fn app(
     }
 }
 
-/// The Craft App Suite, in display order matching her3f.github.io/officoman, then the community apps:
+/// The Craft App Suite, in display order matching officoman.whitebearom.com, then the community apps:
 pub const SUITE: [CraftApp; 4] = [
     app(
         "nib",
@@ -160,7 +160,7 @@ pub const SUITE: [CraftApp; 4] = [
 pub const OFFICOMAN_TEAM_ID: &str = "DJ6XS33FX8";
 
 /// Officoman's website.
-pub const WEBSITE_URL: &str = "https://her3f.github.io/officoman";
+pub const WEBSITE_URL: &str = "https://officoman.whitebearom.com";
 /// The GitHub account every official Craft App's repository lives under. The release feed can
 /// only move an app within it; a community app installs from its own repo, pinned in [`SUITE`].
 pub const GITHUB_OWNER: &str = "her3f";
@@ -254,7 +254,7 @@ mod tests {
         assert_eq!(app.kind, AppKind::Official);
         assert_eq!(app.repo, "storytold/texturecraft");
         assert_eq!(app.bundle_id(), "io.github.her3f.texturecraft");
-        assert_eq!(app.website(), "https://her3f.github.io/officoman/apps/texturecraft");
+        assert_eq!(app.website(), "https://officoman.whitebearom.com/apps/texturecraft");
         assert_eq!(app.mac_team, Some(OFFICOMAN_TEAM_ID));
     }
 
@@ -274,7 +274,7 @@ mod tests {
         assert_eq!(ca.kind, AppKind::Official);
         assert_eq!(ca.repo, "storytold/craft-anything");
         assert_eq!(ca.bundle_id(), "io.github.her3f.craft-anything");
-        assert_eq!(ca.website(), "https://her3f.github.io/officoman/apps/craft-anything");
+        assert_eq!(ca.website(), "https://officoman.whitebearom.com/apps/craft-anything");
         assert_eq!(ca.mac_team, Some(OFFICOMAN_TEAM_ID));
     }
 
@@ -283,7 +283,7 @@ mod tests {
         let pdf = CraftApp::by_id("pdfcraft").unwrap();
         assert_eq!(pdf.stems().collect::<Vec<_>>(), ["pdfcraft", "printcraft"]);
         assert_eq!(pdf.names().collect::<Vec<_>>(), ["PdfCraft", "PrintCraft"]);
-        assert_eq!(pdf.website(), "https://her3f.github.io/officoman/apps/pdfcraft");
-        assert_eq!(CraftApp::by_id("wordcraft").unwrap().website(), "https://her3f.github.io/officoman/apps/wordcraft");
+        assert_eq!(pdf.website(), "https://officoman.whitebearom.com/apps/pdfcraft");
+        assert_eq!(CraftApp::by_id("wordcraft").unwrap().website(), "https://officoman.whitebearom.com/apps/wordcraft");
     }
 }

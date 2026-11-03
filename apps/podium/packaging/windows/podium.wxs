@@ -13,8 +13,8 @@
 
     <Icon Id="PodiumIcon.ico" SourceFile="$(var.IconPath)" />
     <Property Id="ARPPRODUCTICON" Value="PodiumIcon.ico" />
-    <Property Id="ARPURLINFOABOUT" Value="https://her3f.github.io/officoman/apps/podium.html" />
-    <Property Id="ARPURLUPDATEINFO" Value="https://her3f.github.io/officoman/apps/podium.html" />
+    <Property Id="ARPURLINFOABOUT" Value="https://officoman.whitebearom.com/apps/podium.html" />
+    <Property Id="ARPURLUPDATEINFO" Value="https://officoman.whitebearom.com/apps/podium.html" />
     <Property Id="ARPHELPLINK" Value="https://github.com/her3f/officoman/discussions" />
 
     <StandardDirectory Id="ProgramFiles6432Folder">

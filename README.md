@@ -46,7 +46,7 @@ a bug.
 
 The project site lives in [`docs/`](docs) and is published from that folder with GitHub Pages:
 
-**<https://her3f.github.io/officoman>**
+**<https://officoman.whitebearom.com>**
 
 | Page | What it covers |
 |---|---|

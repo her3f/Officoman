@@ -1,5 +1,5 @@
 <p align="center">
-  <a href="https://her3f.github.io/officoman/">
+  <a href="https://officoman.whitebearom.com/">
     <picture>
       <source media="(prefers-color-scheme: dark)" srcset="docs/brand/officoman-logo-white.svg">
       <img alt="Officoman" src="docs/brand/officoman-logo.svg" width="200">
@@ -35,8 +35,8 @@
 
 <p align="center">
   <a href="https://github.com/her3f/officoman/releases/latest"><b>Download Officoman Launcher</b></a> ·
-  <a href="https://her3f.github.io/officoman/">Officoman</a> ·
-  <a href="https://her3f.github.io/officoman/apps">The Craft App Suite</a>
+  <a href="https://officoman.whitebearom.com/">Officoman</a> ·
+  <a href="https://officoman.whitebearom.com/apps">The Craft App Suite</a>
 </p>
 
 > [!NOTE]
@@ -254,30 +254,30 @@ New contributors and AI agents: start with [`AGENTS.md`](AGENTS.md). Release pac
 ## The Craft App Suite
 
 Officoman Launcher installs the **Craft App Suite**: free, open-source creative tools from the
-[Officoman](https://her3f.github.io/officoman/) team, each written from scratch in Rust and each able to
+[Officoman](https://officoman.whitebearom.com/) team, each written from scratch in Rust and each able to
 stand on its own.
 
 | | App | What it's for | Code | Learn more |
 |:-:|---|---|---|---|
-| <img src="https://raw.githubusercontent.com/storytold/photocraft/main/assets/app-icon/hicolor/64x64/apps/io.github.her3f.photocraft.png" alt="" width="32" height="32"> | **PhotoCraft** | Image editing: layers, masks, type and real PSD files | [GitHub](https://github.com/storytold/photocraft) | [Website](https://her3f.github.io/officoman/apps/photocraft) |
-| <img src="https://raw.githubusercontent.com/storytold/vectorcraft/main/assets/app-icon/hicolor/64x64/apps/io.github.her3f.vectorcraft.png" alt="" width="32" height="32"> | **VectorCraft** | Vector illustration | [GitHub](https://github.com/storytold/vectorcraft) | [Website](https://her3f.github.io/officoman/apps/vectorcraft) |
-| <img src="https://raw.githubusercontent.com/storytold/filmcraft/main/assets/app-icon/hicolor/64x64/apps/io.github.her3f.filmcraft.png" alt="" width="32" height="32"> | **FilmCraft** | Video editing, color and sound | [GitHub](https://github.com/storytold/filmcraft) | [Website](https://her3f.github.io/officoman/apps/filmcraft) |
-| <img src="https://raw.githubusercontent.com/storytold/lightcraft/main/assets/app-icon/hicolor/64x64/apps/io.github.her3f.lightcraft.png" alt="" width="32" height="32"> | **LightCraft** | Photo library and raw development | [GitHub](https://github.com/storytold/lightcraft) | [Website](https://her3f.github.io/officoman/apps/lightcraft) |
-| <img src="https://raw.githubusercontent.com/storytold/pdfcraft/main/assets/app-icon/hicolor/64x64/apps/io.github.her3f.pdfcraft.png" alt="" width="32" height="32"> | **PdfCraft** | Reading, organizing and protecting PDFs | [GitHub](https://github.com/storytold/pdfcraft) | [Website](https://her3f.github.io/officoman/apps/pdfcraft) |
-| <img src="https://raw.githubusercontent.com/storytold/effectcraft/main/assets/app-icon/hicolor/64x64/apps/io.github.her3f.effectcraft.png" alt="" width="32" height="32"> | **EffectCraft** | Motion graphics and visual effects | [GitHub](https://github.com/storytold/effectcraft) | [Website](https://her3f.github.io/officoman/apps/effectcraft) |
-| <img src="https://raw.githubusercontent.com/storytold/designcraft/main/assets/app-icon/hicolor/64x64/apps/io.github.her3f.designcraft.png" alt="" width="32" height="32"> | **DesignCraft** | Page layout and publishing | [GitHub](https://github.com/storytold/designcraft) | [Website](https://her3f.github.io/officoman/apps/designcraft) |
-| <img src="https://raw.githubusercontent.com/storytold/figcraft/main/assets/app-icon/hicolor/64x64/apps/io.github.her3f.figcraft.png" alt="" width="32" height="32"> | **FigCraft** | Interface design and prototyping | [GitHub](https://github.com/storytold/figcraft) | [Website](https://her3f.github.io/officoman/apps/figcraft) |
-| <img src="https://raw.githubusercontent.com/storytold/wordcraft/main/assets/app-icon/hicolor/64x64/apps/io.github.her3f.wordcraft.png" alt="" width="32" height="32"> | **WordCraft** | Word processing and documents | [GitHub](https://github.com/storytold/wordcraft) | [Website](https://her3f.github.io/officoman/apps/wordcraft) |
-| <img src="https://raw.githubusercontent.com/storytold/soundcraft/main/assets/app-icon/hicolor/64x64/apps/io.github.her3f.soundcraft.png" alt="" width="32" height="32"> | **SoundCraft** | Audio recording and editing | [GitHub](https://github.com/storytold/soundcraft) | [Website](https://her3f.github.io/officoman/apps/soundcraft) |
-| <img src="https://raw.githubusercontent.com/storytold/deckcraft/main/assets/app-icon/hicolor/64x64/apps/io.github.her3f.deckcraft.png" alt="" width="32" height="32"> | **DeckCraft** | Presentations and slide decks | [GitHub](https://github.com/storytold/deckcraft) | [Website](https://her3f.github.io/officoman/apps/deckcraft) |
-| <img src="https://raw.githubusercontent.com/storytold/cadcraft/main/assets/app-icon/hicolor/64x64/apps/io.github.her3f.cadcraft.png" alt="" width="32" height="32"> | **CADCraft** | Computer-aided design | [GitHub](https://github.com/storytold/cadcraft) | [Website](https://her3f.github.io/officoman/apps/cadcraft) |
-| <img src="https://raw.githubusercontent.com/storytold/gridcraft/main/assets/app-icon/hicolor/64x64/apps/io.github.her3f.gridcraft.png" alt="" width="32" height="32"> | **GridCraft** | Spreadsheets and data | [GitHub](https://github.com/storytold/gridcraft) | [Website](https://her3f.github.io/officoman/apps/gridcraft) |
-| <img src="https://raw.githubusercontent.com/storytold/texturecraft/main/assets/app-icon/hicolor/64x64/apps/io.github.her3f.texturecraft.png" alt="" width="32" height="32"> | **TextureCraft** | 3D texture painting | [GitHub](https://github.com/storytold/texturecraft) | [Website](https://her3f.github.io/officoman/apps/texturecraft) |
+| <img src="https://raw.githubusercontent.com/storytold/photocraft/main/assets/app-icon/hicolor/64x64/apps/io.github.her3f.photocraft.png" alt="" width="32" height="32"> | **PhotoCraft** | Image editing: layers, masks, type and real PSD files | [GitHub](https://github.com/storytold/photocraft) | [Website](https://officoman.whitebearom.com/apps/photocraft) |
+| <img src="https://raw.githubusercontent.com/storytold/vectorcraft/main/assets/app-icon/hicolor/64x64/apps/io.github.her3f.vectorcraft.png" alt="" width="32" height="32"> | **VectorCraft** | Vector illustration | [GitHub](https://github.com/storytold/vectorcraft) | [Website](https://officoman.whitebearom.com/apps/vectorcraft) |
+| <img src="https://raw.githubusercontent.com/storytold/filmcraft/main/assets/app-icon/hicolor/64x64/apps/io.github.her3f.filmcraft.png" alt="" width="32" height="32"> | **FilmCraft** | Video editing, color and sound | [GitHub](https://github.com/storytold/filmcraft) | [Website](https://officoman.whitebearom.com/apps/filmcraft) |
+| <img src="https://raw.githubusercontent.com/storytold/lightcraft/main/assets/app-icon/hicolor/64x64/apps/io.github.her3f.lightcraft.png" alt="" width="32" height="32"> | **LightCraft** | Photo library and raw development | [GitHub](https://github.com/storytold/lightcraft) | [Website](https://officoman.whitebearom.com/apps/lightcraft) |
+| <img src="https://raw.githubusercontent.com/storytold/pdfcraft/main/assets/app-icon/hicolor/64x64/apps/io.github.her3f.pdfcraft.png" alt="" width="32" height="32"> | **PdfCraft** | Reading, organizing and protecting PDFs | [GitHub](https://github.com/storytold/pdfcraft) | [Website](https://officoman.whitebearom.com/apps/pdfcraft) |
+| <img src="https://raw.githubusercontent.com/storytold/effectcraft/main/assets/app-icon/hicolor/64x64/apps/io.github.her3f.effectcraft.png" alt="" width="32" height="32"> | **EffectCraft** | Motion graphics and visual effects | [GitHub](https://github.com/storytold/effectcraft) | [Website](https://officoman.whitebearom.com/apps/effectcraft) |
+| <img src="https://raw.githubusercontent.com/storytold/designcraft/main/assets/app-icon/hicolor/64x64/apps/io.github.her3f.designcraft.png" alt="" width="32" height="32"> | **DesignCraft** | Page layout and publishing | [GitHub](https://github.com/storytold/designcraft) | [Website](https://officoman.whitebearom.com/apps/designcraft) |
+| <img src="https://raw.githubusercontent.com/storytold/figcraft/main/assets/app-icon/hicolor/64x64/apps/io.github.her3f.figcraft.png" alt="" width="32" height="32"> | **FigCraft** | Interface design and prototyping | [GitHub](https://github.com/storytold/figcraft) | [Website](https://officoman.whitebearom.com/apps/figcraft) |
+| <img src="https://raw.githubusercontent.com/storytold/wordcraft/main/assets/app-icon/hicolor/64x64/apps/io.github.her3f.wordcraft.png" alt="" width="32" height="32"> | **WordCraft** | Word processing and documents | [GitHub](https://github.com/storytold/wordcraft) | [Website](https://officoman.whitebearom.com/apps/wordcraft) |
+| <img src="https://raw.githubusercontent.com/storytold/soundcraft/main/assets/app-icon/hicolor/64x64/apps/io.github.her3f.soundcraft.png" alt="" width="32" height="32"> | **SoundCraft** | Audio recording and editing | [GitHub](https://github.com/storytold/soundcraft) | [Website](https://officoman.whitebearom.com/apps/soundcraft) |
+| <img src="https://raw.githubusercontent.com/storytold/deckcraft/main/assets/app-icon/hicolor/64x64/apps/io.github.her3f.deckcraft.png" alt="" width="32" height="32"> | **DeckCraft** | Presentations and slide decks | [GitHub](https://github.com/storytold/deckcraft) | [Website](https://officoman.whitebearom.com/apps/deckcraft) |
+| <img src="https://raw.githubusercontent.com/storytold/cadcraft/main/assets/app-icon/hicolor/64x64/apps/io.github.her3f.cadcraft.png" alt="" width="32" height="32"> | **CADCraft** | Computer-aided design | [GitHub](https://github.com/storytold/cadcraft) | [Website](https://officoman.whitebearom.com/apps/cadcraft) |
+| <img src="https://raw.githubusercontent.com/storytold/gridcraft/main/assets/app-icon/hicolor/64x64/apps/io.github.her3f.gridcraft.png" alt="" width="32" height="32"> | **GridCraft** | Spreadsheets and data | [GitHub](https://github.com/storytold/gridcraft) | [Website](https://officoman.whitebearom.com/apps/gridcraft) |
+| <img src="https://raw.githubusercontent.com/storytold/texturecraft/main/assets/app-icon/hicolor/64x64/apps/io.github.her3f.texturecraft.png" alt="" width="32" height="32"> | **TextureCraft** | 3D texture painting | [GitHub](https://github.com/storytold/texturecraft) | [Website](https://officoman.whitebearom.com/apps/texturecraft) |
 | <img src="https://raw.githubusercontent.com/storytold/materialcraft/main/assets/app-icon/hicolor/64x64/apps/io.github.her3f.materialcraft.png" alt="" width="32" height="32"> | **MaterialCraft** | Procedural material design | [GitHub](https://github.com/storytold/materialcraft) | [Project page](https://github.com/storytold/materialcraft) |
-| <img src="https://raw.githubusercontent.com/storytold/craft-anything/main/assets/app-icon/hicolor/64x64/apps/io.github.her3f.craft-anything.png" alt="" width="32" height="32"> | **Craft Anything** | See how any software works, then build your own | [GitHub](https://github.com/storytold/craft-anything) | [Website](https://her3f.github.io/officoman/apps/craft-anything) |
+| <img src="https://raw.githubusercontent.com/storytold/craft-anything/main/assets/app-icon/hicolor/64x64/apps/io.github.her3f.craft-anything.png" alt="" width="32" height="32"> | **Craft Anything** | See how any software works, then build your own | [GitHub](https://github.com/storytold/craft-anything) | [Website](https://officoman.whitebearom.com/apps/craft-anything) |
 | <img src="https://raw.githubusercontent.com/tangency-labs/solidcraft/main/assets/icons/app/linux/exports/hicolor/64x64/apps/io.tangencylabs.solidcraft.png" alt="" width="32" height="32"> | **SolidCraft** | Parametric 3D CAD by Tangency Labs (community app) | [GitHub](https://github.com/tangency-labs/solidcraft) | |
 
-And [**Officoman**](https://her3f.github.io/officoman/) itself, our AI image and video studio for artists who want real control.
+And [**Officoman**](https://officoman.whitebearom.com/) itself, our AI image and video studio for artists who want real control.
 
 <br>
 
@@ -296,8 +296,8 @@ And [**Officoman**](https://her3f.github.io/officoman/) itself, our AI image and
 
 <p align="center">
   <a href="https://github.com/her3f/officoman/discussions"><b>github.com/her3f/officoman/discussions</b></a> ·
-  <a href="https://her3f.github.io/officoman/">her3f.github.io/officoman</a> ·
-  <a href="https://her3f.github.io/officoman/apps">The Craft App Suite</a> ·
+  <a href="https://officoman.whitebearom.com/">officoman.whitebearom.com</a> ·
+  <a href="https://officoman.whitebearom.com/apps">The Craft App Suite</a> ·
   <a href="https://github.com/her3f/officoman">Officoman Launcher</a>
 </p>
 
@@ -342,6 +342,6 @@ part of this repository and Officoman Launcher, under [`docs/brand/LICENSE-brand
 Forks and modified versions must remove them.
 
 <p align="center">
-  <a href="https://her3f.github.io/officoman/"><img alt="Officoman" src="docs/brand/officoman-mark.svg" width="28"></a><br>
-  <sub>Made by the <a href="https://her3f.github.io/officoman/">Officoman</a> team and community.</sub>
+  <a href="https://officoman.whitebearom.com/"><img alt="Officoman" src="docs/brand/officoman-mark.svg" width="28"></a><br>
+  <sub>Made by the <a href="https://officoman.whitebearom.com/">Officoman</a> team and community.</sub>
 </p>

@@ -1,6 +1,6 @@
 # Officoman Launcher app icon
 
-The app icon is the **Officoman "A" mark in blue** (her3f.github.io/officoman's favicon), exactly as supplied in
+The app icon is the **Officoman "A" mark in blue** (officoman.whitebearom.com's favicon), exactly as supplied in
 [`docs/brand/officoman-mark.svg`](../../docs/brand/officoman-mark.svg). Every file in this
 directory is rendered from it by `packaging/icons.sh`.
 

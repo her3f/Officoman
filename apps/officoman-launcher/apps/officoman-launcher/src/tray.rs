@@ -56,7 +56,7 @@ impl Tray {
         let show = MenuItem::new(i18n::t("Show Officoman Launcher"), true, None);
         let check = MenuItem::new(i18n::t("Check for Updates"), true, None);
         use officoman_launcher_core::catalog::{GITHUB_URL, WEBSITE_URL};
-        let website = MenuItem::new(i18n::t("Visit her3f.github.io/officoman"), true, None);
+        let website = MenuItem::new(i18n::t("Visit officoman.whitebearom.com"), true, None);
         let github = MenuItem::new(i18n::t("Officoman on GitHub"), true, None);
         let discord = MenuItem::new(i18n::t("Join the Officoman Discord"), true, None);
         let quit = MenuItem::new(i18n::t("Quit Officoman Launcher"), true, None);
@@ -109,7 +109,7 @@ impl Tray {
         let labels = vec![
             (show, "Show Officoman Launcher"),
             (check, "Check for Updates"),
-            (website, "Visit her3f.github.io/officoman"),
+            (website, "Visit officoman.whitebearom.com"),
             (github, "Officoman on GitHub"),
             (discord, "Join the Officoman Discord"),
             (quit, "Quit Officoman Launcher"),

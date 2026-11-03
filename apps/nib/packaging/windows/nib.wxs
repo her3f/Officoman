@@ -13,8 +13,8 @@
 
     <Icon Id="NibIcon.ico" SourceFile="$(var.IconPath)" />
     <Property Id="ARPPRODUCTICON" Value="NibIcon.ico" />
-    <Property Id="ARPURLINFOABOUT" Value="https://her3f.github.io/officoman/apps/nib.html" />
-    <Property Id="ARPURLUPDATEINFO" Value="https://her3f.github.io/officoman/apps/nib.html" />
+    <Property Id="ARPURLINFOABOUT" Value="https://officoman.whitebearom.com/apps/nib.html" />
+    <Property Id="ARPURLUPDATEINFO" Value="https://officoman.whitebearom.com/apps/nib.html" />
     <Property Id="ARPHELPLINK" Value="https://github.com/her3f/officoman/discussions" />
 
     <!-- Installer UI (#198): WixUI_Minimal is welcome + license, progress, then a finish page so

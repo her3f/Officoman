@@ -136,7 +136,7 @@ pub fn screenshot_within_budget(bytes: &[u8]) -> bool {
     }
 }
 
-/// Where every Craft App runs (her3f.github.io/officoman lists the same for each of them).
+/// Where every Craft App runs (officoman.whitebearom.com lists the same for each of them).
 const PLATFORMS: &str = "macOS, Windows, Linux, FreeBSD, web";
 
 pub const DETAILS: [AppDetails; 0] = [];

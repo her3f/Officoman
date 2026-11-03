@@ -355,7 +355,7 @@ filter	Installed	Telepítve
 # Tray (menu bar) menu and tooltip
 	Show Officoman Launcher	Officoman Launcher megjelenítése
 	Check for Updates	Frissítések keresése
-	Visit her3f.github.io/officoman	her3f.github.io/officoman megnyitása
+	Visit officoman.whitebearom.com	officoman.whitebearom.com megnyitása
 	Officoman on GitHub	Officoman a GitHubon
 	Join the Officoman Discord	Csatlakozás az Officoman Discord-közösségéhez
 @plural	Officoman Launcher · {n} update available|Officoman Launcher · {n} updates available	Officoman Launcher · {n} frissítés elérhető|Officoman Launcher · {n} frissítés elérhető

@@ -14,7 +14,7 @@ section: misc
 priority: optional
 maintainer: ${TALLY_MAINTAINER}
 vendor: Officoman
-homepage: https://her3f.github.io/officoman/apps/tally.html
+homepage: https://officoman.whitebearom.com/apps/tally.html
 license: MIT OR Apache-2.0
 description: |-
   Open-source, native spreadsheet that works the way Excel users expect.

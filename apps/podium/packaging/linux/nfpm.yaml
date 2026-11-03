@@ -14,7 +14,7 @@ section: editors
 priority: optional
 maintainer: ${PODIUM_MAINTAINER}
 vendor: Officoman
-homepage: https://her3f.github.io/officoman/apps/podium.html
+homepage: https://officoman.whitebearom.com/apps/podium.html
 license: MIT OR Apache-2.0
 description: |-
   Open-source, native presentation app that works the way PowerPoint users

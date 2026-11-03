@@ -27,7 +27,7 @@ pub fn about(_app: &mut SlideApp, ui: &mut Ui) {
         ui.label("An open-source, clean-room project. Not affiliated with Microsoft.");
         ui.add_space(6.0);
         ui.hyperlink_to("Join our community on Discord", podium_engine::links::DISCORD);
-        ui.hyperlink_to("her3f.github.io/officoman/apps/podium", podium_engine::links::APP_PAGE);
+        ui.hyperlink_to("officoman.whitebearom.com/apps/podium", podium_engine::links::APP_PAGE);
         ui.hyperlink_to("Source on GitHub", podium_engine::links::GITHUB);
         ui.add_space(6.0);
         ui.label(egui::RichText::new("MIT OR Apache-2.0 · © 2026 Officoman Team and the Podium contributors").size(11.0).color(t.text_faint));

@@ -14,7 +14,7 @@ ROOT = Path(__file__).resolve().parent.parent
 SITE = ROOT / "docs"
 APPS_DIR = ROOT / "apps"
 
-SITE_URL = "https://her3f.github.io/officoman"
+SITE_URL = "https://officoman.whitebearom.com"
 REPO = "https://github.com/her3f/officoman"
 
 APPS = [

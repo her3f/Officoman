@@ -1,5 +1,5 @@
 //! The header, toolbar, footer, the grid of cards and the table, laid out like the apps page on
-//! her3f.github.io/officoman: hairline cells, mono labels and square controls.
+//! officoman.whitebearom.com: hairline cells, mono labels and square controls.
 
 use officoman_launcher_core::catalog::AppKind;
 use officoman_launcher_core::details::AppDetails;

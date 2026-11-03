@@ -72,7 +72,7 @@ pub fn social(service: &str) -> Option<ImageSource<'static>> {
     })
 }
 
-/// The Officoman "A" mark in blue, as supplied: the launcher's app icon and her3f.github.io/officoman's favicon.
+/// The Officoman "A" mark in blue, as supplied: the launcher's app icon and officoman.whitebearom.com's favicon.
 pub fn officoman_mark() -> ImageSource<'static> {
     egui::include_image!("../../../docs/brand/officoman-mark.svg")
 }

@@ -260,19 +260,19 @@ mod tests {
     }
 }
 
-/// Matches the OCI URL from https://her3f.github.io/officoman/officoman-oci.flatpakrepo,
+/// Matches the OCI URL from https://officoman.whitebearom.com/officoman-oci.flatpakrepo,
 /// independently of its local remote name (normally `officoman-oci`).
 pub fn is_officoman_remote(origin: &str, remotes: &str) -> bool {
     remotes.lines().any(|line| {
         let Some((name, url)) = line.split_once('\t') else { return false };
         let url = url.trim().trim_end_matches('/');
-        name.trim() == origin && url == "oci+https://her3f.github.io/officoman"
+        name.trim() == origin && url == "oci+https://officoman.whitebearom.com"
     })
 }
 
 /// Where Flatpak finds the Officoman OCI images' signatures (officoman-oci.flatpakrepo's
 /// `SignatureLookaside`), redirected to each release's `.oci.sig` asset.
-pub const OFFICOMAN_SIGNATURE_LOOKASIDE: &str = "https://her3f.github.io/officoman/signatures";
+pub const OFFICOMAN_SIGNATURE_LOOKASIDE: &str = "https://officoman.whitebearom.com/signatures";
 
 /// Did an update fail only because `origin`, an Officoman OCI remote, has no signature lookaside
 /// (a signed bundle's origin, which `flatpak build-bundle` can't give one)?
@@ -285,19 +285,19 @@ mod remote_url_tests {
     use super::*;
     #[test]
     fn recognizes_custom_names_and_rejects_unrelated_urls() {
-        assert!(is_officoman_remote("officoman-oci", "officoman-oci\toci+https://her3f.github.io/officoman\n"));
-        assert!(is_officoman_remote("custom", "custom\toci+https://her3f.github.io/officoman/\n"));
+        assert!(is_officoman_remote("officoman-oci", "officoman-oci\toci+https://officoman.whitebearom.com\n"));
+        assert!(is_officoman_remote("custom", "custom\toci+https://officoman.whitebearom.com/\n"));
         for url in [
-            "oci+https://her3f.github.io/officoman.evil",
-            "oci+https://her3f.github.io/officoman/other",
-            "oci+http://her3f.github.io/officoman",
-            "https://her3f.github.io/officoman/linux",
-            "https://her3f.github.io/officoman/officoman-oci.flatpakrepo",
-            "https://her3f.github.io/officoman",
+            "oci+https://officoman.whitebearom.com.evil",
+            "oci+https://officoman.whitebearom.com/other",
+            "oci+http://officoman.whitebearom.com",
+            "https://officoman.whitebearom.com/linux",
+            "https://officoman.whitebearom.com/officoman-oci.flatpakrepo",
+            "https://officoman.whitebearom.com",
         ] {
             assert!(!is_officoman_remote("custom", &format!("custom\t{url}")));
         }
-        assert!(!is_officoman_remote("other", "custom\toci+https://her3f.github.io/officoman"));
+        assert!(!is_officoman_remote("other", "custom\toci+https://officoman.whitebearom.com"));
     }
 
     #[test]
@@ -305,7 +305,7 @@ mod remote_url_tests {
         // Flatpak 1.18's error for a verified OCI remote with no lookaside.
         let stderr = "error: Failed to update io.github.her3f.photocraft: photocraft-origin: no valid signatures for \
                       ghcr.io/storytold/photocraft@sha256:968d75c9d16d5f7d089775f14a3b418d72a4c70d86986811ee2dd818da956b92";
-        let remotes = "photocraft-origin\toci+https://her3f.github.io/officoman\nflathub\thttps://dl.flathub.org/repo/\n";
+        let remotes = "photocraft-origin\toci+https://officoman.whitebearom.com\nflathub\thttps://dl.flathub.org/repo/\n";
         assert!(needs_signature_lookaside(stderr, "photocraft-origin", remotes));
         // Another remote, another origin's failure, or another error: leave the remote alone.
         assert!(!needs_signature_lookaside(stderr, "photocraft-origin", "photocraft-origin\thttps://example.org\n"));
@@ -339,8 +339,8 @@ mod remote_ownership_tests {
     fn only_confirmed_empty_urls_allow_bundle_replacement() {
         assert!(!remote_manages_flatpak("app-origin", "app-origin\t\n"));
         assert!(remote_manages_flatpak("renamed", "renamed\thttps://example.org/repo\n"));
-        assert!(remote_manages_flatpak("renamed", "renamed\toci+https://her3f.github.io/officoman\n"));
-        assert!(!remote_manages_flatpak("app-origin", "app-origin\toci+https://her3f.github.io/officoman\n"));
+        assert!(remote_manages_flatpak("renamed", "renamed\toci+https://officoman.whitebearom.com\n"));
+        assert!(!remote_manages_flatpak("app-origin", "app-origin\toci+https://officoman.whitebearom.com\n"));
         assert!(remote_manages_flatpak("missing", "other\t\n"));
         assert!(!remote_manages_flatpak("app-origin", "app-origin"));
     }

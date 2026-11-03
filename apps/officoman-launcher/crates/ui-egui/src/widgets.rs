@@ -1,4 +1,4 @@
-//! Small building blocks in her3f.github.io/officoman's style: mono labels, square buttons, badges and
+//! Small building blocks in officoman.whitebearom.com's style: mono labels, square buttons, badges and
 //! hairline cell groups.
 //!
 //! Upper-case text is drawn upper case but announced to screen readers as written.

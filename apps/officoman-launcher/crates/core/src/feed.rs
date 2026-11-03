@@ -627,11 +627,11 @@ mod tests {
             .replace(
                 "\"alerts\": []",
                 r#""alerts": [
-            {"title": "Security update", "body": "Update PdfCraft now.", "maybe_web_link": "https://her3f.github.io/officoman/security", "created_at": null},
+            {"title": "Security update", "body": "Update PdfCraft now.", "maybe_web_link": "https://officoman.whitebearom.com/security", "created_at": null},
             {"title": "Bad link", "body": "x", "maybe_web_link": "javascript:alert(1)"},
-            {"title": "Shell link", "body": "x", "maybe_web_link": "https://her3f.github.io/officoman/a|calc.exe"},
-            {"title": "Plain http", "body": "x", "maybe_web_link": "http://her3f.github.io/officoman/security"},
-            {"title": "User-info", "body": "x", "maybe_web_link": "https://her3f.github.io/officoman@evil.example/"},
+            {"title": "Shell link", "body": "x", "maybe_web_link": "https://officoman.whitebearom.com/a|calc.exe"},
+            {"title": "Plain http", "body": "x", "maybe_web_link": "http://officoman.whitebearom.com/security"},
+            {"title": "User-info", "body": "x", "maybe_web_link": "https://officoman.whitebearom.com@evil.example/"},
             {"title": "File link", "body": "x", "maybe_web_link": "file:///etc/passwd"}]"#,
             )
             .replace(
@@ -641,7 +641,7 @@ mod tests {
             );
         let feed = Feed::parse(&with_notices).unwrap();
         assert_eq!(feed.alerts.len(), 6);
-        assert_eq!(feed.alerts[0].link.as_deref(), Some("https://her3f.github.io/officoman/security"));
+        assert_eq!(feed.alerts[0].link.as_deref(), Some("https://officoman.whitebearom.com/security"));
         assert_eq!(feed.alerts[1].link, None, "only web links are kept");
         assert_eq!(feed.alerts[2].link, None, "a link with shell metacharacters is dropped");
         assert_eq!(feed.alerts[3].link, None, "plain http is dropped");

@@ -18,7 +18,7 @@
   <launchable type="desktop-id">io.github.her3f.nib.desktop</launchable>
   <icon type="stock">io.github.her3f.nib</icon>
   <!-- Only url types known to appstream 0.15 (Ubuntu 22.04, where CI validates): no vcs-browser. -->
-  <url type="homepage">https://her3f.github.io/officoman/apps/nib.html</url>
+  <url type="homepage">https://officoman.whitebearom.com/apps/nib.html</url>
   <url type="bugtracker">https://github.com/her3f/officoman/issues</url>
   <url type="help">https://github.com/her3f/officoman</url>
   <url type="contact">https://github.com/her3f/officoman/discussions</url>
