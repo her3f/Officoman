@@ -93,6 +93,10 @@ def main() -> int:
         src = app_dir / extra
         if src.exists():
             shutil.copy2(src, out / extra)
+    # license files the Windows installer definition expects beside the binaries
+    for extra in (app_dir / "assets" / "app-icon" / "LICENSE-document.txt",):
+        if extra.exists():
+            shutil.copy2(extra, out / extra.name)
 
     dlls = mingw_dlls(exe, Path(args.mingw))
     for dll in dlls:

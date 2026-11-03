@@ -172,6 +172,7 @@ code{background:#EFEDE5;padding:1px 6px;border-radius:5px;font-size:.87em}
 footer.site{border-top:1px solid var(--line);padding:34px 0 56px;color:var(--muted);font-size:.86rem}
 footer.site .wrap{display:flex;gap:18px;flex-wrap:wrap;align-items:center}
 
+td .btn,td .btn.ghost{padding:6px 14px;font-size:.83rem;border-radius:7px;margin-right:6px}
 .apphero{padding:64px 0 40px;display:flex;gap:26px;align-items:center;flex-wrap:wrap}
 .apphero img{width:96px;height:96px}
 .apphero h1{font-size:clamp(1.9rem,4vw,2.6rem);letter-spacing:-1.1px;margin:0 0 6px}
@@ -450,47 +451,61 @@ def build_downloads() -> None:
     dist = ROOT / "dist"
     found: dict[str, dict] = {}
     if dist.is_dir():
-        for z in sorted(dist.glob("*.zip")):
-            m = re.match(r"(Nib|Tally|Podium|Sheaf)-(.+)-windows-x64-portable\.zip$", z.name)
-            if not m:
-                continue
-            found[m.group(1).lower()] = {
-                "version": m.group(2),
-                "file": z.name,
-                "mb": z.stat().st_size / 1e6,
-                "sha": hashlib.sha256(z.read_bytes()).hexdigest()[:16],
-            }
+        for pat, key in (("*-windows-x64.msi", "msi"), ("*-windows-x64-portable.zip", "zip")):
+            for f in sorted(dist.glob(pat)):
+                m = re.match(r"(Nib|Tally|Podium|Sheaf)-(.+)-windows-x64", f.name)
+                if not m:
+                    continue
+                slug = m.group(1).lower()
+                entry = found.setdefault(slug, {"version": m.group(2)})
+                entry[key] = f
+                entry[f"{key}_mb"] = f.stat().st_size / 1e6
+                entry[f"{key}_sha"] = hashlib.sha256(f.read_bytes()).hexdigest()[:12]
 
     if found:
-        rows = "\n".join(
-            f"""<tr>
+        rows = []
+        for a in APPS:
+            e = found.get(a["slug"])
+            if not e:
+                continue
+            msi = (f'<a class="btn" href="{REPO}/releases/latest">.msi</a>'
+                   if "msi" in e else '<span class="pill">—</span>')
+            zp = (f'<a class="btn ghost" href="{REPO}/releases/latest">.zip</a>'
+                  if "zip" in e else '<span class="pill">—</span>')
+            sizes = []
+            if "msi" in e:
+                sizes.append(f"msi {e['msi_mb']:.1f} MB")
+            if "zip" in e:
+                sizes.append(f"zip {e['zip_mb']:.1f} MB")
+            rows.append(
+                f"""<tr>
               <td><b>{a['name']}</b></td>
               <td>{a['role']}</td>
-              <td><code>{found[a['slug']]['version']}</code></td>
-              <td>{found[a['slug']]['mb']:.1f} MB</td>
-              <td><a class="btn" href="{REPO}/releases/latest">Download</a></td>
-              <td><code>{found[a['slug']]['sha']}…</code></td>
+              <td><code>{e['version']}</code></td>
+              <td>{'<br>'.join(sizes)}</td>
+              <td>{msi} {zp}</td>
             </tr>"""
-            for a in APPS if a["slug"] in found
-        )
+            )
         table = f"""<table>
-          <thead><tr><th>App</th><th>Role</th><th>Version</th><th>Size</th><th></th><th>SHA-256</th></tr></thead>
-          <tbody>{rows}</tbody>
+          <thead><tr><th>App</th><th>Role</th><th>Version</th><th>Size</th><th>Get it</th></tr></thead>
+          <tbody>{''.join(rows)}</tbody>
         </table>"""
-        note = ("Portable builds: unzip anywhere and run the `.exe`. Nothing is installed and no "
-                "registry keys are written. They are unsigned, so Windows SmartScreen may warn on "
-                "first run.")
+        note = ("<b>.msi</b> installs normally: Start Menu shortcut, Add/Remove Programs, and "
+                "`.docx`/`.xlsx`/`.pptx`/`.pdf` in “Open with”. It asks whether to install for you "
+                "only or for everyone. <b>.zip</b> is portable: unzip and run, nothing written to "
+                "the system. Neither is code-signed, so SmartScreen warns on first run.")
     else:
         table = """<div class="note"><b>No builds yet.</b> Run
-          <code>tools/package_windows.py</code> for each app and this page fills itself in.</div>"""
+          <code>tools/build_windows.ps1</code> then <code>tools/package_all.ps1</code> and this
+          page fills itself in.</div>"""
         note = ""
 
     body = f"""<main>
 <div class="wrap hero">
   <p class="eyebrow">Download</p>
   <h1>Take them for a <em>spin</em>.</h1>
-  <p class="lede">Windows x64 portable builds. Unzip, run, delete the folder when you are done —
-     there is no installer to clean up after.</p>
+  <p class="lede">Two ways to try them: an installer that sets up the Start Menu entry and file
+     associations, or a portable folder you delete when you are done.</p>
 </div>
 <div class="wrap"><section>
   <h2 class="section">Windows x64</h2>

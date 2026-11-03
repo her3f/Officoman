@@ -65,6 +65,7 @@ code{background:#EFEDE5;padding:1px 6px;border-radius:5px;font-size:.87em}
 footer.site{border-top:1px solid var(--line);padding:34px 0 56px;color:var(--muted);font-size:.86rem}
 footer.site .wrap{display:flex;gap:18px;flex-wrap:wrap;align-items:center}
 
+td .btn,td .btn.ghost{padding:6px 14px;font-size:.83rem;border-radius:7px;margin-right:6px}
 .apphero{padding:64px 0 40px;display:flex;gap:26px;align-items:center;flex-wrap:wrap}
 .apphero img{width:96px;height:96px}
 .apphero h1{font-size:clamp(1.9rem,4vw,2.6rem);letter-spacing:-1.1px;margin:0 0 6px}
