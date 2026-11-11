@@ -303,8 +303,8 @@ impl NativeBackend {
         let now = crate::now();
         for app in SUITE.iter().filter(|a| self.platform.is_none_or(|p| a.runs_on(p.os))) {
             let answer = match feed.as_ref().map(|f| f.answer(app, now)) {
-                Some(FeedAnswer::Fresh(Some(r))) => Some((LatestRelease::Found(r), Origin::White OfficeApi)),
-                Some(FeedAnswer::Fresh(None)) => Some((LatestRelease::None, Origin::White OfficeApi)),
+                Some(FeedAnswer::Fresh(Some(r))) => Some((LatestRelease::Found(r), Origin::WhiteOfficeApi)),
+                Some(FeedAnswer::Fresh(None)) => Some((LatestRelease::None, Origin::WhiteOfficeApi)),
                 _ => self.source.as_ref().and_then(|s| s.cached(&feed_repo(feed.as_ref(), app), pre)).map(|l| (l, Origin::GitHub)),
             };
             if let Some((latest, from)) = answer {
@@ -1263,7 +1263,7 @@ fn latest_for(
             // The feed can lag GitHub by some minutes after a release. A check the user pressed
             // looks past it when GitHub's quota-free redirect names something newer (#91).
             Some(FeedAnswer::Fresh(found)) if !(force && feed_is_behind(source, &repo, found.as_ref())) => {
-                return (Some(found.map_or(LatestRelease::None, LatestRelease::Found)), Origin::White OfficeApi, Some(Source::Feed));
+                return (Some(found.map_or(LatestRelease::None, LatestRelease::Found)), Origin::WhiteOfficeApi, Some(Source::Feed));
             }
             Some(FeedAnswer::Fresh(_) | FeedAnswer::AskGitHub) | None => {}
         }
@@ -1431,7 +1431,7 @@ fn mirror_latest(app: &CraftApp, feed: Option<&Feed>, now: i64) -> (Option<Lates
         Some(FeedAnswer::Fresh(None) | FeedAnswer::AskGitHub) => LatestRelease::None,
         None => LatestRelease::Failed("the local mirror didn't answer".into()),
     };
-    (Some(latest), Origin::White OfficeApi, Some(Source::Feed))
+    (Some(latest), Origin::WhiteOfficeApi, Some(Source::Feed))
 }
 
 /// A selected track never silently falls back to the mirror's stable release.

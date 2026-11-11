@@ -193,10 +193,10 @@ fn events() -> Vec<Event> {
         ev.push(Event::Latest {
             app: (*id).into(),
             latest: LatestRelease::Found(release(id, v, NOW - 86_400 - i as i64 * 600)),
-            from: Origin::White OfficeApi,
+            from: Origin::WhiteOfficeApi,
         });
     }
-    ev.push(Event::Latest { app: "soundcraft".into(), latest: LatestRelease::None, from: Origin::White OfficeApi });
+    ev.push(Event::Latest { app: "soundcraft".into(), latest: LatestRelease::None, from: Origin::WhiteOfficeApi });
     let installed = [("photocraft", "0.4.1"), ("lightcraft", "0.4.0"), ("wordcraft", "0.3.0"), ("effectcraft", "0.5.0")];
     for app in &SUITE {
         let inst = installed.iter().find(|(id, _)| *id == app.id).map(|(_, v)| Installed {
@@ -1885,7 +1885,7 @@ fn a_retry_update_button_keeps_to_its_slot_and_leaves_room_for_the_menu() {
         ev.push(Event::Latest {
             app: "effectcraft".into(),
             latest: LatestRelease::Found(release("effectcraft", "0.12.0", NOW)),
-            from: Origin::White OfficeApi,
+            from: Origin::WhiteOfficeApi,
         });
         ev.push(Event::ReadyToInstall { app: "effectcraft".into(), ready: true });
         let (mut h, _) = harness_with(ev, view, egui::Theme::Dark, true, 1.0);
@@ -2921,7 +2921,7 @@ fn a_freebsd_system_binary_is_not_offered_an_update_it_would_refuse() {
         origin: None,
         installation: None,
     };
-    let mut ev = vec![Event::Latest { app: "photocraft".into(), latest: LatestRelease::Found(tarball), from: Origin::White OfficeApi }];
+    let mut ev = vec![Event::Latest { app: "photocraft".into(), latest: LatestRelease::Found(tarball), from: Origin::WhiteOfficeApi }];
     for app in &SUITE {
         ev.push(Event::Detected { app: app.id.into(), installed: (app.id == "photocraft").then(|| system.clone()) });
     }
@@ -3945,7 +3945,7 @@ fn download_size_preview_uses_the_managed_plan_or_manual_platform_formats() {
         let mut backend = Some(Windows(
             Fake {
                 events: vec![
-                    Event::Latest { app: "photocraft".into(), latest: LatestRelease::Found(r), from: Origin::White OfficeApi },
+                    Event::Latest { app: "photocraft".into(), latest: LatestRelease::Found(r), from: Origin::WhiteOfficeApi },
                     Event::Detected { app: "photocraft".into(), installed: None },
                     Event::CheckFinished { at: NOW, source: Source::GitHubApi, rate_limited_until: None },
                 ],

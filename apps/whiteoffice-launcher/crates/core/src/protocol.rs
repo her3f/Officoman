@@ -162,7 +162,7 @@ pub const INSTALL_CANCELLED: &str = "install cancelled";
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, Serialize, Deserialize)]
 pub enum Origin {
     /// White Office's release feed (storyteller-web), which polls GitHub for everyone.
-    White OfficeApi,
+    WhiteOfficeApi,
     /// GitHub directly: the fallback.
     GitHub,
 }
@@ -170,7 +170,7 @@ pub enum Origin {
 impl Origin {
     pub fn label(self) -> &'static str {
         match self {
-            Self::White OfficeApi => "White Office API",
+            Self::WhiteOfficeApi => "White Office API",
             Self::GitHub => "GitHub",
         }
     }

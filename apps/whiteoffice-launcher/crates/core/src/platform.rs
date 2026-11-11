@@ -340,9 +340,9 @@ mod tests {
         let release = crate::release::parse_github_release(include_str!("../tests/fixtures/whiteoffice-release.json"), "storytold/whiteoffice").unwrap();
         assert_eq!(release.version, Some(crate::version::Version::new(0, 41, 1)));
         for (os, arch, kind, expected) in [
-            (Os::Windows, Arch::X64, PackageKind::Msi, "White Office_0.41.1_x64_en-US.msi"),
-            (Os::MacOs, Arch::Arm64, PackageKind::Dmg, "White Office_0.41.1_universal.dmg"),
-            (Os::MacOs, Arch::X64, PackageKind::Dmg, "White Office_0.41.1_universal.dmg"),
+            (Os::Windows, Arch::X64, PackageKind::Msi, "WhiteOffice_0.41.1_x64_en-US.msi"),
+            (Os::MacOs, Arch::Arm64, PackageKind::Dmg, "WhiteOffice_0.41.1_universal.dmg"),
+            (Os::MacOs, Arch::X64, PackageKind::Dmg, "WhiteOffice_0.41.1_universal.dmg"),
             (Os::Linux, Arch::X64, PackageKind::AppImage, "whiteoffice-0.41.1-linux-x86_64.AppImage"),
             (Os::Linux, Arch::X64, PackageKind::Flatpak, "whiteoffice-0.41.1-linux-x86_64.flatpak"),
             (Os::Linux, Arch::X64, PackageKind::TarGz, "whiteoffice-0.41.1-linux-x86_64.tar.gz"),
@@ -436,16 +436,16 @@ mod tests {
     /// Studio's underscore-form MSI and DMG names parse cleanly, including `x86_64` and non-ASCII prefixes.
     #[test]
     fn reads_whiteoffice_studio_asset_names() {
-        let dmg = parse_asset_name("White Office_0.41.1_universal.dmg", &["whiteoffice"]).unwrap();
+        let dmg = parse_asset_name("WhiteOffice_0.41.1_universal.dmg", &["whiteoffice"]).unwrap();
         assert_eq!((dmg.version.as_str(), dmg.token.as_str(), dmg.kind), ("0.41.1", "macos-universal", PackageKind::Dmg));
 
-        let x86_64_dmg = parse_asset_name("White Office_0.41.1_x86_64.dmg", &["whiteoffice"]).unwrap();
+        let x86_64_dmg = parse_asset_name("WhiteOffice_0.41.1_x86_64.dmg", &["whiteoffice"]).unwrap();
         assert_eq!((x86_64_dmg.version.as_str(), x86_64_dmg.token.as_str(), x86_64_dmg.kind), ("0.41.1", "macos-x86_64", PackageKind::Dmg));
 
-        let msi = parse_asset_name("White Office_0.41.1_x64_en-US.msi", &["whiteoffice"]).unwrap();
+        let msi = parse_asset_name("WhiteOffice_0.41.1_x64_en-US.msi", &["whiteoffice"]).unwrap();
         assert_eq!((msi.version.as_str(), msi.token.as_str(), msi.kind), ("0.41.1", "windows-x64", PackageKind::Msi));
 
-        let x86_64_msi = parse_asset_name("White Office_0.41.1_x86_64.msi", &["whiteoffice"]).unwrap();
+        let x86_64_msi = parse_asset_name("WhiteOffice_0.41.1_x86_64.msi", &["whiteoffice"]).unwrap();
         assert_eq!((x86_64_msi.version.as_str(), x86_64_msi.token.as_str(), x86_64_msi.kind), ("0.41.1", "windows-x64", PackageKind::Msi));
 
         assert_eq!(parse_asset_name("artcrafé_0.41.1_x64.msi", &["whiteoffice"]), None);

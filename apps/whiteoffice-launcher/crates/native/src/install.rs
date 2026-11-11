@@ -2706,7 +2706,7 @@ mod tests {
         assert_eq!(is_occupied(Some(&old)), None);
 
         let studio = CraftApp { name: "White Office Studio", former_names: &["White Office"], mac_bundle_name: Some("White Office"), ..*app };
-        let dmg_asset = Asset { name: "White Office_0.41.1_universal.dmg".into(), ..Default::default() };
+        let dmg_asset = Asset { name: "WhiteOffice_0.41.1_universal.dmg".into(), ..Default::default() };
         assert_eq!(occupied(&studio, &dmg_asset, PackageKind::Dmg, None, None, &locations, &paths).unwrap(), None);
         std::fs::create_dir(dir.path().join("White Office.app")).unwrap();
         assert_eq!(occupied(&studio, &dmg_asset, PackageKind::Dmg, None, None, &locations, &paths).unwrap(), Some(dir.path().join("White Office.app")));

@@ -202,7 +202,7 @@ foreach ($f in 'README.md', 'LICENSE-MIT', 'LICENSE-APACHE', 'NOTICE', 'ATTRIBUT
   if (Test-Path $p) { Copy-Item $p $Portable }
 }
 # portable.txt beside whiteoffice-launcher.exe switches on portable mode: settings and the download
-# cache go to White OfficeLauncherData\ next to the exe instead of %APPDATA%.
+# cache go to WhiteOfficeLauncherData\ next to the exe instead of %APPDATA%.
 Copy-Item (Join-Path $PSScriptRoot 'portable.txt') $Portable
 $Zip = Join-Path $Dist "$Pkg-$Version-windows-$Arch-portable.zip"
 Remove-Item -Force $Zip -ErrorAction SilentlyContinue

@@ -40,13 +40,19 @@ $notices = Join-Path $dist 'notices'
 $models = Join-Path $dist 'models'
 
 $apps = @(
-    @{ slug = 'nib';    ver = '0.15.0'; extra = @('-d', "LicenseRtf=$notices\License.rtf", '-d', "AppNoticesDir=$notices"); sources = @() },
-    @{ slug = 'tally';  ver = '0.16.0'; extra = @(); sources = @() },
-    @{ slug = 'podium'; ver = '0.15.0'; extra = @(); sources = @() },
-    @{ slug = 'sheaf';  ver = '0.18.0'; extra = @('-d', "ModelsDir=$models"); sources = @((Join-Path $root 'apps\sheaf\packaging\windows\installer-ui.wxs')) }
+    @{ slug = 'nib';    extra = @('-d', "LicenseRtf=$notices\License.rtf", '-d', "AppNoticesDir=$notices"); sources = @() },
+    @{ slug = 'tally';  extra = @(); sources = @() },
+    @{ slug = 'podium'; extra = @(); sources = @() },
+    @{ slug = 'sheaf';  extra = @('-d', "ModelsDir=$models"); sources = @((Join-Path $root 'apps\sheaf\packaging\windows\installer-ui.wxs')) }
 )
 
 foreach ($a in $apps) {
+    # read the version from the crate rather than repeating it here
+    $verLine = Select-String -Path (Join-Path $root "apps\$($a.slug)\Cargo.toml") -Pattern '^version\s*=\s*"([^"]+)"' |
+        Select-Object -First 1
+    $ver = if ($verLine) { $verLine.Matches[0].Groups[1].Value } else { '0.0.0' }
+    $a.ver = $ver
+
     $bin = Join-Path $dist "$($a.slug)-$($a.ver)-windows-x64"
     if (-not (Test-Path (Join-Path $bin "$($a.slug).exe"))) {
         Write-Host "skip $($a.slug) (no portable build)"

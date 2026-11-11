@@ -1013,15 +1013,15 @@ impl LauncherUi {
         for e in &self.entries {
             if matches!(e.latest, Some(LatestRelease::Found(_) | LatestRelease::None)) {
                 match e.origin {
-                    Some(Origin::White OfficeApi) => api = true,
+                    Some(Origin::WhiteOfficeApi) => api = true,
                     Some(Origin::GitHub) => github = true,
                     None => {}
                 }
             }
         }
         match (api, github) {
-            (true, true) => Some(crate::i18n::fmt(tl!("{a} and {b}"), &[("a", Origin::White OfficeApi.label()), ("b", Origin::GitHub.label())])),
-            (true, false) => Some(Origin::White OfficeApi.label().to_string()),
+            (true, true) => Some(crate::i18n::fmt(tl!("{a} and {b}"), &[("a", Origin::WhiteOfficeApi.label()), ("b", Origin::GitHub.label())])),
+            (true, false) => Some(Origin::WhiteOfficeApi.label().to_string()),
             (false, true) => Some(Origin::GitHub.label().to_string()),
             (false, false) => None,
         }

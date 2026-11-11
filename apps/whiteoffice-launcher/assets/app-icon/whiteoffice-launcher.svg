@@ -1,4 +1,13 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="-10 -19.42 136.34 136.34" role="img" aria-label="White Office">
-  <title>White Office</title>
-  <path fill="#4e7bfb" d="M104.28,49.49L81.55,0h-31.23l-3.17,4.76L14.75,53.63,0,75.85l21.55,21.55,63.79-36.94,16.99,37.04,14.01-21.74-12.06-26.27ZM32.89,65.66l32.42-48.87,10.91,23.77-43.32,25.09Z"/>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64">
+  <title>White Office Launcher</title>
+  <defs>
+    <linearGradient id="l" x1="0" y1="0" x2="0.55" y2="1">
+      <stop offset="0" stop-color="#3E4FAD"/><stop offset="1" stop-color="#0F1433"/>
+    </linearGradient>
+    <clipPath id="c"><rect x="4" y="4" width="56" height="56" rx="15"/></clipPath>
+  </defs>
+  <rect x="4" y="4" width="56" height="56" rx="15" fill="url(#l)"/>
+  <g clip-path="url(#c)"><path d="M36 4 H60 V28 Z" fill="#F2B33D" fill-opacity="0.92"/></g>
+  <rect x="4.5" y="4.5" width="55" height="55" rx="14.5" fill="none" stroke="#FFFFFF" stroke-opacity="0.16"/>
+  <circle cx="29" cy="35" r="11.5" fill="none" stroke="#F7F5EF" stroke-width="5.2"/>
 </svg>

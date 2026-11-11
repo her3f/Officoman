@@ -47,3 +47,9 @@ _le.txt
 
 # private deployment notes
 /_server/
+
+# scratch scripts
+_*.py
+_*.txt
+_*.tgz
+_*.log

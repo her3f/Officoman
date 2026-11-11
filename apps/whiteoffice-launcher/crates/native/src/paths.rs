@@ -88,11 +88,11 @@ pub fn write_atomic(path: &std::path::Path, bytes: &[u8]) -> Result<(), String> 
 }
 
 /// Portable mode: a `portable.txt` beside the executable keeps everything in
-/// `White OfficeLauncherData` next to it (the Windows portable zip ships one).
+/// `WhiteOfficeLauncherData` next to it (the Windows portable zip ships one).
 pub fn portable_root() -> Option<PathBuf> {
     let exe = std::env::current_exe().ok()?;
     let dir = exe.parent()?;
-    dir.join("portable.txt").is_file().then(|| dir.join("White OfficeLauncherData"))
+    dir.join("portable.txt").is_file().then(|| dir.join("WhiteOfficeLauncherData"))
 }
 
 #[cfg(test)]

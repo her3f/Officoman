@@ -3258,6 +3258,348 @@ dependencies = [
 ]
 
 [[package]]
+name = "nib"
+version = "0.18.0"
+dependencies = [
+ "arboard",
+ "chrono",
+ "clipboard-win",
+ "craft-print",
+ "craft-proof",
+ "craft-update",
+ "dispatch2",
+ "eframe",
+ "egui",
+ "fmv-macos-events",
+ "getrandom 0.3.4",
+ "log",
+ "nib-control-key",
+ "nib-doc",
+ "nib-engine",
+ "nib-fonts",
+ "nib-ui-egui",
+ "objc2 0.6.5",
+ "objc2-app-kit 0.3.2",
+ "objc2-foundation 0.3.2",
+ "open",
+ "pollster 1.0.1",
+ "rfd",
+ "serde",
+ "serde_json",
+ "tempfile",
+ "windows",
+ "winit",
+ "winresource",
+ "wl-clipboard-rs",
+ "x11-dl",
+ "x11rb",
+ "xkbcommon-dl",
+ "zbus",
+]
+
+[[package]]
+name = "nib-cli"
+version = "0.18.0"
+dependencies = [
+ "image",
+ "nib-doc",
+ "nib-engine",
+ "nib-fonts",
+ "nib-mcp",
+ "nib-render",
+ "nib-zotero",
+ "serde_json",
+ "sys-locale",
+ "zip 3.0.0",
+]
+
+[[package]]
+name = "nib-control-key"
+version = "0.18.0"
+
+[[package]]
+name = "nib-doc"
+version = "0.18.0"
+dependencies = [
+ "base64 0.23.1",
+ "log",
+ "nib-geom",
+ "proptest",
+ "serde",
+ "serde_json",
+ "thiserror 2.0.21",
+ "unicode-segmentation",
+]
+
+[[package]]
+name = "nib-docbin"
+version = "0.18.0"
+dependencies = [
+ "cfb",
+ "chrono",
+ "image",
+ "log",
+ "miniz_oxide 0.9.1",
+ "nib-doc",
+ "nib-geom",
+ "proptest",
+ "serde_json",
+ "sha1 0.11.0",
+ "thiserror 2.0.21",
+]
+
+[[package]]
+name = "nib-docx"
+version = "0.18.0"
+dependencies = [
+ "aes",
+ "base64 0.23.1",
+ "cfb",
+ "chrono",
+ "getrandom 0.3.4",
+ "hmac",
+ "image",
+ "log",
+ "nib-doc",
+ "nib-geom",
+ "proptest",
+ "quick-xml 0.41.0",
+ "serde_json",
+ "sha1 0.11.0",
+ "sha2 0.11.1",
+ "thiserror 2.0.21",
+ "unicode-bidi",
+ "zeroize",
+ "zip 3.0.0",
+]
+
+[[package]]
+name = "nib-engine"
+version = "0.18.0"
+dependencies = [
+ "cfb",
+ "chrono",
+ "craft-font-catalog",
+ "craft-font-store",
+ "craft-proof",
+ "encoding_rs",
+ "getrandom 0.3.4",
+ "image",
+ "js-sys",
+ "libc",
+ "log",
+ "nib-doc",
+ "nib-docbin",
+ "nib-docx",
+ "nib-fonts",
+ "nib-formats",
+ "nib-geom",
+ "nib-layout",
+ "nib-pdf",
+ "nib-render",
+ "regex",
+ "regex-automata",
+ "rustix 1.1.5",
+ "serde",
+ "serde_json",
+ "thiserror 2.0.21",
+ "zeroize",
+ "zip 3.0.0",
+]
+
+[[package]]
+name = "nib-fonts"
+version = "0.18.0"
+dependencies = [
+ "brotli-decompressor",
+ "harfrust 0.13.3",
+ "kurbo",
+ "log",
+ "skrifa 0.47.0",
+ "unicode-bidi",
+ "unicode-script",
+ "wuff",
+]
+
+[[package]]
+name = "nib-formats"
+version = "0.18.0"
+dependencies = [
+ "aes",
+ "base64 0.23.1",
+ "cfb",
+ "chardetng",
+ "chrono",
+ "encoding_rs",
+ "getrandom 0.3.4",
+ "hmac",
+ "image",
+ "js-sys",
+ "log",
+ "miniz_oxide 0.9.1",
+ "nib-doc",
+ "nib-geom",
+ "nib-metafile",
+ "proptest",
+ "quick-xml 0.41.0",
+ "sha1 0.11.0",
+ "sha2 0.11.1",
+ "zeroize",
+ "zip 3.0.0",
+]
+
+[[package]]
+name = "nib-geom"
+version = "0.18.0"
+dependencies = [
+ "image",
+ "serde",
+]
+
+[[package]]
+name = "nib-layout"
+version = "0.18.0"
+dependencies = [
+ "craft-proof",
+ "image",
+ "js-sys",
+ "kurbo",
+ "log",
+ "nib-doc",
+ "nib-fonts",
+ "nib-geom",
+ "nib-metafile",
+ "serde",
+ "serde_json",
+ "unicode-bidi",
+ "unicode-linebreak",
+ "unicode-segmentation",
+]
+
+[[package]]
+name = "nib-mcp"
+version = "0.18.0"
+dependencies = [
+ "log",
+ "nib-control-key",
+ "nib-doc",
+ "nib-engine",
+ "nib-render",
+ "serde_json",
+]
+
+[[package]]
+name = "nib-metafile"
+version = "0.18.0"
+dependencies = [
+ "kurbo",
+ "thiserror 2.0.21",
+]
+
+[[package]]
+name = "nib-pdf"
+version = "0.18.0"
+dependencies = [
+ "chrono",
+ "craft-pdf",
+ "hayro-cmap",
+ "hayro-interpret",
+ "hayro-syntax",
+ "image",
+ "js-sys",
+ "kurbo",
+ "log",
+ "nib-doc",
+ "nib-fonts",
+ "nib-geom",
+ "nib-layout",
+ "nib-metafile",
+ "thiserror 2.0.21",
+]
+
+[[package]]
+name = "nib-render"
+version = "0.18.0"
+dependencies = [
+ "image",
+ "log",
+ "nib-doc",
+ "nib-fonts",
+ "nib-geom",
+ "nib-layout",
+ "nib-metafile",
+ "vello_cpu",
+]
+
+[[package]]
+name = "nib-ui-egui"
+version = "0.18.0"
+dependencies = [
+ "accesskit_consumer",
+ "cfb",
+ "chrono",
+ "craft-i18n",
+ "craft-ui",
+ "craft-update",
+ "craft-window",
+ "egui",
+ "egui_extras",
+ "egui_kittest",
+ "image",
+ "js-sys",
+ "log",
+ "nib-doc",
+ "nib-engine",
+ "nib-fonts",
+ "nib-geom",
+ "nib-layout",
+ "nib-render",
+ "nib-zotero",
+ "serde",
+ "serde_json",
+ "sys-locale",
+ "toml",
+ "web-time",
+ "zbus",
+ "zip 3.0.0",
+]
+
+[[package]]
+name = "nib-web"
+version = "0.18.0"
+dependencies = [
+ "craft-web-api",
+ "craft-web-host",
+ "eframe",
+ "egui",
+ "js-sys",
+ "log",
+ "nib-doc",
+ "nib-engine",
+ "nib-fonts",
+ "nib-ui-egui",
+ "rfd",
+ "serde_json",
+ "wasm-bindgen",
+ "wasm-bindgen-futures",
+ "web-sys",
+]
+
+[[package]]
+name = "nib-zotero"
+version = "0.18.0"
+dependencies = [
+ "log",
+ "nib-doc",
+ "nib-docx",
+ "nib-engine",
+ "nib-formats",
+ "proptest",
+ "serde_json",
+ "thiserror 2.0.21",
+]
+
+[[package]]
 name = "nix"
 version = "0.31.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -6803,348 +7145,6 @@ dependencies = [
  "wayland-client",
  "wayland-protocols",
  "wayland-protocols-wlr",
-]
-
-[[package]]
-name = "nib"
-version = "0.18.0"
-dependencies = [
- "arboard",
- "chrono",
- "clipboard-win",
- "craft-print",
- "craft-proof",
- "craft-update",
- "dispatch2",
- "eframe",
- "egui",
- "fmv-macos-events",
- "getrandom 0.3.4",
- "log",
- "objc2 0.6.5",
- "objc2-app-kit 0.3.2",
- "objc2-foundation 0.3.2",
- "open",
- "pollster 1.0.1",
- "rfd",
- "serde",
- "serde_json",
- "tempfile",
- "windows",
- "winit",
- "winresource",
- "wl-clipboard-rs",
- "nib-control-key",
- "nib-doc",
- "nib-engine",
- "nib-fonts",
- "nib-ui-egui",
- "x11-dl",
- "x11rb",
- "xkbcommon-dl",
- "zbus",
-]
-
-[[package]]
-name = "nib-cli"
-version = "0.18.0"
-dependencies = [
- "image",
- "serde_json",
- "sys-locale",
- "nib-doc",
- "nib-engine",
- "nib-fonts",
- "nib-mcp",
- "nib-render",
- "nib-zotero",
- "zip 3.0.0",
-]
-
-[[package]]
-name = "nib-control-key"
-version = "0.18.0"
-
-[[package]]
-name = "nib-doc"
-version = "0.18.0"
-dependencies = [
- "base64 0.23.1",
- "log",
- "proptest",
- "serde",
- "serde_json",
- "thiserror 2.0.21",
- "unicode-segmentation",
- "nib-geom",
-]
-
-[[package]]
-name = "nib-docbin"
-version = "0.18.0"
-dependencies = [
- "cfb",
- "chrono",
- "image",
- "log",
- "miniz_oxide 0.9.1",
- "proptest",
- "serde_json",
- "sha1 0.11.0",
- "thiserror 2.0.21",
- "nib-doc",
- "nib-geom",
-]
-
-[[package]]
-name = "nib-docx"
-version = "0.18.0"
-dependencies = [
- "aes",
- "base64 0.23.1",
- "cfb",
- "chrono",
- "getrandom 0.3.4",
- "hmac",
- "image",
- "log",
- "proptest",
- "quick-xml 0.41.0",
- "serde_json",
- "sha1 0.11.0",
- "sha2 0.11.1",
- "thiserror 2.0.21",
- "unicode-bidi",
- "nib-doc",
- "nib-geom",
- "zeroize",
- "zip 3.0.0",
-]
-
-[[package]]
-name = "nib-engine"
-version = "0.18.0"
-dependencies = [
- "cfb",
- "chrono",
- "craft-font-catalog",
- "craft-font-store",
- "craft-proof",
- "encoding_rs",
- "getrandom 0.3.4",
- "image",
- "js-sys",
- "libc",
- "log",
- "regex",
- "regex-automata",
- "rustix 1.1.5",
- "serde",
- "serde_json",
- "thiserror 2.0.21",
- "nib-doc",
- "nib-docbin",
- "nib-docx",
- "nib-fonts",
- "nib-formats",
- "nib-geom",
- "nib-layout",
- "nib-pdf",
- "nib-render",
- "zeroize",
- "zip 3.0.0",
-]
-
-[[package]]
-name = "nib-fonts"
-version = "0.18.0"
-dependencies = [
- "brotli-decompressor",
- "harfrust 0.13.3",
- "kurbo",
- "log",
- "skrifa 0.47.0",
- "unicode-bidi",
- "unicode-script",
- "wuff",
-]
-
-[[package]]
-name = "nib-formats"
-version = "0.18.0"
-dependencies = [
- "aes",
- "base64 0.23.1",
- "cfb",
- "chardetng",
- "chrono",
- "encoding_rs",
- "getrandom 0.3.4",
- "hmac",
- "image",
- "js-sys",
- "log",
- "miniz_oxide 0.9.1",
- "proptest",
- "quick-xml 0.41.0",
- "sha1 0.11.0",
- "sha2 0.11.1",
- "nib-doc",
- "nib-geom",
- "nib-metafile",
- "zeroize",
- "zip 3.0.0",
-]
-
-[[package]]
-name = "nib-geom"
-version = "0.18.0"
-dependencies = [
- "image",
- "serde",
-]
-
-[[package]]
-name = "nib-layout"
-version = "0.18.0"
-dependencies = [
- "craft-proof",
- "image",
- "js-sys",
- "kurbo",
- "log",
- "serde",
- "serde_json",
- "unicode-bidi",
- "unicode-linebreak",
- "unicode-segmentation",
- "nib-doc",
- "nib-fonts",
- "nib-geom",
- "nib-metafile",
-]
-
-[[package]]
-name = "nib-mcp"
-version = "0.18.0"
-dependencies = [
- "log",
- "serde_json",
- "nib-control-key",
- "nib-doc",
- "nib-engine",
- "nib-render",
-]
-
-[[package]]
-name = "nib-metafile"
-version = "0.18.0"
-dependencies = [
- "kurbo",
- "thiserror 2.0.21",
-]
-
-[[package]]
-name = "nib-pdf"
-version = "0.18.0"
-dependencies = [
- "chrono",
- "craft-pdf",
- "hayro-cmap",
- "hayro-interpret",
- "hayro-syntax",
- "image",
- "js-sys",
- "kurbo",
- "log",
- "thiserror 2.0.21",
- "nib-doc",
- "nib-fonts",
- "nib-geom",
- "nib-layout",
- "nib-metafile",
-]
-
-[[package]]
-name = "nib-render"
-version = "0.18.0"
-dependencies = [
- "image",
- "log",
- "vello_cpu",
- "nib-doc",
- "nib-fonts",
- "nib-geom",
- "nib-layout",
- "nib-metafile",
-]
-
-[[package]]
-name = "nib-ui-egui"
-version = "0.18.0"
-dependencies = [
- "accesskit_consumer",
- "cfb",
- "chrono",
- "craft-i18n",
- "craft-ui",
- "craft-update",
- "craft-window",
- "egui",
- "egui_extras",
- "egui_kittest",
- "image",
- "js-sys",
- "log",
- "serde",
- "serde_json",
- "sys-locale",
- "toml",
- "web-time",
- "nib-doc",
- "nib-engine",
- "nib-fonts",
- "nib-geom",
- "nib-layout",
- "nib-render",
- "nib-zotero",
- "zbus",
- "zip 3.0.0",
-]
-
-[[package]]
-name = "nib-web"
-version = "0.18.0"
-dependencies = [
- "craft-web-api",
- "craft-web-host",
- "eframe",
- "egui",
- "js-sys",
- "log",
- "rfd",
- "serde_json",
- "wasm-bindgen",
- "wasm-bindgen-futures",
- "web-sys",
- "nib-doc",
- "nib-engine",
- "nib-fonts",
- "nib-ui-egui",
-]
-
-[[package]]
-name = "nib-zotero"
-version = "0.18.0"
-dependencies = [
- "log",
- "proptest",
- "serde_json",
- "thiserror 2.0.21",
- "nib-doc",
- "nib-docx",
- "nib-engine",
- "nib-formats",
 ]
 
 [[package]]

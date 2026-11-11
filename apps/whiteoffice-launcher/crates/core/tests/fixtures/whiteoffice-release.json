@@ -49,21 +49,21 @@
       "digest": "sha256:149f9748ea33553177c021e1ade47a195fad25b881129d4178fe5bd922a94eb4"
     },
     {
-      "name": "White Office_0.41.1_universal.dmg",
+      "name": "WhiteOffice_0.41.1_universal.dmg",
       "size": 94884865,
-      "browser_download_url": "https://github.com/storytold/whiteoffice/releases/download/whiteoffice-v0.41.1/White Office_0.41.1_universal.dmg",
+      "browser_download_url": "https://github.com/storytold/whiteoffice/releases/download/whiteoffice-v0.41.1/WhiteOffice_0.41.1_universal.dmg",
       "digest": "sha256:89009b8983d88919481ac936e2ada0409dff0e0fc73f487cce3e7324699866a6"
     },
     {
-      "name": "White Office_0.41.1_x64_en-US.msi",
+      "name": "WhiteOffice_0.41.1_x64_en-US.msi",
       "size": 47058944,
-      "browser_download_url": "https://github.com/storytold/whiteoffice/releases/download/whiteoffice-v0.41.1/White Office_0.41.1_x64_en-US.msi",
+      "browser_download_url": "https://github.com/storytold/whiteoffice/releases/download/whiteoffice-v0.41.1/WhiteOffice_0.41.1_x64_en-US.msi",
       "digest": "sha256:450b15e53d8ccc9afde2d3644a547ab5f900167b837b861571ea4c833166417d"
     },
     {
-      "name": "White Office_universal.app.tar.gz",
+      "name": "WhiteOffice_universal.app.tar.gz",
       "size": 94791060,
-      "browser_download_url": "https://github.com/storytold/whiteoffice/releases/download/whiteoffice-v0.41.1/White Office_universal.app.tar.gz",
+      "browser_download_url": "https://github.com/storytold/whiteoffice/releases/download/whiteoffice-v0.41.1/WhiteOffice_universal.app.tar.gz",
       "digest": "sha256:d1e4e9623ebf506fbc8d7476b69b2db957125761e7908624b3eb031ce044413e"
     },
     {

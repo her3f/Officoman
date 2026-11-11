@@ -271,101 +271,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "d3fb67a6e08acf24fdeccbac2cb6ac4305825bd1f117462e0e6f2f193345ad56"
 
 [[package]]
-name = "whiteoffice-launcher"
-version = "0.19.0"
-dependencies = [
- "whiteoffice-launcher-core",
- "whiteoffice-launcher-native",
- "whiteoffice-launcher-ui-egui",
- "craft-quit",
- "eframe",
- "egui",
- "env_logger",
- "image",
- "log",
- "notify-rust",
- "objc2 0.6.5",
- "objc2-app-kit 0.3.2",
- "objc2-foundation 0.3.2",
- "rfd",
- "ron",
- "serde",
- "tray-icon",
- "winreg",
- "winresource",
- "zbus",
-]
-
-[[package]]
-name = "whiteoffice-launcher-core"
-version = "0.19.0"
-dependencies = [
- "jiff",
- "semver",
- "serde",
- "serde_json",
-]
-
-[[package]]
-name = "whiteoffice-launcher-native"
-version = "0.19.0"
-dependencies = [
- "whiteoffice-launcher-core",
- "craft-update",
- "dirs 6.0.0",
- "dunce",
- "flate2",
- "getrandom 0.3.4",
- "log",
- "plist",
- "serde",
- "serde_json",
- "sha2",
- "tar",
- "tempfile",
- "ureq",
- "verifysign",
- "winreg",
- "winsafe",
- "zip",
-]
-
-[[package]]
-name = "whiteoffice-launcher-ui-egui"
-version = "0.19.0"
-dependencies = [
- "whiteoffice-launcher-core",
- "craft-ui",
- "egui",
- "egui_extras",
- "egui_kittest",
- "image",
- "jiff",
- "js-sys",
- "log",
- "serde",
- "serde_json",
- "skrifa",
- "sys-locale",
- "wasm-bindgen",
-]
-
-[[package]]
-name = "whiteoffice-launcher-web"
-version = "0.19.0"
-dependencies = [
- "whiteoffice-launcher-core",
- "whiteoffice-launcher-ui-egui",
- "eframe",
- "egui",
- "js-sys",
- "log",
- "wasm-bindgen",
- "wasm-bindgen-futures",
- "web-sys",
-]
-
-[[package]]
 name = "as-raw-xcb-connection"
 version = "1.0.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -5764,6 +5669,101 @@ dependencies = [
  "raw-window-handle",
  "static_assertions",
  "web-sys",
+]
+
+[[package]]
+name = "whiteoffice-launcher"
+version = "0.19.0"
+dependencies = [
+ "craft-quit",
+ "eframe",
+ "egui",
+ "env_logger",
+ "image",
+ "log",
+ "notify-rust",
+ "objc2 0.6.5",
+ "objc2-app-kit 0.3.2",
+ "objc2-foundation 0.3.2",
+ "rfd",
+ "ron",
+ "serde",
+ "tray-icon",
+ "whiteoffice-launcher-core",
+ "whiteoffice-launcher-native",
+ "whiteoffice-launcher-ui-egui",
+ "winreg",
+ "winresource",
+ "zbus",
+]
+
+[[package]]
+name = "whiteoffice-launcher-core"
+version = "0.19.0"
+dependencies = [
+ "jiff",
+ "semver",
+ "serde",
+ "serde_json",
+]
+
+[[package]]
+name = "whiteoffice-launcher-native"
+version = "0.19.0"
+dependencies = [
+ "craft-update",
+ "dirs 6.0.0",
+ "dunce",
+ "flate2",
+ "getrandom 0.3.4",
+ "log",
+ "plist",
+ "serde",
+ "serde_json",
+ "sha2",
+ "tar",
+ "tempfile",
+ "ureq",
+ "verifysign",
+ "whiteoffice-launcher-core",
+ "winreg",
+ "winsafe",
+ "zip",
+]
+
+[[package]]
+name = "whiteoffice-launcher-ui-egui"
+version = "0.19.0"
+dependencies = [
+ "craft-ui",
+ "egui",
+ "egui_extras",
+ "egui_kittest",
+ "image",
+ "jiff",
+ "js-sys",
+ "log",
+ "serde",
+ "serde_json",
+ "skrifa",
+ "sys-locale",
+ "wasm-bindgen",
+ "whiteoffice-launcher-core",
+]
+
+[[package]]
+name = "whiteoffice-launcher-web"
+version = "0.19.0"
+dependencies = [
+ "eframe",
+ "egui",
+ "js-sys",
+ "log",
+ "wasm-bindgen",
+ "wasm-bindgen-futures",
+ "web-sys",
+ "whiteoffice-launcher-core",
+ "whiteoffice-launcher-ui-egui",
 ]
 
 [[package]]
