@@ -1,8 +1,0 @@
-Officoman Launcher app icon (every file in this directory)
-
-These files are the Officoman "A" mark (docs/brand/officoman-mark-black.svg), rendered unmodified by
-packaging/icons.sh. The mark is a trademark of the Officoman Team. It is NOT open source and is NOT
-covered by Officoman Launcher's MIT or Apache-2.0 license.
-
-Its terms are in docs/brand/LICENSE-brand.txt. In short: it may be used only unmodified, only as
-part of this repository and Officoman Launcher, and forks and modified versions must remove it.

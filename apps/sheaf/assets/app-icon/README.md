@@ -19,7 +19,7 @@ a full-bleed colour field, no frame or roundel, the animal looking at the viewer
 icons use the full-bleed tile. macOS icons put it on Apple's grid (an 824 px body centred on a transparent
 1024 px canvas).
 
-**Provenance:** the project owner's original drawing, made in Officoman (2880 px, keyed to the palette), then
+**Provenance:** the project owner's original drawing, made in White Office (2880 px, keyed to the palette), then
 vectorised (potrace; no filtering or warping).
 Licence: [LICENSE.txt](LICENSE.txt) (`MIT OR Apache-2.0`, like the repo).
 

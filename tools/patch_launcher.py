@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Point the Officoman Launcher at our four apps.
+"""Point the White Office Launcher at our four apps.
 
 The rebrand (tools/rebrand_launcher.py) only changes names. This changes structure:
 the catalog becomes four apps instead of seventeen, the suite list, the icons, the
@@ -9,11 +9,12 @@ Idempotent: each edit is keyed on a marker and reports whether it applied.
 """
 from __future__ import annotations
 
+import re
 import sys
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
-LAUNCHER = ROOT / "apps" / "officoman-launcher"
+LAUNCHER = ROOT / "apps" / "whiteoffice-launcher"
 CORE = LAUNCHER / "crates" / "core" / "src"
 
 SUITE_BLOCK = '''pub const SUITE: [CraftApp; 4] = [
@@ -86,10 +87,9 @@ def main() -> int:
     text = cat.read_text(encoding="utf-8")
     applied = []
 
-    text, ok = replace_between(
-        text, "pub const SUITE: [CraftApp; 17] = [", "\n];", SUITE_BLOCK
-    )
-    applied.append(("suite", ok))
+    text, n = re.subn(r"pub const SUITE: \[CraftApp; \d+\] = \[.*?\n\];",
+                      SUITE_BLOCK, text, count=1, flags=re.S)
+    applied.append(("suite", n == 1))
 
     text, ok = replace_between(
         text, "pub fn app_icon_png(id: &str) -> Option<&'static [u8]> {", "\n}", ICONS_BLOCK
@@ -98,14 +98,14 @@ def main() -> int:
 
     text, ok = replace_once(
         text,
-        'publisher: "Officoman",\n        msi_publisher: None,',
-        'publisher: "Officoman",\n        msi_publisher: Some("Officoman"),',
+        'publisher: "White Office",\n        msi_publisher: None,',
+        'publisher: "White Office",\n        msi_publisher: Some("White Office"),',
     )
     applied.append(("msi publisher", ok))
 
     text, ok = replace_once(
         text,
-        "mac_team: Some(OFFICOMAN_TEAM_ID),",
+        "mac_team: Some(WHITEOFFICE_TEAM_ID),",
         "// These builds are not code-signed, so macOS installs are not offered.\n        mac_team: None,",
     )
     applied.append(("mac team", ok))
@@ -147,9 +147,9 @@ def main() -> int:
     det = CORE / "details.rs"
     if det.is_file():
         text = det.read_text(encoding="utf-8")
-        text, ok = replace_between(
-            text, "pub const DETAILS: [AppDetails; 17] = [", "\n];", DETAILS_BLOCK
-        )
+        text, n2 = re.subn(r"pub const DETAILS: \[AppDetails; \d+\] = \[.*?\n\];",
+                           DETAILS_BLOCK, text, count=1, flags=re.S)
+        ok = n2 == 1
         applied.append(("details data", ok))
         det.write_text(text, encoding="utf-8")
 

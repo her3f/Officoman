@@ -432,7 +432,7 @@ by the DesignCraft/Tally pilots. The callback contract is:
 - The suite has fourteen capture consumers. The eleven existing `craft-ui` consumers require
   CL-1 and CL-2F; only the DesignCraft/Tally pilots use the reviewed CL-2 provisional
   revision, and their adapters are reviewed before CL-2F freezes the API. Podium, FigCraft
-  and Officoman Native keep contract-compatible local adapters; `ai-egui` has no capture path.
+  and White Office Native keep contract-compatible local adapters; `ai-egui` has no capture path.
   Do not add `craft-ui` solely for capture; if Podium/FigCraft later adopt it, Nib's
   adapter stays unchanged.
 

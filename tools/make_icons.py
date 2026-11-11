@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Draw the Officoman app icons.
+"""Draw the White Office app icons.
 
 Each app gets the same construction: a rounded tile in its own colour, the amber
 folded corner shared by the suite mark, and one bold glyph that survives 16 px.

@@ -17,7 +17,7 @@ runtime-version: '25.08'
 sdk: org.freedesktop.Sdk
 command: podium
 finish-args:
-  - --filesystem=xdg-data/Officoman/versions:ro
+  - --filesystem=xdg-data/White Office/versions:ro
   # Display: Wayland first; X11 only when no Wayland compositor is running.
   - --socket=wayland
   - --socket=fallback-x11

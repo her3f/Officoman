@@ -1,7 +1,7 @@
 use super::{Color32, CornerRadius, Rect, Sense, SlideApp, Stroke, Tokens, Ui, pos2, theme, vec2};
 
 /// Room the About credits need for their table; the About tab keeps its compact size.
-pub(super) const CREDITS_SIZE: egui::Vec2 = vec2(640.0, 380.0);
+pub(super) const CREDITS_SIZE: egui::Vec2 = vec2(820.0, 380.0);
 
 /// The Contributors / Models body in a block of its own fixed size, below the tab row. Sizing the
 /// dialog's `ui` instead (`set_min_size` / `set_max_height`) squeezed the tab row and the first
@@ -30,7 +30,7 @@ pub fn about(_app: &mut SlideApp, ui: &mut Ui) {
         ui.hyperlink_to("officoman.whitebearom.com/apps/podium", podium_engine::links::APP_PAGE);
         ui.hyperlink_to("Source on GitHub", podium_engine::links::GITHUB);
         ui.add_space(6.0);
-        ui.label(egui::RichText::new("MIT OR Apache-2.0 · © 2026 Officoman Team and the Podium contributors").size(11.0).color(t.text_faint));
+        ui.label(egui::RichText::new("MIT OR Apache-2.0 · © 2026 White Office Team and the Podium contributors").size(11.0).color(t.text_faint));
     });
 }
 

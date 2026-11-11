@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Draw the launcher's own icon: the Officoman suite mark (tile, amber fold, O).
+"""Draw the launcher's own icon: the White Office suite mark (tile, amber fold, O).
 
 Replaces the upstream "A" mark, which is a trademark and must not ship in a fork.
 """
@@ -10,7 +10,7 @@ from pathlib import Path
 from PIL import Image, ImageDraw
 
 ROOT = Path(__file__).resolve().parent.parent
-ICON_DIR = ROOT / "apps" / "officoman-launcher" / "assets" / "app-icon"
+ICON_DIR = ROOT / "apps" / "whiteoffice-launcher" / "assets" / "app-icon"
 SIZES = [16, 24, 32, 48, 64, 128, 256, 512]
 BASE = 1024
 INSET = 56
@@ -59,7 +59,7 @@ def render() -> Image.Image:
 
 
 SVG = """<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64">
-  <title>Officoman Launcher</title>
+  <title>White Office Launcher</title>
   <defs>
     <linearGradient id="l" x1="0" y1="0" x2="0.55" y2="1">
       <stop offset="0" stop-color="#3E4FAD"/><stop offset="1" stop-color="#0F1433"/>
@@ -76,12 +76,12 @@ SVG = """<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" 
 
 def tray_icons() -> None:
     """The tray/menu-bar mark: the same tile with the O cut out, plus a colour copy."""
-    brand = ROOT / "apps" / "officoman-launcher" / "docs" / "brand"
+    brand = ROOT / "apps" / "whiteoffice-launcher" / "docs" / "brand"
     brand.mkdir(parents=True, exist_ok=True)
 
     # 64 px colour mark
     render().resize((64, 64), Image.Resampling.LANCZOS).save(
-        brand / "officoman-mark-64.png", "PNG")
+        brand / "whiteoffice-mark-64.png", "PNG")
 
     # 44 px monochrome template: alpha only, the O punched through
     n = 44
@@ -97,8 +97,8 @@ def tray_icons() -> None:
     mono.putalpha(alpha)
     black = Image.new("RGBA", (n, n), (0, 0, 0, 255))
     black.putalpha(alpha)
-    black.save(brand / "officoman-mark-black-44.png", "PNG")
-    mono.save(brand / "officoman-mark-black-44-rgba.png", "PNG")
+    black.save(brand / "whiteoffice-mark-black-44.png", "PNG")
+    mono.save(brand / "whiteoffice-mark-black-44-rgba.png", "PNG")
 
 
 def main() -> int:
@@ -106,7 +106,7 @@ def main() -> int:
         print(f"missing {ICON_DIR}")
         return 1
     master = render()
-    master.save(ICON_DIR / "officoman-launcher-1024.png", "PNG")
+    master.save(ICON_DIR / "whiteoffice-launcher-1024.png", "PNG")
 
     for n in SIZES:
         d = ICON_DIR / "hicolor" / f"{n}x{n}" / "apps"
@@ -114,20 +114,20 @@ def main() -> int:
         for old in d.glob("*.png"):
             old.unlink()
         master.resize((n, n), Image.Resampling.LANCZOS).save(
-            d / "io.github.her3f.officoman-launcher.png", "PNG")
+            d / "io.github.her3f.whiteoffice-launcher.png", "PNG")
 
     s = ICON_DIR / "hicolor" / "scalable" / "apps"
     s.mkdir(parents=True, exist_ok=True)
     for old in s.glob("*.svg"):
         old.unlink()
-    (s / "io.github.her3f.officoman-launcher.svg").write_text(SVG, encoding="utf-8")
-    (ICON_DIR / "officoman-launcher.svg").write_text(SVG, encoding="utf-8")
+    (s / "io.github.her3f.whiteoffice-launcher.svg").write_text(SVG, encoding="utf-8")
+    (ICON_DIR / "whiteoffice-launcher.svg").write_text(SVG, encoding="utf-8")
 
-    master.save(ICON_DIR / "officoman-launcher.ico", "ICO",
+    master.save(ICON_DIR / "whiteoffice-launcher.ico", "ICO",
                 sizes=[(16, 16), (24, 24), (32, 32), (48, 48), (64, 64),
                        (128, 128), (256, 256)])
     try:
-        master.save(ICON_DIR / "officoman-launcher.icns", "ICNS")
+        master.save(ICON_DIR / "whiteoffice-launcher.icns", "ICNS")
         note = "icns ok"
     except Exception as exc:                      # noqa: BLE001
         note = f"icns skipped ({exc})"

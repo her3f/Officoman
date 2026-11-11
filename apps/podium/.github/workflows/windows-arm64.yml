@@ -29,5 +29,5 @@ jobs:
     with:
       app-name: podium
       app-dir: Podium
-      install-relative-path: Programs/Officoman/Podium
+      install-relative-path: Programs/White Office/Podium
       install-scope: perUser

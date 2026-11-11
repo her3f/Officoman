@@ -9,9 +9,12 @@ license.workspace = true
 workspace = true
 
 [dependencies]
+aho-corasick = "1"
 sheaf-cos = { workspace = true }
 sheaf-content = { workspace = true }
 sheaf-fonts = { workspace = true }
+# The usable-quad rule `/QuadPoints` readers share.
+sheaf-geom = { workspace = true }
 sheaf-model = { workspace = true }
 sheaf-forms = { workspace = true }
 sheaf-edit = { workspace = true }
@@ -19,7 +22,16 @@ sheaf-annot = { workspace = true }
 sheaf-xfa = { workspace = true }
 # CCITT Group 4 and JBIG2 encoding for cleared one-bit images.
 sheaf-filters = { workspace = true }
+regex = { workspace = true }
 thiserror = { workspace = true }
+# NFKC for the metadata check; already in the build through sheaf-crypt (stringprep).
+unicode-normalization = "0.1"
+# Reads the PDF/A and PDF/UA identification by namespace; already in the build through sheaf-xfa.
+roxmltree = "0.21"
+sha2 = "0.11"
 
 [dev-dependencies]
 sheaf-testkit = { workspace = true }
+# The redacted page is rendered in `tests::a_page_whose_pruned_pattern_is_still_selected_renders`:
+# layer 3 from layer 4, a dev dependency only.
+sheaf-render = { workspace = true }

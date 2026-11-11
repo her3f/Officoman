@@ -1,11 +1,11 @@
 <div align="center">
-  <img src="brand/officoman-wordmark.svg" alt="Officoman" width="300">
+  <img src="brand/whiteoffice-wordmark.svg" alt="White Office" width="300">
   <p><strong>Four office tools. One suite.</strong></p>
 </div>
 
 ---
 
-**Officoman** is a suite of four standalone office applications — documents, spreadsheets,
+**White Office** is a suite of four standalone office applications — documents, spreadsheets,
 presentations and PDF — each a full program in its own right, all written in Rust and all
 sharing one set of conventions.
 
@@ -25,12 +25,12 @@ sharing one set of conventions.
 
 ### The launcher
 
-[`apps/officoman-launcher`](apps/officoman-launcher) is the suite's front end: it lists the four
+[`apps/whiteoffice-launcher`](apps/whiteoffice-launcher) is the suite's front end: it lists the four
 apps, installs the right build for your machine from this repository's releases, and keeps them
 up to date.
 
 ```sh
-cd apps/officoman-launcher
+cd apps/whiteoffice-launcher
 cargo build --release
 ```
 
@@ -64,7 +64,7 @@ apps/nib/        Nib — documents          (own Cargo workspace)
 apps/tally/      Tally — spreadsheets     (own Cargo workspace)
 apps/podium/     Podium — presentations   (own Cargo workspace)
 apps/sheaf/      Sheaf — PDF              (own Cargo workspace)
-brand/           Officoman marks, palette, proposal page
+brand/           White Office marks, palette, proposal page
 docs/            The website (GitHub Pages source)
 tools/           The scripts that produced this tree
 NOTICE           Upstream attribution — required, read it
@@ -123,14 +123,14 @@ Run them in that order to regenerate the tree from `_vendor/`.
 
 ## Where this comes from
 
-Officoman is a **fork and rebrand** of the four open-source *Crafting Apps* published by the
+White Office is a **fork and rebrand** of the four open-source *Crafting Apps* published by the
 [ArtCraft](https://getartcraft.com/) team. Those projects are dual-licensed **MIT or Apache-2.0**,
 which permits exactly this: copying, modifying, renaming and redistributing, including
 commercially.
 
 In return the licences ask for attribution, which this project keeps in full — see
 [NOTICE](NOTICE). The ArtCraft names, the `-Craft` app family and its logos are **trademarks**
-and are explicitly *not* licensed; upstream requires forks to remove them, and Officoman does
+and are explicitly *not* licensed; upstream requires forks to remove them, and White Office does
 not use them anywhere. Every upstream icon and brand asset has been deleted and replaced.
 
 Nothing here is affiliated with, endorsed by, or sponsored by the ArtCraft Team.
@@ -139,7 +139,7 @@ Nothing here is affiliated with, endorsed by, or sponsored by the ArtCraft Team.
 
 Dual-licensed under [MIT](LICENSE-MIT) or [Apache-2.0](LICENSE-APACHE), at your option.
 
-Copyright (c) 2026 her3f and the Officoman contributors, and the upstream ArtCraft Team and
+Copyright (c) 2026 her3f and the White Office contributors, and the upstream ArtCraft Team and
 Crafting App contributors. Required notices are in [NOTICE](NOTICE).
 
-The Officoman name, wordmark and marks under `brand/` are this project's own.
+The White Office name, wordmark and marks under `brand/` are this project's own.

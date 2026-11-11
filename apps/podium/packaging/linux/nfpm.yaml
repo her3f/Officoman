@@ -13,7 +13,7 @@ release: 1
 section: editors
 priority: optional
 maintainer: ${PODIUM_MAINTAINER}
-vendor: Officoman
+vendor: White Office
 homepage: https://officoman.whitebearom.com/apps/podium.html
 license: MIT OR Apache-2.0
 description: |-

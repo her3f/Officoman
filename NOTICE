@@ -1,5 +1,5 @@
-Officoman
-Copyright (c) 2026 her3f and the Officoman contributors.
+White Office
+Copyright (c) 2026 her3f and the White Office contributors.
 Licensed under the MIT License or the Apache License, Version 2.0, at your option
 (LICENSE-MIT, LICENSE-APACHE).
 
@@ -7,7 +7,7 @@ Licensed under the MIT License or the Apache License, Version 2.0, at your optio
 This work is a modified derivative of the ArtCraft Crafting Apps
 ===============================================================
 
-Officoman is based on the following upstream projects, each dual-licensed under the MIT
+White Office is based on the following upstream projects, each dual-licensed under the MIT
 License or the Apache License, Version 2.0, at your option:
 
   DeckCraft   https://github.com/storytold/deckcraft
@@ -18,7 +18,7 @@ License or the Apache License, Version 2.0, at your option:
   Copyright (c) 2026 ArtCraft Team and the DeckCraft, GridCraft, PdfCraft and WordCraft
   contributors.
 
-Modifications: renamed, rebranded, restructured and modified by her3f and the Officoman
+Modifications: renamed, rebranded, restructured and modified by her3f and the White Office
 contributors starting 2026. Imported files carry a prominent notice of modification in their
 headers and in the repository history, as required by Apache-2.0 section 4(b).
 
@@ -30,11 +30,11 @@ Trademarks
 family naming, and the ArtCraft name, wordmark and logo are trademarks of the ArtCraft Team.
 They are not covered by the licenses above and are not used by this project. The upstream
 projects require forks and modified versions to remove the ArtCraft brand assets
-(docs/brand/ and the app icons), and Officoman does so.
+(docs/brand/ and the app icons), and White Office does so.
 
-Officoman is not affiliated with, endorsed by, or sponsored by the ArtCraft Team.
+White Office is not affiliated with, endorsed by, or sponsored by the ArtCraft Team.
 
-The Officoman name, wordmark and the marks under brand/ are this project's own work.
+The White Office name, wordmark and the marks under brand/ are this project's own work.
 
 
 Third-party material
@@ -68,7 +68,7 @@ Material that must not be carried over
 
 The ArtCraft repository (https://github.com/storytold/artcraft) ships files that are not
 covered by its license and are owned by third parties. None of it may be imported into
-Officoman:
+White Office:
 
   - public/resources/sound/          sound effects from Nintendo games
   - public/resources/memes/          meme images and likenesses

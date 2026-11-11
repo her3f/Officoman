@@ -1,0 +1,53 @@
+{
+  "id": "whiteoffice-launcher",
+  "name": "White Office Launcher",
+  "mode": "perUser",
+  "upgradeCode": "1AC08DBF-D4CF-4BA4-A81E-CAA5C1004974",
+  "sources": [
+    "whiteoffice-launcher.wxs"
+  ],
+  "icon": "assets/app-icon/whiteoffice-launcher.ico",
+  "localization": [
+    "whiteoffice-launcher.en-us.wxl"
+  ],
+  "extensions": [
+    "UI",
+    "Util"
+  ],
+  "payloads": [
+    "NOTICE",
+    "whiteoffice-launcher.exe"
+  ],
+  "registry": [
+    [
+      "1",
+      "Software\\White Office\\White Office Launcher",
+      "InstallDir",
+      "[INSTALLFOLDER]"
+    ],
+    [
+      "1",
+      "Software\\White Office\\White Office Launcher",
+      "DesktopShortcutChoice",
+      "[DESKTOPSHORTCUTCHOICE]"
+    ],
+    [
+      "1",
+      "Software\\Microsoft\\Windows\\CurrentVersion\\App Paths\\whiteoffice-launcher.exe",
+      "",
+      "[#White OfficeLauncherExe]"
+    ],
+    [
+      "1",
+      "Software\\White Office\\White Office Launcher",
+      "StartMenuShortcut",
+      "#1"
+    ],
+    [
+      "1",
+      "Software\\White Office\\White Office Launcher",
+      "DesktopShortcut",
+      "#1"
+    ]
+  ]
+}

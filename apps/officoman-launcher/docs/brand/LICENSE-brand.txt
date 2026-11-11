@@ -1,8 +1,0 @@
-Officoman brand assets
-======================
-
-The Officoman mark and wordmark, drawn for this project in 2026. They are not the
-upstream ArtCraft or Storyteller marks; those were removed during the rebrand because
-their terms require forks and modified versions to delete them.
-
-Licensed like the rest of Officoman: MIT or Apache-2.0, at your option.

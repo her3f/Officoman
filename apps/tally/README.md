@@ -6,7 +6,7 @@
 
 <p align="center"><b>Numbers that keep up with you.</b></p>
 
-<p align="center">Part of <a href="../../">Officoman</a>, an open-source office suite.</p>
+<p align="center">Part of <a href="../../">White Office</a>, an open-source office suite.</p>
 
 ---
 
@@ -47,11 +47,11 @@ not been compiled or tested on this machine yet. Build it before trusting it wit
 This is a modified fork of **GridCraft**, copyright (c) 2026 the ArtCraft Team and the
 GridCraft contributors, dual-licensed MIT or Apache-2.0.
 
-Modifications: renamed, rebranded and restructured for Officoman, 2026. See the repository
+Modifications: renamed, rebranded and restructured for White Office, 2026. See the repository
 [NOTICE](../../NOTICE) for the full attribution, and [BRAND.md](../../BRAND.md) for what the
 rebrand covers.
 
 The ArtCraft, GridCraft and related names and logos are trademarks of the ArtCraft Team
-and are not used by this project. Officoman is not affiliated with them.
+and are not used by this project. White Office is not affiliated with them.
 
-Officoman itself is MIT or Apache-2.0, at your option.
+White Office itself is MIT or Apache-2.0, at your option.

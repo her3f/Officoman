@@ -11,6 +11,8 @@ workspace = true
 [dependencies]
 sheaf-cos = { workspace = true }
 sheaf-fonts = { workspace = true }
+# The usable-quad rule `/QuadPoints` readers share.
+sheaf-geom = { workspace = true }
 sheaf-model = { workspace = true }
 thiserror = { workspace = true }
 

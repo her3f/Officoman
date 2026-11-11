@@ -32,5 +32,5 @@ jobs:
     with:
       app-name: sheaf
       app-dir: Sheaf
-      install-relative-path: Programs/Officoman/Sheaf
+      install-relative-path: Programs/White Office/Sheaf
       install-scope: perUser

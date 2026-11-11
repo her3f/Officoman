@@ -15,13 +15,10 @@ pub(crate) fn xfa_layout(doc: &mut sheaf_cos::Document) -> Result<XfaLayout, Str
 /// Give the fields of a laid-out XFA form their appearances. A signed signature box keeps the
 /// picture its signer's application drew.
 pub(crate) fn xfa_redraw(doc: &mut sheaf_cos::Document) -> Result<(), String> {
-    for f in sheaf_forms::fields(doc) {
-        if f.kind == sheaf_forms::FieldKind::Signature && doc.get(f.obj).as_dict().is_some_and(|d| d.contains(b"V")) {
-            continue;
-        }
-        sheaf_forms::redraw_field(doc, &f.name).map_err(|e| format!("{}: {e}", f.name))?;
-    }
-    Ok(())
+    let signed = |doc: &sheaf_cos::Document, f: &sheaf_forms::Field| {
+        f.kind == sheaf_forms::FieldKind::Signature && doc.get(f.obj).as_dict().is_some_and(|d| d.contains(b"V"))
+    };
+    sheaf_forms::redraw_fields(doc, |doc, f| !signed(doc, f)).map_err(|e| e.to_string())
 }
 
 /// A warning for each field whose appearance Sheaf drew with `?` for a character its font
@@ -120,6 +117,18 @@ pub(crate) fn decode_data_file(bytes: &[u8]) -> Option<Result<String, String>> {
     }
 }
 
+/// The on state a radio group's XFA data `item` selects: the button saving writes `item` for
+/// (`/PCOn`, else its `/Opt` entry, else its state; `sheaf_xfa::radio_state_for_item`), so a
+/// saved selection reopens on the same button; else `item` read as an export value, then as an
+/// on-state name ([`sheaf_forms::Field::state_for_export`]), as data from elsewhere is; else
+/// `item` itself.
+fn radio_button(doc: &sheaf_cos::Document, f: &sheaf_forms::Field, datum: Option<&sheaf_xfa::FieldDatum>, item: &str) -> String {
+    datum
+        .and_then(|d| sheaf_xfa::radio_state_for_item(doc, d, item))
+        .or_else(|| f.state_for_export(item).map(str::to_owned))
+        .unwrap_or_else(|| item.to_owned())
+}
+
 /// Take the XFA out of `doc` and note what went with it: the packets, data no field showed,
 /// buttons that did nothing but run scripts, and fields whose value differs from the form's
 /// data (data Sheaf could not read into them, now lost).
@@ -133,7 +142,16 @@ pub(crate) fn strip_xfa(doc: &mut sheaf_cos::Document, cx: &mut EditCtx) -> Resu
             match value {
                 sheaf_xfa::FieldData::Text(t) => f.value.join("\n") != *t && !t.trim().is_empty(),
                 sheaf_xfa::FieldData::Check(on) => f.value.is_empty() == *on,
-                sheaf_xfa::FieldData::Radio(sel) => f.value.first() != sel.as_ref(),
+                // The field holds an on-state name; the data names a button by its item. They agree
+                // when the data holds what saving writes (`/PCOn`, the `/Opt` entry or the state
+                // name), or names the same button as opening reads it ([`radio_button`]).
+                sheaf_xfa::FieldData::Radio(sel) => {
+                    let state = f.value.first().map(String::as_str);
+                    let datum = data.iter().find(|d| d.name == *name);
+                    let same_button = sel.as_deref().map(|s| radio_button(doc, f, datum, s)).as_deref() == state;
+                    let written = datum.map(|d| sheaf_xfa::radio_dataset_value(doc, d, &f.value.first().cloned()));
+                    !same_button && written.as_deref() != Some(sel.as_deref().unwrap_or_default())
+                }
                 sheaf_xfa::FieldData::None => false,
             }
         })
@@ -217,12 +235,22 @@ pub(crate) fn image_content_type(bytes: &[u8]) -> Option<&'static str> {
 /// fields take the data's values.
 pub(crate) fn xfa_after_data_change(doc: &mut sheaf_cos::Document, cx: &mut EditCtx, calculate: bool) -> Result<(), EditError> {
     if let Some(tpl) = cx.xfa.clone() {
-        let mut run =
-            xfa::XfaRun { page_count: cx.pages, out: &mut cx.xfa_out, datasets: cx.xfa_datasets, ran_away: false, time_scale: cx.xfa_time_scale };
+        let highlight = cx.highlight();
+        let mut run = xfa::XfaRun {
+            page_count: cx.pages,
+            out: &mut cx.xfa_out,
+            datasets: cx.xfa_datasets,
+            ran_away: false,
+            highlight,
+            time_scale: cx.xfa_time_scale,
+        };
         let r = guard(|| xfa::on_data_replaced(doc, &tpl, calculate, &mut run))
             .unwrap_or_else(|m| Err(format!("laying the form out again failed unexpectedly ({m})")));
         cx.xfa_datasets = run.datasets;
         cx.xfa_ran_away |= run.ran_away;
+        // The next edit of a batch reads the highlight this one's scripts set.
+        let on = run.highlight;
+        cx.set_highlight(on);
         if let Err(e) = r {
             cx.xfa_out.errors.push(e);
         }
@@ -283,7 +311,13 @@ pub(crate) fn xfa_values_from_datasets(doc: &mut sheaf_cos::Document) -> Result<
             }
             sheaf_xfa::FieldData::Text(t) => (f.value.join("\n") != t).then_some(FieldValue::Text(t)),
             sheaf_xfa::FieldData::Check(on) => (f.value.is_empty() == on).then_some(FieldValue::Check(on)),
-            sheaf_xfa::FieldData::Radio(sel) => (f.value.first() != sel.as_ref()).then_some(FieldValue::Radio(sel)),
+            // The data holds the item; the field takes the on state of the button saving writes it
+            // for ([`radio_button`]), which with `/Opt` may be a position (`1` is the state `/0`).
+            sheaf_xfa::FieldData::Radio(sel) => {
+                let datum = data.iter().find(|d| d.name == name);
+                let state = sel.map(|v| radio_button(doc, f, datum, &v));
+                (f.value.first() != state.as_ref()).then_some(FieldValue::Radio(state))
+            }
             sheaf_xfa::FieldData::None => None,
         };
         if let Some(v) = new {

@@ -36,6 +36,8 @@ pub enum Placed {
         path: Path,
         off: usize,
         spin: Spin,
+        /// Brightness, contrast and transparency (see [`nib_doc::picfx`]).
+        fx: nib_doc::picfx::PicFx,
     },
     Shape {
         rect: Rect,

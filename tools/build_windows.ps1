@@ -15,7 +15,7 @@ $ErrorActionPreference = 'Continue'
 $root = Split-Path -Parent $PSScriptRoot
 $mingw = 'C:\Users\Her3f\tools\mingw64'
 $env:PATH = "$mingw\bin;$env:USERPROFILE\.cargo\bin;$env:PATH"
-$env:CARGO_TARGET_DIR = 'C:\Users\Her3f\build\officoman-target'
+$env:CARGO_TARGET_DIR = 'C:\Users\Her3f\build\whiteoffice-target'
 New-Item -ItemType Directory -Force -Path $env:CARGO_TARGET_DIR | Out-Null
 
 $failed = @()

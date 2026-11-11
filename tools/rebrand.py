@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Rebrand the four upstream Crafting Apps into the Officoman suite.
+"""Rebrand the four upstream Crafting Apps into the White Office suite.
 
 Reads  _vendor/<upstream>/   (fresh shallow clone)
 Writes apps/<product>/       (rebranded copy)
@@ -8,10 +8,10 @@ One global rule set is applied to every repository, because the apps reference
 each other by name. Rules run in this order, and the order matters:
 
   1. bundle identifiers          ai.storyteller.*      -> io.github.her3f.*
-  2. links to the ArtCraft site  getartcraft.com/...   -> the Officoman site
+  2. links to the ArtCraft site  getartcraft.com/...   -> the White Office site
   3. self references             storytold/<app>       -> her3f/officoman
   4. product names (4 apps)      DeckCraft / deckcraft / DECKCRAFT / Deckcraft
-  5. parent brand                ArtCraft              -> Officoman
+  5. parent brand                ArtCraft              -> White Office
 
 External dependencies that live under the storytold organisation
 (craft-libs, egui, craft-fonts, craft-i18n) are deliberately left untouched:
@@ -102,7 +102,7 @@ def build_rules() -> list[tuple[str, str]]:
             (f"https://github.com/storytold/{old}", MONO),
             (f"github.com/storytold/{old}", MONO),
             (f"storytold/{old}", "her3f/officoman"),
-            (f"storytold_{old}", "her3f_officoman"),
+            (f"storytold_{old}", "her3f_whiteoffice"),
         ]
 
     # 4. product names, every casing that occurs
@@ -117,10 +117,11 @@ def build_rules() -> list[tuple[str, str]]:
 
     # 5. parent brand
     rules += [
-        ("ArtCraft", "Officoman"),
-        ("artcraft", "officoman"),
-        ("ARTCRAFT", "OFFICOMAN"),
-        ("ArCraft", "Officoman"),
+        ("ArtCraft Launcher", "White Office Launcher"),
+        ("ArtCraft", "White Office"),
+        ("artcraft", "whiteoffice"),
+        ("ARTCRAFT", "WHITEOFFICE"),
+        ("ArCraft", "White Office"),
     ]
 
     # de-duplicate, first wins

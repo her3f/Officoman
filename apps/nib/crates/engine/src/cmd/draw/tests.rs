@@ -5,6 +5,8 @@ use nib_doc::para::{InlineObject, ShapeKind, Wrap};
 
 use crate::Session;
 
+mod page_lookup;
+
 fn session() -> Session {
     let mut s = Session::new(nib_doc::Document::new());
     s.run("document.setText", &json!({"text": "First paragraph of text.\nSecond paragraph of text."})).unwrap();

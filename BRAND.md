@@ -1,11 +1,11 @@
 # Brand
 
-Everything in this file is original to Officoman. No ArtCraft asset — logo, wordmark, icon,
+Everything in this file is original to White Office. No ArtCraft asset — logo, wordmark, icon,
 name or font — was copied, traced or recoloured.
 
 ## The name
 
-**Officoman** · repo `officoman` · words: *Officoman*, *Officoman Nib*, *Officoman Tally*.
+**White Office** · repo `whiteoffice` · words: *White Office*, *White Office Nib*, *White Office Tally*.
 
 Why this one:
 
@@ -35,12 +35,12 @@ A document tile with a folded page corner; the fold doubles as the counter of th
 - The amber fold is the one constant across the suite — every app icon carries it.
 
 ```
-brand/officoman-mark.svg        64×64, primary
-brand/officoman-wordmark.svg    270×80, horizontal lockup
+brand/whiteoffice-mark.svg        64×64, primary
+brand/whiteoffice-wordmark.svg    270×80, horizontal lockup
 brand/preview.html              both options, side by side
 ```
 
-**Known limitation:** the wordmark sets *Officoman* as live text in `Segoe UI`. That is fine
+**Known limitation:** the wordmark sets *White Office* as live text in `Segoe UI`. That is fine
 for a README or a GitHub page, but convert it to outlines in a chosen typeface before it goes
 on anything printed or shipped.
 
@@ -80,7 +80,7 @@ An Arabic set exists if the suite is ever aimed at an Arabic-first audience:
    in any product-facing string, icon, package name or store listing.
 2. Naming upstream in `NOTICE`, `README` provenance and the site's About page is fine and
    required — that is nominative use, describing where the code came from. It is not branding.
-3. Never say or imply Officoman is made by, endorsed by, or affiliated with the ArtCraft Team.
+3. Never say or imply White Office is made by, endorsed by, or affiliated with the ArtCraft Team.
 4. Do not reuse ArtCraft's app icons, `docs/brand/` assets, bundle identifiers or the
    `ai.storyteller.*` reverse-DNS prefix.
 
@@ -110,7 +110,7 @@ The four upstream repositories were imported by `tools/rebrand.py` and the resul
 | `craft-*` crate names inside the tree | Internal code identifiers of those dependencies. |
 | Historical dev notes in `docs/` that mention sibling Crafting Apps | Records of how the upstream code evolved; they name other projects, they do not brand this one. |
 | Test fixture fonts whose internal name table says `DeckCraft Legacy` | Binary `.ttf` fixtures; rewriting a font's name table safely needs a font tool, and they are test-only. |
-| `docs/brand/` under `apps/sheaf` | Recreated with **our** mark, because Sheaf's About dialog `include_bytes!`s it. The files are Officoman's own artwork, not upstream's. |
+| `docs/brand/` under `apps/sheaf` | Recreated with **our** mark, because Sheaf's About dialog `include_bytes!`s it. The files are White Office's own artwork, not upstream's. |
 
 ## Regenerating
 

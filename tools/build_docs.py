@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Generate the Officoman website (docs/) and the four app READMEs.
+"""Generate the White Office website (docs/) and the four app READMEs.
 
 One source of truth: the APPS table below feeds both the site pages and the
 per-app README, so they cannot drift apart.
@@ -191,7 +191,7 @@ def page(title: str, body: str, root: str = "", description: str = "") -> str:
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>{html.escape(title)}</title>
-<meta name="description" content="{html.escape(description or 'Officoman — an open-source office suite: documents, spreadsheets, presentations and PDF.')}">
+<meta name="description" content="{html.escape(description or 'White Office — an open-source office suite: documents, spreadsheets, presentations and PDF.')}">
 <link rel="icon" href="{root}assets/icons/nib.png">
 <link rel="stylesheet" href="{root}assets/style.css">
 </head>
@@ -199,7 +199,7 @@ def page(title: str, body: str, root: str = "", description: str = "") -> str:
 <header class="site">
   <div class="wrap">
     <a class="brand" href="{root}index.html">
-      <img src="{root}assets/officoman-mark.svg" width="26" height="26" alt="">Officoman
+      <img src="{root}assets/whiteoffice-mark.svg" width="26" height="26" alt="">White Office
     </a>
     <nav class="site">
       <a href="{root}apps/index.html">Apps</a>
@@ -211,7 +211,7 @@ def page(title: str, body: str, root: str = "", description: str = "") -> str:
 {body}
 <footer class="site">
   <div class="wrap">
-    <span>Officoman — MIT or Apache-2.0</span>
+    <span>White Office — MIT or Apache-2.0</span>
     <span>·</span>
     <span>Built on the open-source Crafting Apps by the ArtCraft team</span>
     <span>·</span>
@@ -238,7 +238,7 @@ def build_pages() -> None:
     (SITE / "assets" / "style.css").write_text(CSS.strip() + "\n", encoding="utf-8")
     (SITE / ".nojekyll").write_text("", encoding="utf-8")
 
-    for svg in ("officoman-mark.svg", "officoman-wordmark.svg"):
+    for svg in ("whiteoffice-mark.svg", "whiteoffice-wordmark.svg"):
         src = ROOT / "brand" / svg
         if src.exists():
             shutil.copy2(src, SITE / "assets" / svg)
@@ -301,15 +301,15 @@ def build_pages() -> None:
 <div class="wrap"><section>
   <h2 class="section">Where this comes from</h2>
   <div class="note">
-    <b>Officoman is a fork and rebrand.</b> The four applications are derived from the open-source
+    <b>White Office is a fork and rebrand.</b> The four applications are derived from the open-source
     Crafting Apps published by the ArtCraft team under MIT or Apache-2.0, which permits this.
-    The licences require attribution, which Officoman keeps in full; the ArtCraft names and logos
+    The licences require attribution, which White Office keeps in full; the ArtCraft names and logos
     are trademarks and are not used here. <a href="about.html">Read the full provenance</a>.
   </div>
 </section></div>
 </main>"""
     (SITE / "index.html").write_text(
-        page("Officoman — an open-source office suite", body), encoding="utf-8"
+        page("White Office — an open-source office suite", body), encoding="utf-8"
     )
 
     # ---- apps index
@@ -326,7 +326,7 @@ def build_pages() -> None:
 </section></div>
 </main>"""
     (SITE / "apps" / "index.html").write_text(
-        page("Apps — Officoman", body, root="../"), encoding="utf-8"
+        page("Apps — White Office", body, root="../"), encoding="utf-8"
     )
 
     # ---- per app
@@ -370,7 +370,7 @@ def build_pages() -> None:
 </section></div>
 </main>"""
         (SITE / "apps" / f"{app['slug']}.html").write_text(
-            page(f"{app['name']} — Officoman", body, root="../",
+            page(f"{app['name']} — White Office", body, root="../",
                  description=f"{app['name']}: {app['tagline']}"),
             encoding="utf-8",
         )
@@ -380,14 +380,14 @@ def build_pages() -> None:
 <div class="wrap hero">
   <p class="eyebrow">Provenance and licensing</p>
   <h1>Where this <em>comes from</em>.</h1>
-  <p class="lede">Officoman is a fork, and it says so plainly. This page records what was
+  <p class="lede">White Office is a fork, and it says so plainly. This page records what was
      taken, what was changed, and what the licences require.</p>
 </div>
 
 <div class="wrap"><section>
   <h2 class="section">Upstream</h2>
   <table>
-    <thead><tr><th>Officoman</th><th>Derived from</th><th>Licence</th></tr></thead>
+    <thead><tr><th>White Office</th><th>Derived from</th><th>Licence</th></tr></thead>
     <tbody>
       <tr><td><b>Nib</b></td><td>WordCraft</td><td>MIT or Apache-2.0</td></tr>
       <tr><td><b>Tally</b></td><td>GridCraft</td><td>MIT or Apache-2.0</td></tr>
@@ -420,8 +420,8 @@ def build_pages() -> None:
   <h2 class="section">Trademarks</h2>
   <div class="note">
     <b>ArtCraft, DeckCraft, GridCraft, PdfCraft, WordCraft</b> and their logos are trademarks of
-    the ArtCraft Team. They are not covered by the source licences, and Officoman does not use
-    them. Officoman is not affiliated with, endorsed by, or sponsored by the ArtCraft Team.
+    the ArtCraft Team. They are not covered by the source licences, and White Office does not use
+    them. White Office is not affiliated with, endorsed by, or sponsored by the ArtCraft Team.
     Naming upstream in this page is how the licence asks to be credited — nothing more.
   </div>
 </section></div>
@@ -438,7 +438,7 @@ def build_pages() -> None:
 </section></div>
 </main>"""
     (SITE / "about.html").write_text(
-        page("About — Officoman", body), encoding="utf-8"
+        page("About — White Office", body), encoding="utf-8"
     )
 
 
@@ -463,9 +463,9 @@ def build_downloads() -> None:
 
     if found:
         rows = []
-        launcher = next(iter(sorted(dist.glob("officoman-launcher-*-windows-x64-portable.zip"))), None)
+        launcher = next(iter(sorted(dist.glob("whiteoffice-launcher-*-windows-x64-portable.zip"))), None)
         if launcher:
-            lv = launcher.name.split("-windows-x64")[0].replace("officoman-launcher-", "")
+            lv = launcher.name.split("-windows-x64")[0].replace("whiteoffice-launcher-", "")
             rows.append(
                 f"""<tr style="background:#FCFBF8">
               <td><b>Launcher</b></td>
@@ -534,7 +534,7 @@ def build_downloads() -> None:
 </section></div>
 </main>"""
     (SITE / "download.html").write_text(
-        page("Download — Officoman", body, description="Windows x64 portable builds of the four Officoman apps."),
+        page("Download — White Office", body, description="Windows x64 portable builds of the four White Office apps."),
         encoding="utf-8",
     )
 
@@ -550,7 +550,7 @@ def build_readmes() -> None:
 
 <p align="center"><b>{app['tagline']}</b></p>
 
-<p align="center">Part of <a href="../../">Officoman</a>, an open-source office suite.</p>
+<p align="center">Part of <a href="../../">White Office</a>, an open-source office suite.</p>
 
 ---
 
@@ -586,14 +586,14 @@ not been compiled or tested on this machine yet. Build it before trusting it wit
 This is a modified fork of **{app['upstream']}**, copyright (c) 2026 the ArtCraft Team and the
 {app['upstream']} contributors, dual-licensed MIT or Apache-2.0.
 
-Modifications: renamed, rebranded and restructured for Officoman, 2026. See the repository
+Modifications: renamed, rebranded and restructured for White Office, 2026. See the repository
 [NOTICE](../../NOTICE) for the full attribution, and [BRAND.md](../../BRAND.md) for what the
 rebrand covers.
 
 The ArtCraft, {app['upstream']} and related names and logos are trademarks of the ArtCraft Team
-and are not used by this project. Officoman is not affiliated with them.
+and are not used by this project. White Office is not affiliated with them.
 
-Officoman itself is MIT or Apache-2.0, at your option.
+White Office itself is MIT or Apache-2.0, at your option.
 """
         (APPS_DIR / app["slug"] / "README.md").write_text(md, encoding="utf-8")
 

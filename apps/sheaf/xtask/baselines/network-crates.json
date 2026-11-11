@@ -1,0 +1,74 @@
+[
+  {
+    "crate": "sheaf-cli",
+    "name": "hyper",
+    "reachable": true,
+    "path": "sheaf-cli -> sheaf-engine -> sheaf-print -> craft-print -> winprint -> reqwest -> hyper"
+  },
+  {
+    "crate": "sheaf-cli",
+    "name": "reqwest",
+    "reachable": true,
+    "path": "sheaf-cli -> sheaf-engine -> sheaf-print -> craft-print -> winprint -> reqwest"
+  },
+  {
+    "crate": "sheaf-cli",
+    "name": "socket2",
+    "reachable": true,
+    "path": "sheaf-cli -> sheaf-engine -> sheaf-print -> craft-print -> winprint -> reqwest -> hyper-util -> socket2"
+  },
+  {
+    "crate": "sheaf-cli",
+    "name": "tokio",
+    "reachable": true,
+    "path": "sheaf-cli -> sheaf-engine -> sheaf-print -> craft-print -> winprint -> reqwest -> tokio"
+  },
+  {
+    "crate": "sheaf-automation",
+    "name": "hyper",
+    "reachable": true,
+    "path": "sheaf-automation -> sheaf-engine -> sheaf-print -> craft-print -> winprint -> reqwest -> hyper"
+  },
+  {
+    "crate": "sheaf-automation",
+    "name": "reqwest",
+    "reachable": true,
+    "path": "sheaf-automation -> sheaf-engine -> sheaf-print -> craft-print -> winprint -> reqwest"
+  },
+  {
+    "crate": "sheaf-automation",
+    "name": "socket2",
+    "reachable": true,
+    "path": "sheaf-automation -> sheaf-engine -> sheaf-print -> craft-print -> winprint -> reqwest -> hyper-util -> socket2"
+  },
+  {
+    "crate": "sheaf-automation",
+    "name": "tokio",
+    "reachable": true,
+    "path": "sheaf-automation -> sheaf-engine -> sheaf-print -> craft-print -> winprint -> reqwest -> tokio"
+  },
+  {
+    "crate": "sheaf-engine",
+    "name": "hyper",
+    "reachable": true,
+    "path": "sheaf-engine -> sheaf-print -> craft-print -> winprint -> reqwest -> hyper"
+  },
+  {
+    "crate": "sheaf-engine",
+    "name": "reqwest",
+    "reachable": true,
+    "path": "sheaf-engine -> sheaf-print -> craft-print -> winprint -> reqwest"
+  },
+  {
+    "crate": "sheaf-engine",
+    "name": "socket2",
+    "reachable": true,
+    "path": "sheaf-engine -> sheaf-print -> craft-print -> winprint -> reqwest -> hyper-util -> socket2"
+  },
+  {
+    "crate": "sheaf-engine",
+    "name": "tokio",
+    "reachable": true,
+    "path": "sheaf-engine -> sheaf-print -> craft-print -> winprint -> reqwest -> tokio"
+  }
+]

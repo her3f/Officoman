@@ -121,7 +121,7 @@ is GUI, `tally-cli.exe` console), signs both executables, builds the MSI with Wi
 the MSI, and zips a portable build.
 
 - `tally.wxs`: a dual-scope package (per-user by default into
-  `%LOCALAPPDATA%\Programs\Officoman\Tally`, per-machine into `Program Files\Officoman\Tally` (`Program Files (x86)` for the 32-bit build),
+  `%LOCALAPPDATA%\Programs\White Office\Tally`, per-machine into `Program Files\White Office\Tally` (`Program Files (x86)` for the 32-bit build),
   see `packaging/windows/INSTALLATION.md`), advertised Start Menu shortcut, App
   Paths (Win+R `tally`). File types: ProgIds `Tally.Workbook` (`.xlsx`, `.xlsm`) and
   `Tally.TextData` (`.csv`, `.tsv`), listed under each extension's `OpenWithProgids` and
@@ -209,7 +209,7 @@ shows a `::warning::`. Never store these as org- or repo-level Actions secrets (
 
 | Secret | Used for |
 |---|---|
-| `APPLE_CERTIFICATE` | single-line base64 `.p12`: "Developer ID Application: Officoman (DJ6XS33FX8)" |
+| `APPLE_CERTIFICATE` | single-line base64 `.p12`: "Developer ID Application: White Office (DJ6XS33FX8)" |
 | `APPLE_CERTIFICATE_PASSWORD` | password for that `.p12` |
 | `KEYCHAIN_PASSWORD` | password for the temporary CI keychain (random if unset) |
 | `APPLE_ID` | Apple ID used by `notarytool` |
@@ -218,7 +218,7 @@ shows a `::warning::`. Never store these as org- or repo-level Actions secrets (
 | `WINDOWS_CERTIFICATE`, `WINDOWS_CERTIFICATE_PASSWORD` | `.pfx` signing (unused by storytold; Azure is used) |
 | `AZURE_TENANT_ID`, `AZURE_CLIENT_ID`, `AZURE_CLIENT_SECRET` | service principal for Azure Trusted Signing |
 | `AZURE_SIGNING_ENDPOINT` | `https://eus.codesigning.azure.net` |
-| `AZURE_SIGNING_ACCOUNT`, `AZURE_CERT_PROFILE` | `Officoman`, `officoman` |
+| `AZURE_SIGNING_ACCOUNT`, `AZURE_CERT_PROFILE` | `White Office`, `whiteoffice` |
 
 `GITHUB_TOKEN` creates the release; only the final job gets `contents: write`.
 

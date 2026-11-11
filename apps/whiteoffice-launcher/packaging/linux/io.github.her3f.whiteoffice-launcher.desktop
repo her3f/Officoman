@@ -1,0 +1,13 @@
+[Desktop Entry]
+Type=Application
+Name=White Office Launcher
+GenericName=App Launcher
+Comment=Install, update and launch the Craft App Suite
+Exec=whiteoffice-launcher
+TryExec=whiteoffice-launcher
+Icon=io.github.her3f.whiteoffice-launcher
+Terminal=false
+StartupNotify=true
+StartupWMClass=io.github.her3f.whiteoffice-launcher
+Categories=Utility;PackageManager;
+Keywords=whiteoffice;craft;launcher;installer;updater;photocraft;filmcraft;apps;

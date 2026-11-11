@@ -21,3 +21,8 @@ nib-mcp = { workspace = true }
 nib-zotero = { workspace = true }
 serde_json = { workspace = true }
 sys-locale = "0.3"
+
+[dev-dependencies]
+nib-fonts = { workspace = true }
+image = { workspace = true }
+zip = { workspace = true }

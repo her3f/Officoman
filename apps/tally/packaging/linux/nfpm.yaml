@@ -13,7 +13,7 @@ release: 1
 section: misc
 priority: optional
 maintainer: ${TALLY_MAINTAINER}
-vendor: Officoman
+vendor: White Office
 homepage: https://officoman.whitebearom.com/apps/tally.html
 license: MIT OR Apache-2.0
 description: |-

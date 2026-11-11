@@ -3,8 +3,8 @@
   <?ifndef HasCraftFontLicences ?>
   <?define HasCraftFontLicences=0 ?>
   <?endif?>
-  <Package Name="Sheaf" Manufacturer="Officoman" Version="$(var.Version)" UpgradeCode="EA00C367-7270-4C50-9D8B-A7A5C88AD27F" Scope="perUserOrMachine" Compressed="yes" Language="1033">
-    <SummaryInformation Description="Sheaf PDF workbench" Manufacturer="Officoman" />
+  <Package Name="Sheaf" Manufacturer="White Office" Version="$(var.Version)" UpgradeCode="EA00C367-7270-4C50-9D8B-A7A5C88AD27F" Scope="perUserOrMachine" Compressed="yes" Language="1033">
+    <SummaryInformation Description="Sheaf PDF workbench" Manufacturer="White Office" />
     <?include $(sys.SOURCEFILEDIR)install-policy.wxi?>
     <!-- HKLM registrations must never point into a per-user installation (#305). Allow removal
          of an existing installation even if an older MSI let it install per-user. -->
@@ -66,7 +66,7 @@
     <UIRef Id="SheafInstallerUI" />
 
     <StandardDirectory Id="ProgramFiles6432Folder">
-      <Directory Id="CraftSuiteFolder" Name="Officoman">
+      <Directory Id="CraftSuiteFolder" Name="White Office">
         <Directory Id="INSTALLFOLDER" Name="Sheaf">
         <Directory Id="ModelsFolder" Name="models" />
       </Directory>
@@ -133,14 +133,17 @@
            ones point at a Windows Installer descriptor rather than the program, which Windows can't
            use as a file handler (#107), and 0.2.1's advertised one went missing from the Start menu
            (#143). Each has its own component with an HKLM key path, so Windows Installer removes it
-           on uninstall; in this per-machine package both folders are the all-users ones. -->
+           on uninstall; in this per-machine package both folders are the all-users ones. They take
+           their icon from sheaf.exe, not the Icon table: Windows Installer keeps that copy under
+           the ProductCode, which every release changes, so a taskbar pin made from a shortcut that
+           named it shows a blank icon once an update removes the old release. -->
       <Component Id="SheafStartMenuShortcut" Directory="ProgramMenuFolder" Guid="DC028192-C233-4F99-9A77-ED458C60DF26">
-        <Shortcut Id="StartMenuShortcut" Name="Sheaf" Description="Sheaf PDF workbench" Target="[#SheafExe]" WorkingDirectory="INSTALLFOLDER" Icon="SheafIcon.ico" IconIndex="0" />
+        <Shortcut Id="StartMenuShortcut" Name="Sheaf" Description="Sheaf PDF workbench" Target="[#SheafExe]" WorkingDirectory="INSTALLFOLDER" />
         <RegistryValue Root="HKMU" Key="Software\Sheaf\Shortcuts" Name="StartMenu" Type="integer" Value="1" KeyPath="yes" />
       </Component>
 
       <Component Id="SheafDesktopShortcut" Directory="DesktopFolder" Guid="F6948627-32AB-4D78-8865-0FDF417CE442" Condition="INSTALLDESKTOPSHORTCUT = 1">
-        <Shortcut Id="DesktopShortcut" Name="Sheaf" Description="Sheaf PDF workbench" Target="[#SheafExe]" WorkingDirectory="INSTALLFOLDER" Icon="SheafIcon.ico" IconIndex="0" />
+        <Shortcut Id="DesktopShortcut" Name="Sheaf" Description="Sheaf PDF workbench" Target="[#SheafExe]" WorkingDirectory="INSTALLFOLDER" />
         <RegistryValue Root="HKMU" Key="Software\Sheaf\Shortcuts" Name="Desktop" Type="integer" Value="1" KeyPath="yes" />
       </Component>
 
@@ -156,6 +159,13 @@
         <RegistryValue Root="HKMU" Key="Software\Classes\SystemFileAssociations\.pdf\shell\Sheaf.Edit" Name="Icon" Value="&quot;[#SheafExe]&quot;,0" Type="string" />
         <RegistryValue Root="HKMU" Key="Software\Classes\SystemFileAssociations\.pdf\shell\Sheaf.Edit" Name="MultiSelectModel" Value="Document" Type="string" />
         <RegistryValue Root="HKMU" Key="Software\Classes\SystemFileAssociations\.pdf\shell\Sheaf.Edit\command" Value="&quot;[#SheafExe]&quot; &quot;%1&quot;" Type="string" />
+        <!-- "Combine files in Sheaf" (#585), on the same switch: each selected file starts one
+             launch of sheaf.exe with the combine option, and the running Sheaf collects them into its Combine
+             files tab (single_instance). -->
+        <RegistryValue Root="HKMU" Key="Software\Classes\SystemFileAssociations\.pdf\shell\Sheaf.Combine" Value="Combine files in Sheaf" Type="string" />
+        <RegistryValue Root="HKMU" Key="Software\Classes\SystemFileAssociations\.pdf\shell\Sheaf.Combine" Name="Icon" Value="&quot;[#SheafExe]&quot;,0" Type="string" />
+        <RegistryValue Root="HKMU" Key="Software\Classes\SystemFileAssociations\.pdf\shell\Sheaf.Combine" Name="MultiSelectModel" Value="Document" Type="string" />
+        <RegistryValue Root="HKMU" Key="Software\Classes\SystemFileAssociations\.pdf\shell\Sheaf.Combine\command" Value="&quot;[#SheafExe]&quot; --combine &quot;%1&quot;" Type="string" />
       </Component>
 
       <!-- Image context menu (#190): "Create PDF with Sheaf…" opens the DPI chooser, without

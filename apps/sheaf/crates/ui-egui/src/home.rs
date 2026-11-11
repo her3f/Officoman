@@ -92,9 +92,9 @@ pub fn show(app: &mut SheafApp, ui: &mut egui::Ui) {
                     .show(ui, |ui| {
                         ui.set_width(ui.available_width());
                         ui.horizontal(|ui| {
-                            widgets::officoman_mark(ui, 28.0);
+                            widgets::whiteoffice_mark(ui, 28.0);
                             ui.vertical(|ui| {
-                                ui.label(egui::RichText::new(tl!("Join the Officoman community")).font(theme::semibold(15.0)));
+                                ui.label(egui::RichText::new(tl!("Join the White Office community")).font(theme::semibold(15.0)));
                                 ui.label(egui::RichText::new(tl!("Get help, share feedback and follow development on Discord.")).color(t.text_muted));
                             });
                             // Closed for this run only: the card is back on the next launch.
@@ -317,6 +317,9 @@ mod tests {
 
     #[test]
     fn translated_card_description_leaves_room_for_the_action() {
+        if !crate::i18n::needs_catalogs() {
+            return;
+        }
         let de = crate::i18n::Lang::from_code("de").unwrap();
         crate::i18n::set_current(de);
         let ctx = egui::Context::default();

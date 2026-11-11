@@ -1,10 +1,10 @@
-//! Where Sheaf and the Officoman community live on the web. One table, so the Help menu, the
+//! Where Sheaf and the White Office community live on the web. One table, so the Help menu, the
 //! About dialog, the home screen, the CLI and the README agree.
 
 use icu_properties::props::Script;
 use std::path::{Path, PathBuf};
 
-/// The app's name in Officoman URLs (`officoman.whitebearom.com/apps/{APP}`, `github.com/storytold/{APP}`).
+/// The app's name in White Office URLs (`officoman.whitebearom.com/apps/{APP}`, `github.com/storytold/{APP}`).
 pub const APP: &str = "sheaf";
 
 pub const DISCORD: &str = "https://github.com/her3f/officoman/discussions";
@@ -24,10 +24,10 @@ pub struct Link {
 
 /// In the order they are shown. Discord comes first: it is where people get help fastest.
 pub const LINKS: &[Link] = &[
-    Link { command: "help.discord", label: "Join the Officoman Discord", url: DISCORD, icon: "messages-square" },
+    Link { command: "help.discord", label: "Join the White Office Discord", url: DISCORD, icon: "messages-square" },
     Link { command: "help.app_page", label: "Sheaf web page", url: APP_PAGE, icon: "globe" },
     Link { command: "help.github", label: "Sheaf on GitHub", url: GITHUB, icon: "code-xml" },
-    Link { command: "help.website", label: "Officoman website", url: WEBSITE, icon: "external-link" },
+    Link { command: "help.website", label: "White Office website", url: WEBSITE, icon: "external-link" },
 ];
 
 pub fn for_command(id: &str) -> Option<&'static Link> {
@@ -227,7 +227,25 @@ pub fn read_remote_document(path: &Path) -> Result<Vec<u8>, RemoteDocumentPathEr
     if meta.len() > MAX_REMOTE_DOCUMENT_BYTES {
         return Err(RemoteDocumentPathError::TooLarge);
     }
-    let file = std::fs::File::open(path).map_err(|e| RemoteDocumentPathError::Read(e.to_string()))?;
+    // The path can change between that check and the open (a file replaced by a FIFO): opened
+    // without blocking, and checked again on the handle, which is what is read.
+    let mut options = std::fs::OpenOptions::new();
+    options.read(true);
+    #[cfg(unix)]
+    {
+        use std::os::unix::fs::OpenOptionsExt as _;
+        // O_NONBLOCK: Linux 0o4000, macOS and the BSDs 0x4.
+        options.custom_flags(if cfg!(target_os = "linux") { 0o4000 } else { 0x4 });
+    }
+    let file = options.open(path).map_err(|e| RemoteDocumentPathError::Read(e.to_string()))?;
+    let meta = file.metadata().map_err(|e| RemoteDocumentPathError::Read(e.to_string()))?;
+    if !meta.is_file() {
+        return Err(RemoteDocumentPathError::NotAFile);
+    }
+    // the opened handle's own length: a file replaced after the path check must not size the buffer
+    if meta.len() > MAX_REMOTE_DOCUMENT_BYTES {
+        return Err(RemoteDocumentPathError::TooLarge);
+    }
     let mut bytes = Vec::with_capacity(usize::try_from(meta.len()).unwrap_or(0));
     file.take(MAX_REMOTE_DOCUMENT_BYTES.saturating_add(1)).read_to_end(&mut bytes).map_err(|e| RemoteDocumentPathError::Read(e.to_string()))?;
     if u64::try_from(bytes.len()).map_or(true, |n| n > MAX_REMOTE_DOCUMENT_BYTES) {

@@ -185,7 +185,7 @@ fn tree() -> Vec<(&'static str, Vec<Entry>)> {
                 ("Agent Control (MCP)…", "dialog:agents", None),
                 ("Contributors…", "dialog:about:Contributors", None),
                 ("Tally on officoman.whitebearom.com", "url:https://officoman.whitebearom.com/apps/tally.html", None),
-                ("Join the Officoman Discord…", "url:https://github.com/her3f/officoman/discussions", None),
+                ("Join the White Office Discord…", "url:https://github.com/her3f/officoman/discussions", None),
             ],
         ),
     ]

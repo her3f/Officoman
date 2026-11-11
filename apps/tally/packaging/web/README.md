@@ -1,5 +1,6 @@
 # Hosting Tally for the web
 
+
 `tally-web-<version>.zip` (from the GitHub release, or `packaging/web/package.sh`) holds a
 static site in `tally-web-<version>/`:
 
@@ -76,6 +77,97 @@ Local test: `python3 -m http.server 8765` inside the folder, then open http://lo
   (whose Backstage view then never opens); `?chrome=notitlebar` or `?chrome=nofiletab` leave out just
   one. Use them when the host window already shows the file name and owns the files, so the sheet's
   own Open or Save As cannot replace what the host thinks is open. Everything stays on by default.
+
+### The parent bridge (`?host=parent`)
+
+A page framing Tally in a **same-origin** iframe can add `?host=parent` to the iframe's URL
+(`https://example.com/tally/?host=parent`) and have Tally hand its files over instead of
+downloading them. The two sides talk `postMessage` with plain window messages that carry a
+`type`:
+
+| Message | Direction | Fields |
+|---|---|---|
+| `tally:ready` | app → page | `version`, `appVersion`: the app is listening; send a file now |
+| `tally:open` | page → app | `name`, `bytes` (an `ArrayBuffer` or `Uint8Array`): open like File › Open |
+| `tally:save` | app → page | `name`, `bytes` (a transferred `ArrayBuffer`): every file the app would otherwise download (Save, Save As, Export as PDF). The page stores it and reports failures itself. |
+| `tally:dirty` | app → page | `dirty`: unsaved changes appeared or went away |
+| `tally:failed` | app → page | `error`: the app couldn't start |
+
+In host mode the app starts with an empty workbook instead of a sample, so the framing page
+should guard leaving the page while changes are unsaved. `&author=` names the user for the
+notes and comments the app creates. Opening `?host=parent` outside an iframe gives the normal
+app with downloads.
+
+### Embedding without an iframe (page host mode)
+
+A page that loads the Tally module into its own document — its own `<canvas
+id="tally_canvas">` inside a component, sized to a box beside the page's own header and
+controls — opts in with `data-host="page"` on that canvas. The behaviour is the same as the
+parent bridge, except the transport is DOM `CustomEvent`s on the canvas instead of
+`postMessage`: the app dispatches `tally:ready`, `tally:save`, `tally:dirty` and
+`tally:failed` on the canvas with the message fields above as the event's `detail`, and the
+page dispatches `tally:open` on the canvas with `detail: { name, bytes }` to open a
+workbook. Events don't bubble, so two editors on one page can't hear each other; listen on the
+canvas itself.
+
+```html
+<canvas id="tally_canvas" data-host="page" style="width: 100%; height: 600px; border: 0;"></canvas>
+```
+
+```js
+import init from "./tally-web-<hash>.js"; // the wasm-bindgen glue shipped with the app
+
+// Listen first: the app announces itself while `init` runs.
+const canvas = document.getElementById("tally_canvas");
+
+canvas.addEventListener("tally:ready", async () => {
+  // Open a workbook of the page's own, as with File › Open.
+  const bytes = await workbookBytes(); // an ArrayBuffer or Uint8Array
+  canvas.dispatchEvent(new CustomEvent("tally:open", {
+    detail: { name: "Budget.xlsx", bytes },
+  }));
+});
+
+// Every file Tally would otherwise download (Save, Save As, Export as PDF) arrives here.
+canvas.addEventListener("tally:save", (event) => {
+  const { name, bytes } = event.detail; // bytes is an ArrayBuffer
+  storeFile(name, bytes);
+});
+
+canvas.addEventListener("tally:dirty", (event) => {
+  warnBeforeLeaving(event.detail.dirty);
+});
+canvas.addEventListener("tally:failed", (event) => {
+  showError(event.detail.error);
+});
+
+await init({ module_or_path: "./tally-web-<hash>_bg.wasm" });
+```
+
+As with the parent bridge, the app starts with an empty workbook instead of a sample, and
+`?author=` on the page's URL names the user for new notes and comments. The `data-host` value
+must be exactly `page`; anything else is ignored, and the app runs as a standalone page with
+downloads.
+
+The messages and both transports are the shared contract of [`craft-web-host`](https://github.com/storytold/craft-libs/tree/main/crates/web-host) (storytold/craft-libs#420), the same for every Craft app: its README lists every message, including `saved`, with the compatibility notes. In `tally:ready`, `version` is the contract's (`"1"`) and `appVersion` is this app's release. Tally reads bytes, so a host sends `bytes`, not a `File`.
+
+### Trust and limits
+
+- **Who is trusted.** In page host mode the page and Tally share one document, so any script on the page can drive the app: open files in it and receive what it saves. Use this mode only for a page you control. The iframe mode (`?host=parent`) answers only the parent window, on the page's own origin.
+- **Files from the host are untrusted input.** An opened file goes through the same reading as one picked with File ▸ Open or dropped on the window, with the same format limits; before it is copied into the app's memory, its size is checked against the host open limit (512 MiB) and a larger file is refused, and a name is cut to 255 characters.
+- **The event and message names are the interface.** `tally:ready`, `tally:open`, `tally:save`, `tally:dirty` and `tally:failed`, and the fields they carry (the same as the `?host=parent` messages), stay stable; changing one is a breaking change.
+
+### Driving it from the page (`window.tally`)
+
+Every Tally web build puts `window.tally` on the page, from [`craft-web-api`](https://github.com/storytold/craft-libs/tree/main/crates/web-api) (storytold/craft-libs#413), the same shape in every Craft app. `tally.request(method, params)` calls any method of the control channel the desktop app serves (`docs/control-protocol.md`), and `execute(command, params)`, `commands()`, `docInspect(params)`, `uiInspect(params)` and `screenshot(params)` are shortcuts for the common ones. Each returns a Promise that resolves with the method's result and rejects with an `Error`; a call the app does not answer within 30 seconds rejects, and the app skips it if it has not started it; a call the app has already taken still finishes, so a retry after a timeout can apply a command twice.
+
+```js
+const book = await tally.docInspect();               // sheets, used ranges, tables, charts, names, selection
+await tally.execute("cell.set", { cell: "A1", input: "Total" });
+const { data } = await tally.screenshot();          // the canvas as PNG (base64)
+```
+
+The API is there in every mode, with or without a host. Opening a workbook, handing a saved or exported file to the page, the file name and the unsaved flag stay with the host messages above.
 
 ## Renderer selection
 

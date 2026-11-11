@@ -16,7 +16,7 @@ if ($env:GITHUB_ACTIONS -ne 'true' -or $env:RUNNER_OS -ne 'Windows' -or $env:RUN
 }
 if (-not $WorkDir) { $WorkDir = Join-Path $env:RUNNER_TEMP 'tally-shortcut-smoke' }
 $Root = (Resolve-Path (Join-Path $PSScriptRoot '..\..')).Path
-$InstallDir = Join-Path $env:ProgramFiles 'Officoman\Tally'
+$InstallDir = Join-Path $env:ProgramFiles 'White Office\Tally'
 $DesktopLink = Join-Path ([Environment]::GetFolderPath('CommonDesktopDirectory')) 'Tally.lnk'
 $StartLink = Join-Path ([Environment]::GetFolderPath('CommonPrograms')) 'Tally.lnk'
 $ChoiceKey = 'HKLM:\Software\Tally\Installer'

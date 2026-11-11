@@ -31,5 +31,5 @@ jobs:
     with:
       app-name: nib
       app-dir: Nib
-      install-relative-path: Programs/Officoman/Nib
+      install-relative-path: Programs/White Office/Nib
       install-scope: perUser

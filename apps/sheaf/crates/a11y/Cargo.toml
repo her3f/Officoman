@@ -14,6 +14,5 @@ workspace = true
 sheaf-cos = { workspace = true }
 sheaf-model = { workspace = true }
 sheaf-content = { workspace = true }
-sheaf-filters = { workspace = true }
 sheaf-fonts = { workspace = true }
 thiserror.workspace = true

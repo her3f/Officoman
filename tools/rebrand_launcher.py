@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
-"""Rebrand the upstream Craft App Launcher into the Officoman Launcher.
+"""Rebrand the upstream Craft App Launcher into the White Office Launcher.
 
 Reads  _vendor/craft-launcher/
-Writes apps/officoman-launcher/
+Writes apps/whiteoffice-launcher/
 
 Text substitution only. The catalog (which four apps the launcher knows about), the
 per-app details data and the bundled icons are patched separately, because they are
@@ -18,7 +18,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
 SRC = ROOT / "_vendor" / "craft-launcher"
-DST = ROOT / "apps" / "officoman-launcher"
+DST = ROOT / "apps" / "whiteoffice-launcher"
 
 SKIP_SUFFIX = {
     ".png", ".jpg", ".jpeg", ".gif", ".ico", ".icns", ".tiff", ".tif", ".webp",
@@ -27,25 +27,25 @@ SKIP_SUFFIX = {
 
 # Longest / most specific first: the generic brand swap must not eat these.
 RULES = [
-    ("ai.storyteller.artcraft-launcher", "io.github.her3f.officoman-launcher"),
+    ("ai.storyteller.artcraft-launcher", "io.github.her3f.whiteoffice-launcher"),
     ("ai.storyteller.", "io.github.her3f."),
     ("ai/storyteller/", "io/github/her3f/"),
-    ("ARTCRAFT_LAUNCHER_", "OFFICOMAN_LAUNCHER_"),
-    ("artcraft-launcher", "officoman-launcher"),
-    ("ArtCraft Launcher", "Officoman Launcher"),
-    ("ARTCRAFT TEAM", "OFFICOMAN TEAM"),
-    ("ARTCRAFT_TEAM_ID", "OFFICOMAN_TEAM_ID"),
+    ("ARTCRAFT_LAUNCHER_", "WHITEOFFICE_LAUNCHER_"),
+    ("artcraft-launcher", "whiteoffice-launcher"),
+    ("ArtCraft Launcher", "White Office Launcher"),
+    ("ARTCRAFT TEAM", "WHITEOFFICE TEAM"),
+    ("ARTCRAFT_TEAM_ID", "WHITEOFFICE_TEAM_ID"),
     ("ai.storyteller", "io.github.her3f"),
-    ("Learning Machines LLC", "Officoman"),
+    ("Learning Machines LLC", "White Office"),
     # The launcher's own repository only. The upstream git dependencies (egui, craft-libs,
     # craft-fonts, craft-i18n) and the screenshot asset repo stay where they are: rewriting
     # them breaks dependency resolution.
     ("@SELF@", "her3f/officoman"),
     ("getartcraft.com", "officoman.whitebearom.com"),
     ("discord.gg/artcraft", "github.com/her3f/officoman/discussions"),
-    ("ArtCraft", "Officoman"),
-    ("artcraft", "officoman"),
-    ("ARTCRAFT", "OFFICOMAN"),
+    ("ArtCraft", "White Office"),
+    ("artcraft", "whiteoffice"),
+    ("ARTCRAFT", "WHITEOFFICE"),
 ]
 
 

@@ -1,0 +1,106 @@
+name: build
+
+# Builds every app on all three desktop platforms.
+#
+# Windows binaries are also built locally with MinGW-w64; this workflow is the only
+# way to get macOS and Linux binaries, because neither can be produced from Windows
+# (they need the platform's own system libraries, windowing headers and linker).
+#
+# Artifacts are attached to the run. To publish them, download, then upload to the
+# server's /dl/ directory next to release_info.json.
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths-ignore: ['docs/**', '**.md']
+
+env:
+  CARGO_TERM_COLOR: always
+  CARGO_INCREMENTAL: "0"
+
+jobs:
+  build:
+    name: ${{ matrix.app }} · ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+        app: [nib, tally, podium, sheaf]
+    defaults:
+      run:
+        shell: bash
+        working-directory: apps/${{ matrix.app }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Linux build dependencies
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            libxkbcommon-dev libwayland-dev libx11-dev libxrandr-dev libxi-dev \
+            libgl1-mesa-dev libasound2-dev pkg-config
+
+      - uses: dtolnay/rust-toolchain@stable
+
+      - uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: apps/${{ matrix.app }}
+
+      - name: Build
+        run: cargo build --release -p ${{ matrix.app }} -p ${{ matrix.app }}-cli
+
+      # ---- Windows -------------------------------------------------------
+      - name: Package (Windows)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        working-directory: .
+        run: |
+          $v = (Select-String -Path "apps/${{ matrix.app }}/Cargo.toml" -Pattern '^version\s*=\s*"([^"]+)"').Matches.Groups[1].Value
+          $rel = "apps/${{ matrix.app }}/target/release"
+          $out = "dist/${{ matrix.app }}-$v-windows-x64"
+          New-Item -ItemType Directory -Force -Path $out | Out-Null
+          Copy-Item "$rel/${{ matrix.app }}.exe" $out
+          Copy-Item "$rel/${{ matrix.app }}-cli.exe" $out
+          Copy-Item "apps/${{ matrix.app }}/NOTICE" $out -ErrorAction SilentlyContinue
+          Copy-Item "apps/${{ matrix.app }}/LICENSE-MIT" $out -ErrorAction SilentlyContinue
+          Copy-Item "apps/${{ matrix.app }}/LICENSE-APACHE" $out -ErrorAction SilentlyContinue
+          Copy-Item "apps/${{ matrix.app }}/ATTRIBUTION.md" $out -ErrorAction SilentlyContinue
+          Compress-Archive -Path "$out/*" -DestinationPath "dist/${{ matrix.app }}-$v-windows-x64-portable.zip"
+
+      # ---- macOS ---------------------------------------------------------
+      - name: Package (macOS)
+        if: runner.os == 'macOS'
+        working-directory: .
+        run: |
+          v=$(sed -n 's/^version *= *"\(.*\)"/\1/p' "apps/${{ matrix.app }}/Cargo.toml" | head -1)
+          rel="apps/${{ matrix.app }}/target/release"
+          out="dist/${{ matrix.app }}-$v-macos-universal"
+          mkdir -p "$out"
+          cp "$rel/${{ matrix.app }}" "$rel/${{ matrix.app }}-cli" "$out"/
+          cp "apps/${{ matrix.app }}/NOTICE" "apps/${{ matrix.app }}/LICENSE-MIT" \
+             "apps/${{ matrix.app }}/LICENSE-APACHE" "apps/${{ matrix.app }}/ATTRIBUTION.md" "$out"/ 2>/dev/null || true
+          tar -czf "dist/${{ matrix.app }}-$v-macos-universal.tar.gz" -C dist "$(basename "$out")"
+
+      # ---- Linux ---------------------------------------------------------
+      - name: Package (Linux)
+        if: runner.os == 'Linux'
+        working-directory: .
+        run: |
+          v=$(sed -n 's/^version *= *"\(.*\)"/\1/p' "apps/${{ matrix.app }}/Cargo.toml" | head -1)
+          rel="apps/${{ matrix.app }}/target/release"
+          out="dist/${{ matrix.app }}-$v-linux-x86_64"
+          mkdir -p "$out"
+          cp "$rel/${{ matrix.app }}" "$rel/${{ matrix.app }}-cli" "$out"/
+          cp "apps/${{ matrix.app }}/NOTICE" "apps/${{ matrix.app }}/LICENSE-MIT" \
+             "apps/${{ matrix.app }}/LICENSE-APACHE" "apps/${{ matrix.app }}/ATTRIBUTION.md" "$out"/ 2>/dev/null || true
+          tar -czf "dist/${{ matrix.app }}-$v-linux-x86_64.tar.gz" -C dist "$(basename "$out")"
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.app }}-${{ matrix.os }}
+          path: dist/*
+          if-no-files-found: error

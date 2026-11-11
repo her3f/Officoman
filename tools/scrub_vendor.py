@@ -28,10 +28,10 @@ ROOT = Path(__file__).resolve().parent.parent
 APPS = ROOT / "apps"
 
 ENTITY = [
-    ("Learning Machines LLC", "Officoman"),
-    ("LearningMachinesInc", "Officoman"),
-    ("learningmachines", "officoman"),
-    ("LearningMachines", "Officoman"),
+    ("Learning Machines LLC", "White Office"),
+    ("LearningMachinesInc", "White Office"),
+    ("learningmachines", "whiteoffice"),
+    ("LearningMachines", "White Office"),
 ]
 
 BRAND_DIR = "docs/brand/"
@@ -52,7 +52,7 @@ UPDATE_APP = {
 UPDATE_BLOCK = '''pub const UPDATE_APP: craft_update::app::App = craft_update::app::App {{
     icon_png: Some(include_bytes!("../../../assets/app-icon/hicolor/128x128/apps/io.github.her3f.{slug}.png")),
     accent: Some([{accent}]),
-    developer: "Officoman",
+    developer: "White Office",
     ..craft_update::app::App::new(
         "{slug}",
         "{name}",

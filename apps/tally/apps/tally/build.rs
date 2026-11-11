@@ -16,7 +16,7 @@ fn main() {
     res.set_icon("../../assets/app-icon/tally.ico")
         .set("ProductName", "Tally")
         .set("FileDescription", "Tally spreadsheet")
-        .set("CompanyName", "Officoman")
+        .set("CompanyName", "White Office")
         .set("LegalCopyright", "Copyright (c) the Tally authors. MIT OR Apache-2.0.")
         .set("OriginalFilename", "tally.exe")
         .set("InternalName", "tally");

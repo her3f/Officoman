@@ -14,4 +14,8 @@ sheaf-annot = { workspace = true }
 sheaf-forms = { workspace = true }
 sheaf-model = { workspace = true }
 roxmltree = "0.21"
+base64 = "0.23"
 thiserror = { workspace = true }
+
+[dev-dependencies]
+proptest = { workspace = true }

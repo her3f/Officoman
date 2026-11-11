@@ -11,7 +11,7 @@ param([string[]]$Apps = @('nib', 'tally', 'podium', 'sheaf'))
 $ErrorActionPreference = 'Continue'
 $root = Split-Path -Parent $PSScriptRoot
 $python = 'C:\Users\Her3f\.dsh\dsh-runtimes\dsh-primary-runtime\dependencies\python\python.exe'
-$release = 'C:\Users\Her3f\build\officoman-target\release'
+$release = 'C:\Users\Her3f\build\whiteoffice-target\release'
 
 foreach ($app in $Apps) {
     if (-not (Test-Path (Join-Path $release "$app.exe"))) {

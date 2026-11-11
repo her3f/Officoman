@@ -145,7 +145,7 @@ $rtf = '{\rtf1\ansi\ansicpg1252\deff0{\fonttbl{\f0\fswiss\fcharset0 Tahoma;}}\vi
 [System.IO.File]::WriteAllText($LicenseRtf, $rtf, [System.Text.Encoding]::ASCII)
 
 # One MSI from one dual-scope source (see nib.wxs and install-policy.wxi): per user by default into
-# %LOCALAPPDATA%\Programs\Officoman\Nib (#39), per machine into Program Files\Officoman on request.
+# %LOCALAPPDATA%\Programs\White Office\Nib (#39), per machine into Program Files\White Office on request.
 # The plain name is the one every sibling app, the launcher and the shared windows-arm64 workflow expect.
 $Msi = Join-Path $Dist "nib-$Version-windows-$Arch.msi"
 Invoke-Native "wix build" {
