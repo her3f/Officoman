@@ -527,9 +527,14 @@ def build_downloads() -> None:
 <div class="wrap"><section>
   <h2 class="section">Other platforms</h2>
   <p style="color:var(--muted);max-width:66ch">
-    macOS, Linux and FreeBSD builds are produced by each app's own packaging scripts under
-    <code>apps/&lt;app&gt;/packaging/</code>. They need a macOS or Linux host; they cannot be
-    cross-built from Windows.
+    <b>Only Windows builds exist today.</b> The applications are written to run on macOS and
+    Linux as well, but those binaries must be produced on those systems — neither can be
+    cross-built from Windows — and that build has not run yet.
+  </p>
+  <p style="color:var(--muted);max-width:66ch;margin-top:14px">
+    The build recipe for both is committed: a CI workflow builds all four apps on Ubuntu and
+    macOS and attaches the archives. It is waiting to be enabled. Until it runs, the table
+    above is the whole catalogue.
   </p>
 </section></div>
 </main>"""
