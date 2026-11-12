@@ -1,0 +1,109 @@
+name: build-macos-linux
+
+# Builds every app on macOS and Linux.
+#
+# Windows builds are produced locally with MinGW-w64 (see tools/build_windows.ps1);
+# macOS and Linux cannot be cross-built from Windows, so this workflow is the only
+# way to get them. The artifacts are attached to a GitHub Release so they can be
+# downloaded (and re-hosted on the project server) without an account.
+#
+# Run it from the Actions tab, or push any change under apps/ or this file.
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - 'apps/**'
+      - '.github/workflows/build-macos-linux.yml'
+
+permissions:
+  contents: write
+
+env:
+  CARGO_TERM_COLOR: always
+  CARGO_INCREMENTAL: "0"
+
+jobs:
+  build:
+    name: ${{ matrix.app }} · ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+        app: [nib, tally, podium, sheaf]
+    defaults:
+      run:
+        shell: bash
+        working-directory: apps/${{ matrix.app }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Linux build dependencies
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            libxkbcommon-dev libwayland-dev libx11-dev libxrandr-dev libxi-dev \
+            libgl1-mesa-dev libasound2-dev pkg-config
+
+      - uses: dtolnay/rust-toolchain@stable
+
+      - uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: apps/${{ matrix.app }}
+
+      - name: Build
+        run: cargo build --release -p ${{ matrix.app }} -p ${{ matrix.app }}-cli
+
+      - name: Package
+        working-directory: .
+        run: |
+          v=$(sed -n 's/^version *= *"\(.*\)"/\1/p' "apps/${{ matrix.app }}/Cargo.toml" | head -1)
+          rel="apps/${{ matrix.app }}/target/release"
+          if [ "${{ runner.os }}" = "macOS" ]; then
+            plat="macos-universal"
+          else
+            plat="linux-x86_64"
+          fi
+          out="dist/${{ matrix.app }}-$v-$plat"
+          mkdir -p "$out"
+          cp "$rel/${{ matrix.app }}" "$rel/${{ matrix.app }}-cli" "$out"/
+          for f in NOTICE LICENSE-MIT LICENSE-APACHE ATTRIBUTION.md; do
+            cp "apps/${{ matrix.app }}/$f" "$out"/ 2>/dev/null || true
+          done
+          tar -czf "dist/${{ matrix.app }}-$v-$plat.tar.gz" -C dist "$(basename "$out")"
+          rm -rf "$out"
+          ls -l dist
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.app }}-${{ matrix.os }}
+          path: dist/*.tar.gz
+          if-no-files-found: error
+
+  release:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+
+      - name: Collect
+        run: |
+          mkdir -p out
+          find artifacts -name '*.tar.gz' -exec cp {} out/ \;
+          ls -l out
+
+      - uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ci-${{ github.run_number }}
+          name: "CI build ${{ github.run_number }} (macOS + Linux)"
+          body: |
+            Automatic build of the four apps for macOS and Linux.
+            Windows builds are produced locally and served from officoman.whitebearom.com.
+          files: out/*.tar.gz
+          fail_on_unmatched_files: true
