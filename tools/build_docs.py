@@ -482,15 +482,21 @@ def build_downloads() -> None:
 
     rows = []
 
-    launcher = pick("whiteoffice-launcher", "windows-x64-portable.zip")
-    if launcher:
-        lv = launcher.name.split("-windows-x64")[0].replace("whiteoffice-launcher-", "")
+    l_msi = pick("whiteoffice-launcher", "windows-x64.msi")
+    l_zip = pick("whiteoffice-launcher", "windows-x64-portable.zip")
+    l_mac = pick("whiteoffice-launcher", "macos-universal.tar.gz")
+    l_lin = pick("whiteoffice-launcher", "linux-x86_64.tar.gz")
+    if any((l_msi, l_zip, l_mac, l_lin)):
+        lv = (l_msi or l_zip or l_mac or l_lin).name.split("whiteoffice-launcher-", 1)[1]
+        for suf in ("-windows-x64.msi", "-windows-x64-portable.zip",
+                    "-macos-universal.tar.gz", "-linux-x86_64.tar.gz"):
+            lv = lv.split(suf, 1)[0]
         rows.append(f"""<tr class="featured">
           <td><b>Launcher</b><span class="sub">installs and updates all four</span></td>
           <td><code>{lv}</code></td>
-          <td><div class="plat-btns">{btn(launcher, ".zip", True)}</div>{size(launcher)}</td>
-          <td><span class="plat-none">—</span></td>
-          <td><span class="plat-none">—</span></td>
+          <td><div class="plat-btns">{btn(l_msi, ".msi")}{btn(l_zip, ".zip", True)}</div>{size(l_msi or l_zip)}</td>
+          <td><div class="plat-btns">{btn(l_mac, ".tar.gz")}</div>{size(l_mac)}</td>
+          <td><div class="plat-btns">{btn(l_lin, ".tar.gz")}</div>{size(l_lin)}</td>
         </tr>""")
 
     for a in APPS:
