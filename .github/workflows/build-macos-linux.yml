@@ -25,6 +25,62 @@ env:
   CARGO_INCREMENTAL: "0"
 
 jobs:
+  launcher:
+    name: launcher · ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+    defaults:
+      run:
+        shell: bash
+        working-directory: apps/whiteoffice-launcher
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Linux build dependencies
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            libxkbcommon-dev libwayland-dev libx11-dev libxrandr-dev libxi-dev \
+            libgl1-mesa-dev libasound2-dev libdbus-1-dev pkg-config
+
+      - uses: dtolnay/rust-toolchain@stable
+
+      - uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: apps/whiteoffice-launcher
+
+      - name: Build
+        env:
+          WHITEOFFICE_LAUNCHER_MIRROR: https://officoman.whitebearom.com/dl/
+        run: cargo build --release -p whiteoffice-launcher
+
+      - name: Package
+        working-directory: .
+        run: |
+          v=$(sed -n 's/^version *= *"\(.*\)"/\1/p' apps/whiteoffice-launcher/Cargo.toml | head -1)
+          rel="apps/whiteoffice-launcher/target/release"
+          if [ "${{ runner.os }}" = "macOS" ]; then plat="macos-universal"; else plat="linux-x86_64"; fi
+          out="dist/whiteoffice-launcher-$v-$plat"
+          mkdir -p "$out"
+          cp "$rel/whiteoffice-launcher" "$out"/
+          for f in NOTICE LICENSE-MIT LICENSE-APACHE ATTRIBUTION.md; do
+            cp "apps/whiteoffice-launcher/$f" "$out"/ 2>/dev/null || true
+          done
+          tar -czf "dist/whiteoffice-launcher-$v-$plat.tar.gz" -C dist "$(basename "$out")"
+          rm -rf "$out"
+          ls -l dist
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: launcher-${{ matrix.os }}
+          path: dist/*.tar.gz
+          if-no-files-found: error
+
   build:
     name: ${{ matrix.app }} · ${{ matrix.os }}
     runs-on: ${{ matrix.os }}
@@ -85,7 +141,7 @@ jobs:
           if-no-files-found: error
 
   release:
-    needs: build
+    needs: [build, launcher]
     runs-on: ubuntu-latest
     steps:
       - uses: actions/download-artifact@v4
