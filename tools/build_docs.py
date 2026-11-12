@@ -505,6 +505,40 @@ def build_downloads() -> None:
                 "`.docx`/`.xlsx`/`.pptx`/`.pdf` in “Open with”. It asks whether to install for you "
                 "only or for everyone. <b>.zip</b> is portable: unzip and run, nothing written to "
                 "the system. Neither is code-signed, so SmartScreen warns on first run.")
+        def platform_table(suffix: str, note: str) -> str:
+            rows = []
+            for a in APPS:
+                f = next(iter(sorted(dist.glob(f"{a['slug']}-*-{suffix}"))), None)
+                if not f:
+                    continue
+                ver = f.name.split(f"{a['slug']}-", 1)[1].split(f"-{suffix}", 1)[0]
+                rows.append(
+                    f"""<tr>
+              <td><b>{a['name']}</b></td>
+              <td>{a['role']}</td>
+              <td><code>{ver}</code></td>
+              <td>{f.stat().st_size / 1e6:.1f} MB</td>
+              <td><a class="btn" href="/dl/{f.name}">.tar.gz</a></td>
+            </tr>"""
+                )
+            if not rows:
+                return ""
+            return f"""<table>
+          <thead><tr><th>App</th><th>Role</th><th>Version</th><th>Size</th><th>Get it</th></tr></thead>
+          <tbody>{''.join(rows)}</tbody>
+        </table>
+        <p style="color:var(--muted);font-size:.9rem;margin-top:14px">{note}</p>"""
+
+        mac_table = platform_table(
+            "macos-universal.tar.gz",
+            "Unpack, then run the binary inside. Universal: Apple silicon and Intel. "
+            "Unsigned, so Gatekeeper asks before the first launch (right-click → Open).",
+        )
+        linux_table = platform_table(
+            "linux-x86_64.tar.gz",
+            "Unpack and run. Needs the usual X11/Wayland, GL and ALSA libraries — "
+            "see the app's packaging notes if a library is missing.",
+        )
     else:
         table = """<div class="note"><b>No builds yet.</b> Run
           <code>tools/build_windows.ps1</code> then <code>tools/package_all.ps1</code> and this
@@ -515,8 +549,8 @@ def build_downloads() -> None:
 <div class="wrap hero">
   <p class="eyebrow">Download</p>
   <h1>Take them for a <em>spin</em>.</h1>
-  <p class="lede">Two ways to try them: an installer that sets up the Start Menu entry and file
-     associations, or a portable folder you delete when you are done.</p>
+  <p class="lede">Windows, macOS and Linux. On Windows take the installer or the portable
+     folder; on the other two it is a tarball you unpack and run.</p>
 </div>
 <div class="wrap"><section>
   <h2 class="section">Windows x64</h2>
@@ -525,17 +559,13 @@ def build_downloads() -> None:
 </section></div>
 
 <div class="wrap"><section>
-  <h2 class="section">Other platforms</h2>
-  <p style="color:var(--muted);max-width:66ch">
-    <b>Only Windows builds exist today.</b> The applications are written to run on macOS and
-    Linux as well, but those binaries must be produced on those systems — neither can be
-    cross-built from Windows — and that build has not run yet.
-  </p>
-  <p style="color:var(--muted);max-width:66ch;margin-top:14px">
-    The build recipe for both is committed: a CI workflow builds all four apps on Ubuntu and
-    macOS and attaches the archives. It is waiting to be enabled. Until it runs, the table
-    above is the whole catalogue.
-  </p>
+  <h2 class="section">macOS</h2>
+  {mac_table or '<div class="note"><b>Not built yet.</b></div>'}
+</section></div>
+
+<div class="wrap"><section>
+  <h2 class="section">Linux x86_64</h2>
+  {linux_table or '<div class="note"><b>Not built yet.</b></div>'}
 </section></div>
 </main>"""
     (SITE / "download.html").write_text(

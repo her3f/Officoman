@@ -40,7 +40,7 @@ def version_of(slug: str) -> str | None:
 def assets_for(slug: str, base: str) -> list[dict]:
     out = []
     for p in sorted(DIST.glob(f"{slug}-*")):
-        if p.suffix not in (".msi", ".zip"):
+        if not (p.name.endswith(".msi") or p.name.endswith(".zip") or p.name.endswith(".tar.gz")):
             continue
         out.append({
             "name": p.name,

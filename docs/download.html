@@ -25,8 +25,8 @@
 <div class="wrap hero">
   <p class="eyebrow">Download</p>
   <h1>Take them for a <em>spin</em>.</h1>
-  <p class="lede">Two ways to try them: an installer that sets up the Start Menu entry and file
-     associations, or a portable folder you delete when you are done.</p>
+  <p class="lede">Windows, macOS and Linux. On Windows take the installer or the portable
+     folder; on the other two it is a tarball you unpack and run.</p>
 </div>
 <div class="wrap"><section>
   <h2 class="section">Windows x64</h2>
@@ -68,17 +68,69 @@
 </section></div>
 
 <div class="wrap"><section>
-  <h2 class="section">Other platforms</h2>
-  <p style="color:var(--muted);max-width:66ch">
-    <b>Only Windows builds exist today.</b> The applications are written to run on macOS and
-    Linux as well, but those binaries must be produced on those systems — neither can be
-    cross-built from Windows — and that build has not run yet.
-  </p>
-  <p style="color:var(--muted);max-width:66ch;margin-top:14px">
-    The build recipe for both is committed: a CI workflow builds all four apps on Ubuntu and
-    macOS and attaches the archives. It is waiting to be enabled. Until it runs, the table
-    above is the whole catalogue.
-  </p>
+  <h2 class="section">macOS</h2>
+  <table>
+          <thead><tr><th>App</th><th>Role</th><th>Version</th><th>Size</th><th>Get it</th></tr></thead>
+          <tbody><tr>
+              <td><b>Nib</b></td>
+              <td>Documents</td>
+              <td><code>0.18.0</code></td>
+              <td>48.8 MB</td>
+              <td><a class="btn" href="/dl/nib-0.18.0-macos-universal.tar.gz">.tar.gz</a></td>
+            </tr><tr>
+              <td><b>Tally</b></td>
+              <td>Spreadsheets</td>
+              <td><code>0.19.0</code></td>
+              <td>24.6 MB</td>
+              <td><a class="btn" href="/dl/tally-0.19.0-macos-universal.tar.gz">.tar.gz</a></td>
+            </tr><tr>
+              <td><b>Podium</b></td>
+              <td>Presentations</td>
+              <td><code>0.18.0</code></td>
+              <td>33.0 MB</td>
+              <td><a class="btn" href="/dl/podium-0.18.0-macos-universal.tar.gz">.tar.gz</a></td>
+            </tr><tr>
+              <td><b>Sheaf</b></td>
+              <td>PDF</td>
+              <td><code>0.21.0</code></td>
+              <td>49.6 MB</td>
+              <td><a class="btn" href="/dl/sheaf-0.21.0-macos-universal.tar.gz">.tar.gz</a></td>
+            </tr></tbody>
+        </table>
+        <p style="color:var(--muted);font-size:.9rem;margin-top:14px">Unpack, then run the binary inside. Universal: Apple silicon and Intel. Unsigned, so Gatekeeper asks before the first launch (right-click → Open).</p>
+</section></div>
+
+<div class="wrap"><section>
+  <h2 class="section">Linux x86_64</h2>
+  <table>
+          <thead><tr><th>App</th><th>Role</th><th>Version</th><th>Size</th><th>Get it</th></tr></thead>
+          <tbody><tr>
+              <td><b>Nib</b></td>
+              <td>Documents</td>
+              <td><code>0.18.0</code></td>
+              <td>57.0 MB</td>
+              <td><a class="btn" href="/dl/nib-0.18.0-linux-x86_64.tar.gz">.tar.gz</a></td>
+            </tr><tr>
+              <td><b>Tally</b></td>
+              <td>Spreadsheets</td>
+              <td><code>0.19.0</code></td>
+              <td>30.3 MB</td>
+              <td><a class="btn" href="/dl/tally-0.19.0-linux-x86_64.tar.gz">.tar.gz</a></td>
+            </tr><tr>
+              <td><b>Podium</b></td>
+              <td>Presentations</td>
+              <td><code>0.18.0</code></td>
+              <td>39.9 MB</td>
+              <td><a class="btn" href="/dl/podium-0.18.0-linux-x86_64.tar.gz">.tar.gz</a></td>
+            </tr><tr>
+              <td><b>Sheaf</b></td>
+              <td>PDF</td>
+              <td><code>0.21.0</code></td>
+              <td>58.0 MB</td>
+              <td><a class="btn" href="/dl/sheaf-0.21.0-linux-x86_64.tar.gz">.tar.gz</a></td>
+            </tr></tbody>
+        </table>
+        <p style="color:var(--muted);font-size:.9rem;margin-top:14px">Unpack and run. Needs the usual X11/Wayland, GL and ALSA libraries — see the app's packaging notes if a library is missing.</p>
 </section></div>
 </main>
 <footer class="site">
