@@ -174,6 +174,20 @@ footer.site .wrap{display:flex;gap:18px;flex-wrap:wrap;align-items:center}
 
 td .btn,td .btn.ghost{padding:6px 14px;font-size:.83rem;border-radius:7px;margin-right:6px}
 .apphero{padding:64px 0 40px;display:flex;gap:26px;align-items:center;flex-wrap:wrap}
+table.platforms th,table.platforms td{padding:18px 14px;vertical-align:top}
+table.platforms tbody tr:hover{background:#FCFBF8}
+table.platforms td code{font-size:.85rem}
+.sub{display:block;font-size:.76rem;color:var(--muted);font-weight:400;margin-top:2px}
+.plat-btns{display:flex;gap:6px;flex-wrap:wrap}
+.plat-btn{display:inline-block;padding:6px 12px;border-radius:7px;font-size:.79rem;font-weight:600;
+  text-decoration:none;border:1px solid var(--ink);background:var(--ink);color:var(--paper);white-space:nowrap}
+.plat-btn.ghost{background:transparent;color:var(--ink)}
+.plat-btn:hover{opacity:.85}
+.plat-sz{display:block;font-size:.68rem;color:var(--muted);margin-top:6px}
+.plat-none{color:#C4C0B2}
+tr.featured{background:#FCFBF8}
+.legend{display:grid;gap:10px;margin-top:24px;font-size:.88rem;color:var(--muted);max-width:80ch}
+.legend b{color:var(--ink)}
 .apphero img{width:96px;height:96px}
 .apphero h1{font-size:clamp(1.9rem,4vw,2.6rem);letter-spacing:-1.1px;margin:0 0 6px}
 .apphero .role{font-size:.74rem;letter-spacing:.14em;text-transform:uppercase;
@@ -443,133 +457,92 @@ def build_pages() -> None:
 
 
 def build_downloads() -> None:
-    """A download page built from whatever is sitting in dist/."""
-    import hashlib
-    import re
-
+    """One table: every app against every platform, built from whatever is in dist/."""
     dist = ROOT / "dist"
-    found: dict[str, dict] = {}
-    if dist.is_dir():
-        for pat, key in (("*-windows-x64.msi", "msi"), ("*-windows-x64-portable.zip", "zip")):
-            for f in sorted(dist.glob(pat)):
-                m = re.match(r"(nib|tally|podium|sheaf)-(.+)-windows-x64", f.name)
-                if not m:
-                    continue
-                slug = m.group(1).lower()
-                entry = found.setdefault(slug, {"version": m.group(2)})
-                entry[key] = f
-                entry[f"{key}_mb"] = f.stat().st_size / 1e6
-                entry[f"{key}_sha"] = hashlib.sha256(f.read_bytes()).hexdigest()[:12]
 
-    if found:
-        rows = []
-        launcher = next(iter(sorted(dist.glob("whiteoffice-launcher-*-windows-x64-portable.zip"))), None)
-        if launcher:
-            lv = launcher.name.split("-windows-x64")[0].replace("whiteoffice-launcher-", "")
-            rows.append(
-                f"""<tr style="background:#FCFBF8">
-              <td><b>Launcher</b></td>
-              <td>Installs all four</td>
-              <td><code>{lv}</code></td>
-              <td>zip {launcher.stat().st_size / 1e6:.1f} MB</td>
-              <td><a class="btn ghost" href="/dl/{launcher.name}">.zip</a></td>
-            </tr>"""
-            )
-        for a in APPS:
-            e = found.get(a["slug"])
-            if not e:
-                continue
-            msi = (f'<a class="btn" href="/dl/{e["msi"].name}">.msi</a>'
-                   if "msi" in e else '<span class="pill">—</span>')
-            zp = (f'<a class="btn ghost" href="/dl/{e["zip"].name}">.zip</a>'
-                  if "zip" in e else '<span class="pill">—</span>')
-            sizes = []
-            if "msi" in e:
-                sizes.append(f"msi {e['msi_mb']:.1f} MB")
-            if "zip" in e:
-                sizes.append(f"zip {e['zip_mb']:.1f} MB")
-            rows.append(
-                f"""<tr>
-              <td><b>{a['name']}</b></td>
-              <td>{a['role']}</td>
-              <td><code>{e['version']}</code></td>
-              <td>{'<br>'.join(sizes)}</td>
-              <td>{msi} {zp}</td>
-            </tr>"""
-            )
-        table = f"""<table>
-          <thead><tr><th>App</th><th>Role</th><th>Version</th><th>Size</th><th>Get it</th></tr></thead>
+    def pick(slug: str, suffix: str):
+        return next(iter(sorted(dist.glob(f"{slug}-*-{suffix}"))), None)
+
+    def version_of(slug: str) -> str:
+        for suffix in ("windows-x64.msi", "windows-x64-portable.zip",
+                       "macos-universal.tar.gz", "linux-x86_64.tar.gz"):
+            f = pick(slug, suffix)
+            if f:
+                return f.name.split(f"{slug}-", 1)[1].split(f"-{suffix}", 1)[0]
+        return ""
+
+    def btn(f, label: str, ghost: bool = False) -> str:
+        if not f:
+            return '<span class="plat-none">—</span>'
+        cls = "plat-btn ghost" if ghost else "plat-btn"
+        return f'<a class="{cls}" href="/dl/{f.name}">{label}</a>'
+
+    def size(f) -> str:
+        return f'<span class="plat-sz">{f.stat().st_size / 1e6:.0f} MB</span>' if f else ""
+
+    rows = []
+
+    launcher = pick("whiteoffice-launcher", "windows-x64-portable.zip")
+    if launcher:
+        lv = launcher.name.split("-windows-x64")[0].replace("whiteoffice-launcher-", "")
+        rows.append(f"""<tr class="featured">
+          <td><b>Launcher</b><span class="sub">installs and updates all four</span></td>
+          <td><code>{lv}</code></td>
+          <td><div class="plat-btns">{btn(launcher, ".zip", True)}</div>{size(launcher)}</td>
+          <td><span class="plat-none">—</span></td>
+          <td><span class="plat-none">—</span></td>
+        </tr>""")
+
+    for a in APPS:
+        slug = a["slug"]
+        msi = pick(slug, "windows-x64.msi")
+        zp = pick(slug, "windows-x64-portable.zip")
+        mac = pick(slug, "macos-universal.tar.gz")
+        lin = pick(slug, "linux-x86_64.tar.gz")
+        if not any((msi, zp, mac, lin)):
+            continue
+        rows.append(f"""<tr>
+          <td><b>{a["name"]}</b><span class="sub">{a["role"]}</span></td>
+          <td><code>{version_of(slug)}</code></td>
+          <td><div class="plat-btns">{btn(msi, ".msi")}{btn(zp, ".zip", True)}</div>{size(msi or zp)}</td>
+          <td><div class="plat-btns">{btn(mac, ".tar.gz")}</div>{size(mac)}</td>
+          <td><div class="plat-btns">{btn(lin, ".tar.gz")}</div>{size(lin)}</td>
+        </tr>""")
+
+    if rows:
+        table = f"""<table class="platforms">
+          <thead><tr>
+            <th>App</th><th>Version</th><th>Windows x64</th><th>macOS</th><th>Linux x86_64</th>
+          </tr></thead>
           <tbody>{''.join(rows)}</tbody>
         </table>"""
-        note = ("<b>.msi</b> installs normally: Start Menu shortcut, Add/Remove Programs, and "
-                "`.docx`/`.xlsx`/`.pptx`/`.pdf` in “Open with”. It asks whether to install for you "
-                "only or for everyone. <b>.zip</b> is portable: unzip and run, nothing written to "
-                "the system. Neither is code-signed, so SmartScreen warns on first run.")
-        def platform_table(suffix: str, note: str) -> str:
-            rows = []
-            for a in APPS:
-                f = next(iter(sorted(dist.glob(f"{a['slug']}-*-{suffix}"))), None)
-                if not f:
-                    continue
-                ver = f.name.split(f"{a['slug']}-", 1)[1].split(f"-{suffix}", 1)[0]
-                rows.append(
-                    f"""<tr>
-              <td><b>{a['name']}</b></td>
-              <td>{a['role']}</td>
-              <td><code>{ver}</code></td>
-              <td>{f.stat().st_size / 1e6:.1f} MB</td>
-              <td><a class="btn" href="/dl/{f.name}">.tar.gz</a></td>
-            </tr>"""
-                )
-            if not rows:
-                return ""
-            return f"""<table>
-          <thead><tr><th>App</th><th>Role</th><th>Version</th><th>Size</th><th>Get it</th></tr></thead>
-          <tbody>{''.join(rows)}</tbody>
-        </table>
-        <p style="color:var(--muted);font-size:.9rem;margin-top:14px">{note}</p>"""
-
-        mac_table = platform_table(
-            "macos-universal.tar.gz",
-            "Unpack, then run the binary inside. Universal: Apple silicon and Intel. "
-            "Unsigned, so Gatekeeper asks before the first launch (right-click → Open).",
-        )
-        linux_table = platform_table(
-            "linux-x86_64.tar.gz",
-            "Unpack and run. Needs the usual X11/Wayland, GL and ALSA libraries — "
-            "see the app's packaging notes if a library is missing.",
-        )
+        notes = """<div class="legend">
+          <div><b>Windows</b> — <code>.msi</code> installs with a Start Menu entry and file
+            associations; <code>.zip</code> is portable, nothing written to the system.</div>
+          <div><b>macOS</b> — universal (Apple silicon and Intel). Unpack and run. Unsigned, so
+            Gatekeeper asks once: right-click → Open.</div>
+          <div><b>Linux</b> — unpack and run. Needs the usual X11/Wayland, GL and ALSA libraries.</div>
+        </div>"""
     else:
-        table = """<div class="note"><b>No builds yet.</b> Run
-          <code>tools/build_windows.ps1</code> then <code>tools/package_all.ps1</code> and this
-          page fills itself in.</div>"""
-        note = ""
+        table = """<div class="note"><b>No builds yet.</b> Run the packaging scripts and this page
+          fills itself in.</div>"""
+        notes = ""
 
     body = f"""<main>
 <div class="wrap hero">
   <p class="eyebrow">Download</p>
   <h1>Take them for a <em>spin</em>.</h1>
-  <p class="lede">Windows, macOS and Linux. On Windows take the installer or the portable
-     folder; on the other two it is a tarball you unpack and run.</p>
+  <p class="lede">One table, every platform. Pick the build for your machine — each app stands
+     on its own, install one or all four.</p>
 </div>
-<div class="wrap"><section>
-  <h2 class="section">Windows x64</h2>
+<div class="wrap"><section style="border-top:none;padding-top:8px">
   {table}
-  <p style="color:var(--muted);font-size:.9rem;margin-top:18px">{note}</p>
-</section></div>
-
-<div class="wrap"><section>
-  <h2 class="section">macOS</h2>
-  {mac_table or '<div class="note"><b>Not built yet.</b></div>'}
-</section></div>
-
-<div class="wrap"><section>
-  <h2 class="section">Linux x86_64</h2>
-  {linux_table or '<div class="note"><b>Not built yet.</b></div>'}
+  {notes}
 </section></div>
 </main>"""
     (SITE / "download.html").write_text(
-        page("Download — White Office", body, description="Windows x64 portable builds of the four White Office apps."),
+        page("Download — White Office", body,
+             description="Windows, macOS and Linux builds of the four White Office apps."),
         encoding="utf-8",
     )
 
