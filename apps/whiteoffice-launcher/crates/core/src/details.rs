@@ -1,7 +1,6 @@
 //! Hand-written product pages: what each app is, in the launcher's own words.
 //!
-//! The text is compiled in, so it works offline and on the web, and nothing from the network is
-//! ever shown as page copy. What changes with every release (version, date, size, notes) comes
+//! Bundled text works offline and on the web; a verified hosted snapshot may replace it. What changes with every release (version, date, size, notes) comes
 //! from the GitHub release instead. An app without an entry here simply has no details page.
 //!
 //! The pictures are not compiled in: they are fetched when a page is opened (see
@@ -136,10 +135,7 @@ pub fn screenshot_within_budget(bytes: &[u8]) -> bool {
     }
 }
 
-/// Where every Craft App runs (officoman.whitebearom.com lists the same for each of them).
-const PLATFORMS: &str = "macOS, Windows, Linux, FreeBSD, web";
-
-pub const DETAILS: [AppDetails; 0] = [];
+include!(concat!(env!("OUT_DIR"), "/details.rs"));
 
 impl AppDetails {
     /// Where the picture `key` of this app is published, or `None` if the page has no such picture.
@@ -149,7 +145,7 @@ impl AppDetails {
     }
 
     pub fn by_id(id: &str) -> Option<&'static AppDetails> {
-        DETAILS.iter().find(|d| d.id == id)
+        crate::hosted_catalog::details(id).or_else(|| DETAILS.iter().find(|d| d.id == id))
     }
 
     pub fn paragraphs(&self) -> impl Iterator<Item = &'static str> {

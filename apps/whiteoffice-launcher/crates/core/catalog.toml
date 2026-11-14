@@ -1,0 +1,66 @@
+# White Office Launcher catalog — the four apps, our own data.
+# Read by crates/core/build.rs and compiled into the binary.
+
+[[apps]]
+id = "nib"
+name = "Nib"
+tagline = "Documents"
+color = [51, 67, 155]
+ink_light = [36, 47, 112]
+ink_dark = [124, 140, 222]
+repo = "her3f/officoman"
+former_ids = []
+former_names = []
+kind = "official"
+publisher = "White Office"
+msi_publisher = "White Office"
+former_bundles = []
+site = "https://officoman.whitebearom.com/apps/nib.html"
+
+[[apps]]
+id = "tally"
+name = "Tally"
+tagline = "Spreadsheets"
+color = [31, 122, 107]
+ink_light = [21, 87, 76]
+ink_dark = [104, 182, 166]
+repo = "her3f/officoman"
+former_ids = []
+former_names = []
+kind = "official"
+publisher = "White Office"
+msi_publisher = "White Office"
+former_bundles = []
+site = "https://officoman.whitebearom.com/apps/tally.html"
+
+[[apps]]
+id = "podium"
+name = "Podium"
+tagline = "Presentations"
+color = [180, 80, 46]
+ink_light = [130, 55, 30]
+ink_dark = [233, 140, 105]
+repo = "her3f/officoman"
+former_ids = []
+former_names = []
+kind = "official"
+publisher = "White Office"
+msi_publisher = "White Office"
+former_bundles = []
+site = "https://officoman.whitebearom.com/apps/podium.html"
+
+[[apps]]
+id = "sheaf"
+name = "Sheaf"
+tagline = "PDF"
+color = [107, 78, 158]
+ink_light = [76, 54, 115]
+ink_dark = [168, 140, 215]
+repo = "her3f/officoman"
+former_ids = []
+former_names = []
+kind = "official"
+publisher = "White Office"
+msi_publisher = "White Office"
+former_bundles = []
+site = "https://officoman.whitebearom.com/apps/sheaf.html"

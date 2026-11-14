@@ -1,4 +1,4 @@
-//! The Craft App Suite: the eighteen apps the launcher knows about.
+//! The Craft App Suite: bundled data with a signed hosted startup snapshot.
 //!
 //! The list is data so a later version can fetch it from an API; [`SUITE`] is the built-in copy.
 //!
@@ -114,7 +114,7 @@ impl CraftApp {
     }
 
     pub fn by_id(id: &str) -> Option<&'static CraftApp> {
-        SUITE.iter().find(|a| a.id == id)
+        crate::hosted_catalog::apps().iter().find(|a| a.id == id)
     }
 }
 
@@ -142,41 +142,13 @@ const fn app(
         bundle: None,
         former_bundles: &[],
         site: None,
-        mac_team: Some(WHITEOFFICE_TEAM_ID),
+        // These builds are not code-signed, so macOS installs are not offered.
+        mac_team: None,
     }
 }
 
-/// The Craft App Suite, in display order matching officoman.whitebearom.com, then the community apps:
-pub const SUITE: [CraftApp; 4] = [
-    app(
-        "nib",
-        "Nib",
-        "Documents",
-        [[0x33, 0x43, 0x9b], [0x24, 0x2f, 0x70], [0x6b, 0x7d, 0xd6]],
-        "her3f/officoman",
-    ),
-    app(
-        "tally",
-        "Tally",
-        "Spreadsheets",
-        [[0x1f, 0x7a, 0x6b], [0x15, 0x57, 0x4c], [0x4f, 0xc2, 0xae]],
-        "her3f/officoman",
-    ),
-    app(
-        "podium",
-        "Podium",
-        "Presentations",
-        [[0xb4, 0x50, 0x2e], [0x8a, 0x3a, 0x1f], [0xe8, 0x8a, 0x63]],
-        "her3f/officoman",
-    ),
-    app(
-        "sheaf",
-        "Sheaf",
-        "PDF",
-        [[0x6b, 0x4e, 0x9e], [0x4d, 0x37, 0x76], [0xa5, 0x8a, 0xd6]],
-        "her3f/officoman",
-    ),
-];
+// The bundled suite, in website display order, then the approved community apps.
+include!(concat!(env!("OUT_DIR"), "/catalog.rs"));
 
 /// The Apple Developer team that signs every official Craft App and White Office Launcher (Learning
 /// Machines LLC): the macOS side of the Windows publisher check.

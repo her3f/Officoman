@@ -3259,7 +3259,7 @@ dependencies = [
 
 [[package]]
 name = "nib"
-version = "0.18.0"
+version = "0.18.1"
 dependencies = [
  "arboard",
  "chrono",
@@ -3299,7 +3299,7 @@ dependencies = [
 
 [[package]]
 name = "nib-cli"
-version = "0.18.0"
+version = "0.18.1"
 dependencies = [
  "image",
  "nib-doc",
@@ -3315,11 +3315,11 @@ dependencies = [
 
 [[package]]
 name = "nib-control-key"
-version = "0.18.0"
+version = "0.18.1"
 
 [[package]]
 name = "nib-doc"
-version = "0.18.0"
+version = "0.18.1"
 dependencies = [
  "base64 0.23.1",
  "log",
@@ -3333,7 +3333,7 @@ dependencies = [
 
 [[package]]
 name = "nib-docbin"
-version = "0.18.0"
+version = "0.18.1"
 dependencies = [
  "cfb",
  "chrono",
@@ -3350,7 +3350,7 @@ dependencies = [
 
 [[package]]
 name = "nib-docx"
-version = "0.18.0"
+version = "0.18.1"
 dependencies = [
  "aes",
  "base64 0.23.1",
@@ -3375,7 +3375,7 @@ dependencies = [
 
 [[package]]
 name = "nib-engine"
-version = "0.18.0"
+version = "0.18.1"
 dependencies = [
  "cfb",
  "chrono",
@@ -3409,7 +3409,7 @@ dependencies = [
 
 [[package]]
 name = "nib-fonts"
-version = "0.18.0"
+version = "0.18.1"
 dependencies = [
  "brotli-decompressor",
  "harfrust 0.13.3",
@@ -3423,7 +3423,7 @@ dependencies = [
 
 [[package]]
 name = "nib-formats"
-version = "0.18.0"
+version = "0.18.1"
 dependencies = [
  "aes",
  "base64 0.23.1",
@@ -3450,7 +3450,7 @@ dependencies = [
 
 [[package]]
 name = "nib-geom"
-version = "0.18.0"
+version = "0.18.1"
 dependencies = [
  "image",
  "serde",
@@ -3458,7 +3458,7 @@ dependencies = [
 
 [[package]]
 name = "nib-layout"
-version = "0.18.0"
+version = "0.18.1"
 dependencies = [
  "craft-proof",
  "image",
@@ -3478,7 +3478,7 @@ dependencies = [
 
 [[package]]
 name = "nib-mcp"
-version = "0.18.0"
+version = "0.18.1"
 dependencies = [
  "log",
  "nib-control-key",
@@ -3490,7 +3490,7 @@ dependencies = [
 
 [[package]]
 name = "nib-metafile"
-version = "0.18.0"
+version = "0.18.1"
 dependencies = [
  "kurbo",
  "thiserror 2.0.21",
@@ -3498,7 +3498,7 @@ dependencies = [
 
 [[package]]
 name = "nib-pdf"
-version = "0.18.0"
+version = "0.18.1"
 dependencies = [
  "chrono",
  "craft-pdf",
@@ -3519,7 +3519,7 @@ dependencies = [
 
 [[package]]
 name = "nib-render"
-version = "0.18.0"
+version = "0.18.1"
 dependencies = [
  "image",
  "log",
@@ -3533,7 +3533,7 @@ dependencies = [
 
 [[package]]
 name = "nib-ui-egui"
-version = "0.18.0"
+version = "0.18.1"
 dependencies = [
  "accesskit_consumer",
  "cfb",
@@ -3566,7 +3566,7 @@ dependencies = [
 
 [[package]]
 name = "nib-web"
-version = "0.18.0"
+version = "0.18.1"
 dependencies = [
  "craft-web-api",
  "craft-web-host",
@@ -3587,7 +3587,7 @@ dependencies = [
 
 [[package]]
 name = "nib-zotero"
-version = "0.18.0"
+version = "0.18.1"
 dependencies = [
  "log",
  "nib-doc",
@@ -7298,7 +7298,7 @@ checksum = "9440ea3e5aeabb0ac63af70daf835274065238cdd0cec83418f417eae38bacee"
 
 [[package]]
 name = "xtask"
-version = "0.18.0"
+version = "0.18.1"
 dependencies = [
  "serde_json",
 ]

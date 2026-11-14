@@ -9,10 +9,9 @@ description = "Podium media: probing, audio decoding (MP3, AAC/M4A, WAV, AIFF, F
 workspace = true
 
 [dependencies]
-podium-isobmff = { workspace = true }
-podium-matroska = { workspace = true }
-podium-ogg = { workspace = true }
-podium-opus = { workspace = true }
+# Containers (MP4/MOV, Matroska/WebM, Ogg) and the Opus decoder, shared with the other Craft apps.
+craft-media = { workspace = true, features = ["isobmff", "matroska", "ogg"] }
+craft-audio = { workspace = true }
 podium-h264 = { workspace = true }
 podium-hevc = { workspace = true }
 podium-vp9 = { workspace = true }

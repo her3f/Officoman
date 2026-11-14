@@ -63,3 +63,11 @@ licensed like those apps. Refresh them from the source path, never redraw them.
 |---|---|---|---|---|
 | `docs/brand/` (all files) | White Office name, wordmark and mark | White Office Team | officoman.whitebearom.com | Not open source; trademarks of the White Office Team, [`docs/brand/LICENSE-brand.txt`](docs/brand/LICENSE-brand.txt) |
 | README app icons (linked, not copied) | Each Craft app's 64 px icon | White Office Team and each app's contributors | `raw.githubusercontent.com/storytold/<app>/main/assets/app-icon/hicolor/64x64/apps/io.github.her3f.<app>.png` | MIT OR Apache-2.0 (each app's license) |
+
+## Hosted catalog verification
+
+| Path                                                 | Title                                     | Author        | Source                                               | License           |
+| ---------------------------------------------------- | ----------------------------------------- | ------------- | ---------------------------------------------------- | ----------------- |
+| `crates/core/assets/launcher-catalog-public-key.pem` | Launcher catalog Ed25519 verification key | White Office Team | Maintainer-supplied website catalog signing keypair  | MIT OR Apache-2.0 |
+| `crates/core/catalog.toml`                           | Bundled launcher catalog                  | White Office Team | `storytold/whiteoffice-services` PR #205                | MIT OR Apache-2.0 |
+| `crates/core/tests/fixtures/hosted-catalog.toml.sig` | Detached catalog signature test fixture   | White Office Team | Signature of the bundled catalog with its pinned key | MIT OR Apache-2.0 |

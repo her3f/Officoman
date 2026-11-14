@@ -845,14 +845,23 @@ dependencies = [
 ]
 
 [[package]]
+name = "craft-audio"
+version = "0.1.0"
+source = "git+https://github.com/storytold/craft-libs?rev=75895c0321d8cb6e175a42466cba050352b117c5#75895c0321d8cb6e175a42466cba050352b117c5"
+dependencies = [
+ "craft-media",
+ "thiserror 2.0.21",
+]
+
+[[package]]
 name = "craft-fonts-build"
 version = "0.1.0"
-source = "git+https://github.com/storytold/craft-libs?rev=1b34eba41e62138fc2438d2734523b302840b45d#1b34eba41e62138fc2438d2734523b302840b45d"
+source = "git+https://github.com/storytold/craft-libs?rev=6e03f65bf45181db77ba6229716e6624db9eb25b#6e03f65bf45181db77ba6229716e6624db9eb25b"
 
 [[package]]
 name = "craft-i18n"
 version = "0.1.0"
-source = "git+https://github.com/storytold/craft-libs?rev=1b34eba41e62138fc2438d2734523b302840b45d#1b34eba41e62138fc2438d2734523b302840b45d"
+source = "git+https://github.com/storytold/craft-libs?rev=6e03f65bf45181db77ba6229716e6624db9eb25b#6e03f65bf45181db77ba6229716e6624db9eb25b"
 dependencies = [
  "fixed_decimal",
  "icu_decimal",
@@ -875,7 +884,7 @@ dependencies = [
 [[package]]
 name = "craft-media"
 version = "0.1.0"
-source = "git+https://github.com/storytold/craft-libs?rev=1b34eba41e62138fc2438d2734523b302840b45d#1b34eba41e62138fc2438d2734523b302840b45d"
+source = "git+https://github.com/storytold/craft-libs?rev=75895c0321d8cb6e175a42466cba050352b117c5#75895c0321d8cb6e175a42466cba050352b117c5"
 dependencies = [
  "thiserror 2.0.21",
 ]
@@ -883,7 +892,7 @@ dependencies = [
 [[package]]
 name = "craft-pdf"
 version = "0.1.0"
-source = "git+https://github.com/storytold/craft-libs?rev=1b34eba41e62138fc2438d2734523b302840b45d#1b34eba41e62138fc2438d2734523b302840b45d"
+source = "git+https://github.com/storytold/craft-libs?rev=6e03f65bf45181db77ba6229716e6624db9eb25b#6e03f65bf45181db77ba6229716e6624db9eb25b"
 dependencies = [
  "krilla",
  "thiserror 2.0.21",
@@ -892,7 +901,7 @@ dependencies = [
 [[package]]
 name = "craft-ui"
 version = "0.1.0"
-source = "git+https://github.com/storytold/craft-libs?rev=1b34eba41e62138fc2438d2734523b302840b45d#1b34eba41e62138fc2438d2734523b302840b45d"
+source = "git+https://github.com/storytold/craft-libs?rev=6e03f65bf45181db77ba6229716e6624db9eb25b#6e03f65bf45181db77ba6229716e6624db9eb25b"
 dependencies = [
  "craft-fonts-build",
  "craft-i18n",
@@ -912,7 +921,7 @@ dependencies = [
 [[package]]
 name = "craft-update"
 version = "0.1.0"
-source = "git+https://github.com/storytold/craft-libs?rev=1b34eba41e62138fc2438d2734523b302840b45d#1b34eba41e62138fc2438d2734523b302840b45d"
+source = "git+https://github.com/storytold/craft-libs?rev=6e03f65bf45181db77ba6229716e6624db9eb25b#6e03f65bf45181db77ba6229716e6624db9eb25b"
 dependencies = [
  "chrono",
  "dunce",
@@ -922,6 +931,7 @@ dependencies = [
  "image",
  "log",
  "plist",
+ "rustix 1.1.5",
  "semver",
  "serde",
  "serde_json",
@@ -2460,7 +2470,7 @@ dependencies = [
 [[package]]
 name = "krilla"
 version = "0.8.2"
-source = "git+https://github.com/storytold/craft-libs?rev=1b34eba41e62138fc2438d2734523b302840b45d#1b34eba41e62138fc2438d2734523b302840b45d"
+source = "git+https://github.com/storytold/craft-libs?rev=6e03f65bf45181db77ba6229716e6624db9eb25b#6e03f65bf45181db77ba6229716e6624db9eb25b"
 dependencies = [
  "base64 0.22.1",
  "bumpalo",
@@ -3433,7 +3443,7 @@ dependencies = [
 
 [[package]]
 name = "podium"
-version = "0.18.0"
+version = "0.18.1"
 dependencies = [
  "arboard",
  "chrono",
@@ -3455,7 +3465,7 @@ dependencies = [
 
 [[package]]
 name = "podium-anim"
-version = "0.18.0"
+version = "0.18.1"
 dependencies = [
  "podium-geom",
  "podium-model",
@@ -3464,7 +3474,7 @@ dependencies = [
 
 [[package]]
 name = "podium-av1"
-version = "0.18.0"
+version = "0.18.1"
 dependencies = [
  "podium-bitstream",
  "rayon",
@@ -3473,14 +3483,14 @@ dependencies = [
 
 [[package]]
 name = "podium-bitstream"
-version = "0.18.0"
+version = "0.18.1"
 dependencies = [
  "craft-media",
 ]
 
 [[package]]
 name = "podium-cli"
-version = "0.18.0"
+version = "0.18.1"
 dependencies = [
  "podium-engine",
  "podium-mcp",
@@ -3490,14 +3500,14 @@ dependencies = [
 
 [[package]]
 name = "podium-color"
-version = "0.18.0"
+version = "0.18.1"
 dependencies = [
  "serde",
 ]
 
 [[package]]
 name = "podium-engine"
-version = "0.18.0"
+version = "0.18.1"
 dependencies = [
  "chrono",
  "i_overlay",
@@ -3523,7 +3533,7 @@ dependencies = [
 
 [[package]]
 name = "podium-fonts"
-version = "0.18.0"
+version = "0.18.1"
 dependencies = [
  "epaint_default_fonts",
  "harfrust 0.13.3",
@@ -3535,7 +3545,7 @@ dependencies = [
 
 [[package]]
 name = "podium-format"
-version = "0.18.0"
+version = "0.18.1"
 dependencies = [
  "podium-model",
  "serde",
@@ -3546,7 +3556,7 @@ dependencies = [
 
 [[package]]
 name = "podium-geom"
-version = "0.18.0"
+version = "0.18.1"
 dependencies = [
  "kurbo",
  "serde",
@@ -3554,7 +3564,7 @@ dependencies = [
 
 [[package]]
 name = "podium-h264"
-version = "0.18.0"
+version = "0.18.1"
 dependencies = [
  "podium-bitstream",
  "rayon",
@@ -3563,7 +3573,7 @@ dependencies = [
 
 [[package]]
 name = "podium-hevc"
-version = "0.18.0"
+version = "0.18.1"
 dependencies = [
  "podium-bitstream",
  "rayon",
@@ -3571,22 +3581,8 @@ dependencies = [
 ]
 
 [[package]]
-name = "podium-isobmff"
-version = "0.18.0"
-dependencies = [
- "craft-media",
-]
-
-[[package]]
-name = "podium-matroska"
-version = "0.18.0"
-dependencies = [
- "craft-media",
-]
-
-[[package]]
 name = "podium-mcp"
-version = "0.18.0"
+version = "0.18.1"
 dependencies = [
  "log",
  "podium-engine",
@@ -3596,17 +3592,15 @@ dependencies = [
 
 [[package]]
 name = "podium-media"
-version = "0.18.0"
+version = "0.18.1"
 dependencies = [
+ "craft-audio",
+ "craft-media",
  "image",
  "log",
  "podium-av1",
  "podium-h264",
  "podium-hevc",
- "podium-isobmff",
- "podium-matroska",
- "podium-ogg",
- "podium-opus",
  "podium-vp9",
  "symphonia",
  "thiserror 2.0.21",
@@ -3614,7 +3608,7 @@ dependencies = [
 
 [[package]]
 name = "podium-metafile"
-version = "0.18.0"
+version = "0.18.1"
 dependencies = [
  "image",
  "kurbo",
@@ -3623,7 +3617,7 @@ dependencies = [
 
 [[package]]
 name = "podium-model"
-version = "0.18.0"
+version = "0.18.1"
 dependencies = [
  "podium-color",
  "podium-geom",
@@ -3634,16 +3628,8 @@ dependencies = [
 ]
 
 [[package]]
-name = "podium-ogg"
-version = "0.18.0"
-
-[[package]]
-name = "podium-opus"
-version = "0.18.0"
-
-[[package]]
 name = "podium-pdf"
-version = "0.18.0"
+version = "0.18.1"
 dependencies = [
  "craft-pdf",
  "hayro-syntax",
@@ -3661,7 +3647,7 @@ dependencies = [
 
 [[package]]
 name = "podium-pptx"
-version = "0.18.0"
+version = "0.18.1"
 dependencies = [
  "image",
  "log",
@@ -3677,7 +3663,7 @@ dependencies = [
 
 [[package]]
 name = "podium-render"
-version = "0.18.0"
+version = "0.18.1"
 dependencies = [
  "image",
  "kurbo",
@@ -3696,7 +3682,7 @@ dependencies = [
 
 [[package]]
 name = "podium-text"
-version = "0.18.0"
+version = "0.18.1"
 dependencies = [
  "chrono",
  "podium-color",
@@ -3710,7 +3696,7 @@ dependencies = [
 
 [[package]]
 name = "podium-ui-egui"
-version = "0.18.0"
+version = "0.18.1"
 dependencies = [
  "craft-ui",
  "craft-update",
@@ -3736,7 +3722,7 @@ dependencies = [
 
 [[package]]
 name = "podium-vp9"
-version = "0.18.0"
+version = "0.18.1"
 dependencies = [
  "podium-bitstream",
  "rayon",
@@ -3745,7 +3731,7 @@ dependencies = [
 
 [[package]]
 name = "podium-web"
-version = "0.18.0"
+version = "0.18.1"
 dependencies = [
  "craft-web-api",
  "craft-web-host",
@@ -6325,7 +6311,7 @@ checksum = "9440ea3e5aeabb0ac63af70daf835274065238cdd0cec83418f417eae38bacee"
 
 [[package]]
 name = "xtask"
-version = "0.18.0"
+version = "0.18.1"
 dependencies = [
  "serde_json",
 ]

@@ -1,11 +1,10 @@
 #!/usr/bin/env python3
 """Point the White Office Launcher at our four apps.
 
-The rebrand (tools/rebrand_launcher.py) only changes names. This changes structure:
-the catalog becomes four apps instead of seventeen, the suite list, the icons, the
-per-app details data, and the publisher/signing assumptions.
-
-Idempotent: each edit is keyed on a marker and reports whether it applied.
+The launcher (>= v0.19.2) compiles its app list from `crates/core/catalog.toml`
+via a build script; older versions kept it as a `pub const SUITE` in the source.
+This script writes the catalog and fixes the remaining source constants, so it
+works for both.
 """
 from __future__ import annotations
 
@@ -17,36 +16,73 @@ ROOT = Path(__file__).resolve().parent.parent
 LAUNCHER = ROOT / "apps" / "whiteoffice-launcher"
 CORE = LAUNCHER / "crates" / "core" / "src"
 
-SUITE_BLOCK = '''pub const SUITE: [CraftApp; 4] = [
-    app(
-        "nib",
-        "Nib",
-        "Documents",
-        [[0x33, 0x43, 0x9b], [0x24, 0x2f, 0x70], [0x6b, 0x7d, 0xd6]],
-        "her3f/officoman",
-    ),
-    app(
-        "tally",
-        "Tally",
-        "Spreadsheets",
-        [[0x1f, 0x7a, 0x6b], [0x15, 0x57, 0x4c], [0x4f, 0xc2, 0xae]],
-        "her3f/officoman",
-    ),
-    app(
-        "podium",
-        "Podium",
-        "Presentations",
-        [[0xb4, 0x50, 0x2e], [0x8a, 0x3a, 0x1f], [0xe8, 0x8a, 0x63]],
-        "her3f/officoman",
-    ),
-    app(
-        "sheaf",
-        "Sheaf",
-        "PDF",
-        [[0x6b, 0x4e, 0x9e], [0x4d, 0x37, 0x76], [0xa5, 0x8a, 0xd6]],
-        "her3f/officoman",
-    ),
-];'''
+CATALOG_TOML = '''# White Office Launcher catalog — the four apps, our own data.
+# Read by crates/core/build.rs and compiled into the binary.
+
+[[apps]]
+id = "nib"
+name = "Nib"
+tagline = "Documents"
+color = [51, 67, 155]
+ink_light = [36, 47, 112]
+ink_dark = [124, 140, 222]
+repo = "her3f/officoman"
+former_ids = []
+former_names = []
+kind = "official"
+publisher = "White Office"
+msi_publisher = "White Office"
+former_bundles = []
+site = "https://officoman.whitebearom.com/apps/nib.html"
+
+[[apps]]
+id = "tally"
+name = "Tally"
+tagline = "Spreadsheets"
+color = [31, 122, 107]
+ink_light = [21, 87, 76]
+ink_dark = [104, 182, 166]
+repo = "her3f/officoman"
+former_ids = []
+former_names = []
+kind = "official"
+publisher = "White Office"
+msi_publisher = "White Office"
+former_bundles = []
+site = "https://officoman.whitebearom.com/apps/tally.html"
+
+[[apps]]
+id = "podium"
+name = "Podium"
+tagline = "Presentations"
+color = [180, 80, 46]
+ink_light = [130, 55, 30]
+ink_dark = [233, 140, 105]
+repo = "her3f/officoman"
+former_ids = []
+former_names = []
+kind = "official"
+publisher = "White Office"
+msi_publisher = "White Office"
+former_bundles = []
+site = "https://officoman.whitebearom.com/apps/podium.html"
+
+[[apps]]
+id = "sheaf"
+name = "Sheaf"
+tagline = "PDF"
+color = [107, 78, 158]
+ink_light = [76, 54, 115]
+ink_dark = [168, 140, 215]
+repo = "her3f/officoman"
+former_ids = []
+former_names = []
+kind = "official"
+publisher = "White Office"
+msi_publisher = "White Office"
+former_bundles = []
+site = "https://officoman.whitebearom.com/apps/sheaf.html"
+'''
 
 ICONS_BLOCK = '''pub fn app_icon_png(id: &str) -> Option<&'static [u8]> {
     Some(match id {
@@ -58,103 +94,105 @@ ICONS_BLOCK = '''pub fn app_icon_png(id: &str) -> Option<&'static [u8]> {
     })
 }'''
 
-DETAILS_BLOCK = '''pub const DETAILS: [AppDetails; 0] = [];'''
+
+def patch_file(path: Path, pairs: list[tuple[str, str]]) -> list[str]:
+    text = path.read_text(encoding="utf-8")
+    done = []
+    for old, new in pairs:
+        if old in text:
+            text = text.replace(old, new)
+            done.append(old[:40])
+    if done:
+        path.write_text(text, encoding="utf-8")
+    return done
 
 
-def replace_between(text: str, start: str, end: str, new: str) -> tuple[str, bool]:
-    """Replace start..=end (end is the literal that closes the block)."""
-    i = text.find(start)
-    if i < 0:
-        return text, False
-    j = text.find(end, i)
-    if j < 0:
-        return text, False
-    return text[:i] + new + text[j + len(end):], True
+def patch_mirror() -> None:
+    """Bake the project's own server in as the release source.
 
+    The upstream launcher only ever asks GitHub, and its loopback mirror is feature-gated.
+    Without this, the launcher queries `her3f/officoman/releases`, finds the `ci-*` tags
+    (which are not versions) and reports every app as "not found". This step must run
+    after tools/rebrand_launcher.py, which copies the pristine file in.
+    """
+    backend = LAUNCHER / "crates" / "native" / "src" / "backend.rs"
+    text = backend.read_text(encoding="utf-8")
+    old = """fn local_mirror() -> Option<String> {
+    if !cfg!(feature = "local-mirror") {
+        return None;
+    }"""
+    new = """/// Where this project publishes its release feed and builds. Baked in at build time with
+/// `WHITEOFFICE_LAUNCHER_MIRROR`, so the launcher asks this server and never GitHub.
+const BUILT_IN_MIRROR: Option<&str> = option_env!("WHITEOFFICE_LAUNCHER_MIRROR");
 
-def replace_once(text: str, old: str, new: str) -> tuple[str, bool]:
-    if old not in text:
-        return text, False
-    return text.replace(old, new, 1), True
+fn local_mirror() -> Option<String> {
+    if let Some(base) = BUILT_IN_MIRROR {
+        let base = base.trim();
+        if base.starts_with("https://") && !base.contains(['?', '#', '\\\\']) {
+            return Some(if base.ends_with('/') { base.to_string() } else { format!("{base}/") });
+        }
+        log::warn!("ignoring the built-in mirror {base}: it must be an https:// base URL");
+    }
+    if !cfg!(feature = "local-mirror") {
+        return None;
+    }"""
+    if old in text:
+        backend.write_text(text.replace(old, new, 1), encoding="utf-8")
+        print("  ok    mirror support (backend.rs)")
+    else:
+        print("  skip  mirror support (already present or signature changed)")
 
 
 def main() -> int:
-    if not CORE.is_dir():
-        print(f"missing {CORE}", file=sys.stderr)
+    if not LAUNCHER.is_dir():
+        print(f"missing {LAUNCHER}", file=sys.stderr)
         return 1
+
+    (LAUNCHER / "crates" / "core" / "catalog.toml").write_text(CATALOG_TOML, encoding="utf-8")
+    print("  ok    catalog.toml (4 apps)")
+
+    patch_mirror()
 
     cat = CORE / "catalog.rs"
     text = cat.read_text(encoding="utf-8")
-    applied = []
 
+    # legacy SUITE const (pre-v0.19.2) — remove it if the regex still finds it
     text, n = re.subn(r"pub const SUITE: \[CraftApp; \d+\] = \[.*?\n\];",
-                      SUITE_BLOCK, text, count=1, flags=re.S)
-    applied.append(("suite", n == 1))
+                      "pub const SUITE: [CraftApp; 4] = [];", text, count=1, flags=re.S)
+    if n:
+        cat.write_text(text, encoding="utf-8")
+        print("  ok    legacy SUITE const cleared")
 
-    text, ok = replace_between(
-        text, "pub fn app_icon_png(id: &str) -> Option<&'static [u8]> {", "\n}", ICONS_BLOCK
-    )
-    applied.append(("icons", ok))
+    pairs = [
+        ('publisher: "White Office",\n        msi_publisher: None,',
+         'publisher: "White Office",\n        msi_publisher: Some("White Office"),'),
+        ("mac_team: Some(WHITEOFFICE_TEAM_ID),",
+         "mac_team: None, // builds are unsigned"),
+        ('pub const GITHUB_URL: &str = "https://github.com/her3f";',
+         'pub const GITHUB_URL: &str = "https://github.com/her3f/officoman";'),
+        ('pub const GITHUB_URL: &str = "https://github.com/storytold";',
+         'pub const GITHUB_URL: &str = "https://github.com/her3f/officoman";'),
+    ]
+    done = patch_file(cat, pairs)
 
-    text, ok = replace_once(
-        text,
-        'publisher: "White Office",\n        msi_publisher: None,',
-        'publisher: "White Office",\n        msi_publisher: Some("White Office"),',
-    )
-    applied.append(("msi publisher", ok))
+    # app_icon_png arms
+    text = cat.read_text(encoding="utf-8")
+    text, n2 = re.subn(r"pub fn app_icon_png\(id: &str\) -> Option<&'static \[u8\]> \{.*?\n\}",
+                       ICONS_BLOCK, text, count=1, flags=re.S)
+    if n2:
+        cat.write_text(text, encoding="utf-8")
+        done.append("app_icon_png")
 
-    text, ok = replace_once(
-        text,
-        "mac_team: Some(WHITEOFFICE_TEAM_ID),",
-        "// These builds are not code-signed, so macOS installs are not offered.\n        mac_team: None,",
-    )
-    applied.append(("mac team", ok))
+    # SOCIAL links -> none
+    text = cat.read_text(encoding="utf-8")
+    text, n3 = re.subn(r"pub const SOCIAL: \[\(&str, &str\); \d+\] = \[.*?\n\];",
+                       "pub const SOCIAL: [(&str, &str); 0] = [];", text, count=1, flags=re.S)
+    if n3:
+        cat.write_text(text, encoding="utf-8")
+        done.append("SOCIAL")
 
-    text, ok = replace_once(
-        text, '"her3f/craft-launcher"', '"her3f/officoman"'
-    )
-    if ok:
-        text = text.replace('"her3f/craft-launcher"', '"her3f/officoman"')
-    applied.append(("launcher repo", ok))
-
-    text, ok = replace_between(
-        text, "pub const SOCIAL: [(&str, &str); 5] = [", "\n];",
-        "pub const SOCIAL: [(&str, &str); 0] = [];",
-    )
-    applied.append(("social links", ok))
-
-    text, ok = replace_once(
-        text,
-        'pub const GITHUB_URL: &str = "https://github.com/her3f";',
-        'pub const GITHUB_URL: &str = "https://github.com/her3f/officoman";',
-    )
-    applied.append(("github url", ok))
-
-    text, ok = replace_once(
-        text, 'pub const GITHUB_OWNER: &str = "storytold";',
-        'pub const GITHUB_OWNER: &str = "her3f";'
-    )
-    applied.append(("github owner", ok))
-
-    text, ok = replace_once(
-        text, 'pub const GITHUB_URL: &str = "https://github.com/storytold";',
-        'pub const GITHUB_URL: &str = "https://github.com/her3f/officoman";'
-    )
-    applied.append(("github url (unreplaced)", ok))
-
-    cat.write_text(text, encoding="utf-8")
-
-    det = CORE / "details.rs"
-    if det.is_file():
-        text = det.read_text(encoding="utf-8")
-        text, n2 = re.subn(r"pub const DETAILS: \[AppDetails; \d+\] = \[.*?\n\];",
-                           DETAILS_BLOCK, text, count=1, flags=re.S)
-        ok = n2 == 1
-        applied.append(("details data", ok))
-        det.write_text(text, encoding="utf-8")
-
-    for name, ok in applied:
-        print(f"  {'ok  ' if ok else 'skip'}  {name}")
+    for d in done:
+        print(f"  ok    {d}")
     return 0
 
 
