@@ -2533,7 +2533,7 @@ fn links_open_the_right_pages() {
     assert_eq!(sites, vec!["https://officoman.whitebearom.com".to_string()], "{sites:?}");
     // Social icons in the footer.
     assert_eq!(click_opens(&mut h, "X").as_deref(), Some("https://x.com/get_whiteoffice"));
-    assert_eq!(click_opens(&mut h, "YouTube").as_deref(), Some("https://www.youtube.com/@OfficialWhite OfficeStudios"));
+    assert_eq!(click_opens(&mut h, "YouTube").as_deref(), Some("https://www.youtube.com/@OfficialArtcraftStudios"));
     assert_eq!(click_opens(&mut h, "TikTok").as_deref(), Some("https://www.tiktok.com/@whiteoffice.studios"));
     assert_eq!(click_opens(&mut h, "Instagram").as_deref(), Some("https://www.instagram.com/officialwhiteofficestudios"));
     assert_eq!(click_opens(&mut h, "LinkedIn").as_deref(), Some("https://www.linkedin.com/company/whiteoffice-ai"));
@@ -3420,7 +3420,7 @@ fn a_page_without_pictures_has_no_gallery() {
     h.get_by_label("PdfCraft details").click();
     h.run_steps(10);
     snapshot(&mut h, "details-no-pictures-dark");
-    h.get_all_by_label_contains("The  PDF workbench.").last().unwrap();
+    h.get_all_by_label_contains("The open-source PDF workbench.").last().unwrap();
     h.get_by_label_contains("Search as you type");
     assert!(h.query_by_label("Enlarge picture").is_none());
     assert!(h.query_by_label("Next picture (→)").is_none());

@@ -15,8 +15,8 @@
 
   Double-clicked, it opens a setup wizard that names the version: Welcome; a folder page to pick
   where it goes, with a "Create a desktop shortcut" box; Ready; a progress page; and a Finish page
-  with a ticked "Launch White Office Launcher" box. There is no licence page (the code is 
-  ; nothing to accept). The install folder and the desktop-shortcut choice are recorded
+  with a ticked "Launch White Office Launcher" box. There is no licence page (the code is MIT OR
+  Apache-2.0; nothing to accept). The install folder and the desktop-shortcut choice are recorded
   under HKCU and reused by later versions, so an update (the launcher's own self-update runs this
   with /passive, which skips the wizard) lands in the same folder and keeps the user's choice; the
   launcher reads the recorded folder to know it was installed by this MSI.

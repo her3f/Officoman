@@ -66,7 +66,7 @@ fn substitutes_by_name(family: &str) -> (&'static [&'static str], bool) {
     // headings and screens. Open fonts with full Persian coverage first.
     const NASKH: &[&str] = &["Noto Naskh Arabic", "XB Zar", "XB Niloofar", "Amiri", "Vazirmatn", "Noto Sans Arabic", "DejaVu Sans", "Source Serif 4"];
     const ARABIC_SANS: &[&str] = &["Vazirmatn", "Sahel", "Shabnam", "Samim", "Noto Sans Arabic", "Noto Naskh Arabic", "DejaVu Sans", "Source Sans 3"];
-    // Hebrew document fonts: platform-specific fonts first, then common  fallbacks.
+    // Hebrew document fonts: platform-specific fonts first, then common open source fallbacks.
     // Windows: Microsoft Office fonts (David, Miriam) are common; Segoe UI is standard.
     // macOS: Helvetica has good Hebrew support; Geeza Pro is included by default.
     // Linux: Noto Sans Hebrew is the best option.

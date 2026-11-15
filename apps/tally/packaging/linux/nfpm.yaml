@@ -15,9 +15,9 @@ priority: optional
 maintainer: ${TALLY_MAINTAINER}
 vendor: White Office
 homepage: https://officoman.whitebearom.com/apps/tally.html
-license:  
+license: MIT OR Apache-2.0
 description: |-
-  , native spreadsheet that works the way Excel users expect.
+  Open-source, native spreadsheet that works the way Excel users expect.
   Opens and saves .xlsx workbooks and CSV/TSV files; hundreds of worksheet
   functions; formatting, sorting, filtering and charts.
   Includes tally-cli, a headless evaluator, converter and command runner.

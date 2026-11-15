@@ -1,5 +1,5 @@
 // Copyright 2018 the Kurbo Authors
-// SPDX-License-Identifier:  OR MIT
+// SPDX-License-Identifier: Apache-2.0 OR MIT
 
 //! 2D affine transformations.
 

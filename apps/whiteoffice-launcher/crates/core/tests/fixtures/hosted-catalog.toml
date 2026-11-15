@@ -32,7 +32,7 @@ repo = "storytold/photocraft"
 tagline = "Image editing"
 [apps.details]
 headline = "The image editor you already know how to use."
-about = "Layers, masks, adjustment layers, layer styles, type, vectors and brushes in a native app. , offline, and yours.\n\nPhotoCraft keeps the menus, shortcuts and panels your hands already know, so there is nothing to relearn."
+about = "Layers, masks, adjustment layers, layer styles, type, vectors and brushes in a native app. Open source, offline, and yours.\n\nPhotoCraft keeps the menus, shortcuts and panels your hands already know, so there is nothing to relearn."
 platforms = "macOS, Windows, Linux, FreeBSD, web"
 [[apps.details.features]]
 text = "No Electron and no web view: a fast native compositor."
@@ -94,7 +94,7 @@ repo = "storytold/vectorcraft"
 tagline = "Vector illustration"
 [apps.details]
 headline = "Vector illustration, with familiar tools and editable effects."
-about = "A native vector illustration app with the pen, panels and shortcuts illustrators expect. , and it also runs in a browser."
+about = "A native vector illustration app with the pen, panels and shortcuts illustrators expect. Open source, and it also runs in a browser."
 platforms = "macOS, Windows, Linux, FreeBSD, web"
 [[apps.details.features]]
 text = "Pen, direct selection, shape booleans, snapping guides and an appearance panel, laid out the way you expect."
@@ -284,7 +284,7 @@ publisher = "White Office"
 repo = "storytold/pdfcraft"
 tagline = "Reading, organizing and protecting PDFs"
 [apps.details]
-headline = "The  PDF workbench."
+headline = "The open-source PDF workbench."
 about = "Read, organize, combine, split and secure PDFs in a fast, native app. No account, no telemetry and no cloud."
 platforms = "macOS, Windows, Linux, FreeBSD, web"
 [[apps.details.features]]
@@ -400,7 +400,7 @@ site = "https://github.com/storytold/anicraft"
 tagline = "2D vector animation"
 [apps.details]
 headline = "Vector animation on a timeline you know."
-about = " 2D vector animation, built in pure Rust."
+about = "Open-source 2D vector animation, built in pure Rust."
 platforms = "macOS, Windows, Linux, FreeBSD, web"
 [[apps.details.features]]
 text = "Stage, tools, timeline, layers, keyframes, Properties and Library sit where animators expect them, with onion skinning for in-betweening."
@@ -551,7 +551,7 @@ repo = "storytold/wordcraft"
 tagline = "Writing and document design"
 [apps.details]
 headline = "The familiar word processor, native and offline."
-about = "A word processor with the ribbon, shortcuts and behavior you already know. , and built from public specifications."
+about = "A word processor with the ribbon, shortcuts and behavior you already know. Open source, and built from public specifications."
 platforms = "macOS, Windows, Linux, BSD, web"
 [[apps.details.features]]
 text = "Ribbon tabs and groups, a live Styles gallery and the editing behavior you expect, from list continuation to Format Painter."
@@ -938,7 +938,7 @@ repo = "storytold/craft-anything"
 tagline = "Find out how any software works, then craft your own"
 [apps.details]
 headline = "See how any website, app or game works, then build your own."
-about = "Point it at a target and say what you want. It studies the original with real inspection tools, has a coding agent build a new project in the stack you ask for, checks the result against the original and refines it.  and clean-room."
+about = "Point it at a target and say what you want. It studies the original with real inspection tools, has a coding agent build a new project in the stack you ask for, checks the result against the original and refines it. Open source and clean-room."
 platforms = "macOS, Windows, Linux, FreeBSD, web"
 [[apps.details.features]]
 text = "Websites, desktop apps, phone apps, games and files: find out how they're built, with the evidence behind every answer."
@@ -984,7 +984,7 @@ site = "https://solidcraft.io"
 tagline = "Parametric 3D CAD"
 [apps.details]
 headline = "Parametric 3D CAD, with editable sketches and solids."
-about = "A parametric solid modeller by Tangency Labs. Sketch, constrain and build solids on an editable feature timeline: change a dimension and the model rebuilds. Early, but usable for simple parts. , and it can be driven by AI agents through its MCP server."
+about = "A parametric solid modeller by Tangency Labs. Sketch, constrain and build solids on an editable feature timeline: change a dimension and the model rebuilds. Early, but usable for simple parts. Open source, and it can be driven by AI agents through its MCP server."
 platforms = "macOS, Windows, Linux, FreeBSD, web"
 [[apps.details.features]]
 text = "Lines, arcs, splines and text, solved by SolidCraft's own constraint solver, with parameter-driven dimensions."
@@ -1029,7 +1029,7 @@ site = "https://mailcraft.work"
 tagline = "Mail, calendar and contacts"
 [apps.details]
 headline = "Mail, calendar, contacts and tasks, in one native app."
-about = "An  mail program by UCS Care Group, written from scratch in Rust: the folder pane, message list and reading pane people already know, with a calendar, people and to-dos. Works with Microsoft 365, Outlook.com and IMAP. In public beta, and it can be driven by AI agents through its MCP server."
+about = "An open-source mail program by UCS Care Group, written from scratch in Rust: the folder pane, message list and reading pane people already know, with a calendar, people and to-dos. Works with Microsoft 365, Outlook.com and IMAP. In public beta, and it can be driven by AI agents through its MCP server."
 platforms = "macOS, Windows, Linux, FreeBSD, web"
 [[apps.details.features]]
 text = "Conversations, flags, categories, rules, search with a query language, and HTML mail shown without running anything in it."

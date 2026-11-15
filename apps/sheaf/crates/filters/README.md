@@ -3,7 +3,7 @@
 PDF stream filters: the decoders and encoders behind `/Filter` and `/DecodeParms`.
 
 - **Layer:** L0, standalone. No dependency on any other Sheaf crate. `cos` depends on it (architecture §3 rule 3).
-- **Licence:**  . Clean-room: written from ISO 32000-2 §7.4, RFC 1950/1951 (through `flate2` with the pure-Rust `zlib-rs` backend), TIFF 6.0 §14 (predictor 2) and RFC 2083 §6 (PNG filters). CCITT Group 4 encoding (ITU-T T.6) is the `fax` crate's (MIT, already in the tree through `tiff`), checked here by round trips through an independent decoder; CCITT decoding (T.4 and T.6) is the `hayro-ccitt` crate's, and JBIG2 decoding the `hayro-jbig2` crate's (both  , already in the tree through hayro), bounded here. JBIG2 generic region encoding is written from the public ISO/IEC 14492 Final Committee Draft (WG1 N1359, 1999); Annex H.2 checks the arithmetic coder byte for byte.
+- **Licence:** MIT OR Apache-2.0. Clean-room: written from ISO 32000-2 §7.4, RFC 1950/1951 (through `flate2` with the pure-Rust `zlib-rs` backend), TIFF 6.0 §14 (predictor 2) and RFC 2083 §6 (PNG filters). CCITT Group 4 encoding (ITU-T T.6) is the `fax` crate's (MIT, already in the tree through `tiff`), checked here by round trips through an independent decoder; CCITT decoding (T.4 and T.6) is the `hayro-ccitt` crate's, and JBIG2 decoding the `hayro-jbig2` crate's (both MIT OR Apache-2.0, already in the tree through hayro), bounded here. JBIG2 generic region encoding is written from the public ISO/IEC 14492 Final Committee Draft (WG1 N1359, 1999); Annex H.2 checks the arithmetic coder byte for byte.
 
 - `#![forbid(unsafe_code)]`. Builds for `wasm32-unknown-unknown`.
 

@@ -16,8 +16,6 @@ import json
 from datetime import datetime, timezone
 from pathlib import Path
 
-from release_assets import latest_assets
-
 ROOT = Path(__file__).resolve().parent.parent
 DIST = ROOT / "dist"
 
@@ -32,33 +30,31 @@ REPO = "her3f/officoman"
 
 
 def version_of(slug: str) -> str | None:
-    version, _ = latest_assets(DIST, slug)
-    return version or None
+    for p in sorted(DIST.glob(f"{slug}-*-windows-x64.msi")):
+        return p.name.split(f"{slug}-", 1)[1].split("-windows-x64", 1)[0]
+    for p in sorted(DIST.glob(f"{slug}-*-windows-x64-portable.zip")):
+        return p.name.split(f"{slug}-", 1)[1].split("-windows-x64", 1)[0]
+    return None
 
 
 def assets_for(slug: str, base: str) -> list[dict]:
     out = []
-    _, assets = latest_assets(DIST, slug)
-    for p in sorted(assets.values()):
+    for p in sorted(DIST.glob(f"{slug}-*")):
+        if not (p.name.endswith(".msi") or p.name.endswith(".zip") or p.name.endswith(".tar.gz")):
+            continue
         out.append({
             "name": p.name,
             "size_bytes": p.stat().st_size,
             "download_url": f"{base}{p.name}",
-            "sha256": sha256(p),
+            "sha256": hashlib.sha256(p.read_bytes()).hexdigest(),
         })
     return out
-
-
-def sha256(path: Path) -> str:
-    with path.open("rb") as stream:
-        return hashlib.file_digest(stream, "sha256").hexdigest()
 
 
 def main() -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("--base", default="https://officoman.whitebearom.com/dl/")
     args = ap.parse_args()
-    DIST.mkdir(parents=True, exist_ok=True)
     base = args.base if args.base.endswith("/") else args.base + "/"
 
     now = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")

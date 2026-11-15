@@ -39,7 +39,7 @@ Dependencies and assets use SPDX identifiers. An expression is allowed when ever
 - `MIT`
 - `BSD-2-Clause`
 - `BSD-3-Clause`
-- ``
+- `Apache-2.0`
 - `OFL-1.1`
 - `Ubuntu-font-1.0`
 - `Bitstream-Vera`
@@ -53,14 +53,14 @@ Dependencies and assets use SPDX identifiers. An expression is allowed when ever
 
 # Tally — instructions for agents
 
-Tally is a clean-room, , Rust-native spreadsheet targeting Microsoft Excel parity — and superiority (speed, openness, agent control). It runs natively on macOS, Windows, Linux and BSD, and on the web via WASM. Siblings with the same conventions: `../designcraft` (InDesign-class, the closest reference), `../photocraft` (Photoshop), `../vectorcraft` (Illustrator), `../sheaf` (Acrobat), `../filmcraft` (Premiere), `../lightcraft` (Lightroom), `../effectcraft` (After Effects).
+Tally is a clean-room, open-source, Rust-native spreadsheet targeting Microsoft Excel parity — and superiority (speed, openness, agent control). It runs natively on macOS, Windows, Linux and BSD, and on the web via WASM. Siblings with the same conventions: `../designcraft` (InDesign-class, the closest reference), `../photocraft` (Photoshop), `../vectorcraft` (Illustrator), `../sheaf` (Acrobat), `../filmcraft` (Premiere), `../lightcraft` (Lightroom), `../effectcraft` (After Effects).
 
 ## Start every session here
 Read [`ROADMAP.md`](ROADMAP.md) and [`docs/gaps.md`](docs/gaps.md). `plan/` is an optional gitignored notebook (status, execution notes, `plan/excel/*.md`). Do not ask for it and do not stop when it is absent. Screenshots of Microsoft software stay in that notebook and are never committed.
 
 ## Assets and iconography — absolute rule
 **No Microsoft, Adobe, Avid, Autodesk (or any other vendor's) iconography, images, artwork, fonts, templates, themes or sample files — ever.** This is the most important rule in this repository; breaking it is a serious failure.
-- Every asset in the repo is original work by Tally contributors, or public domain / CC0, or  / Creative Commons that allows redistribution (or licensed  by the contributor who created it).
+- Every asset in the repo is original work by Tally contributors, or public domain / CC0, or open source / Creative Commons that allows redistribution (or licensed open source by the contributor who created it).
 - Every asset file has a row in [`ATTRIBUTION.md`](ATTRIBUTION.md) (author, source, licence). `cargo xtask assets` enforces it. Adding an asset without a row is a bug.
 - Prefer art generated in code: the UI icon set (`crates/ui-egui/src/icons.rs`), table and cell style palettes, themes and sample workbooks are drawn/defined in code and original.
 - Never copy Office's icons, ribbon artwork, theme XML, table-style definitions, templates, clip art or wording beyond feature names. Excel feature *names* (menu labels, function names) are fine.

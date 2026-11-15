@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 """Repair identifiers that the bulk rename glued together.
 
-The brand rename turns `White Office` into `White Office`. Inside a code identifier
-(`White OfficeApi`, `White OfficeLauncherData`) that leaves a space, which neither Rust nor
+The brand rename turns `ArtCraft` into `White Office`. Inside a code identifier
+(`ArtCraftApi`, `ArtCraftLauncherData`) that leaves a space, which neither Rust nor
 WiX nor TOML accepts. Display strings keep the space; identifiers lose it.
 
 Run after tools/rebrand.py, tools/scrub_vendor.py, tools/rebrand_launcher.py and

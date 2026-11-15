@@ -370,7 +370,7 @@ members = ["dpi"]
 [workspace.package]
 rust-version = "1.70.0"
 repository = "https://github.com/rust-windowing/winit"
-license = ""
+license = "Apache-2.0"
 edition = "2021"
 
 [workspace.dependencies]

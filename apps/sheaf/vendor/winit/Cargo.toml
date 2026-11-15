@@ -40,7 +40,7 @@ documentation = "https://docs.rs/winit"
 readme = "README.md"
 keywords = ["windowing"]
 categories = ["gui"]
-license = ""
+license = "Apache-2.0"
 repository = "https://github.com/rust-windowing/winit"
 
 [package.metadata.docs.rs]

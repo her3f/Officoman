@@ -194,7 +194,7 @@ fn hostile_encryption_info_errors_without_panicking() {
 }
 
 /// The key a real-world Standard-encrypted package derives: Apache POI's test file
-/// `protected_passtika.xlsx` ( test data), password "tika", written by Excel
+/// `protected_passtika.xlsx` (Apache-2.0 test data), password "tika", written by Excel
 /// itself. The value was computed from [MS-OFFCRYPTO] §2.3.4.7 independently of this code —
 /// the file decrypts to a valid package under it and nothing else opens that file — so real
 /// Word 2007 documents stay pinned, not just spec-derived ones.

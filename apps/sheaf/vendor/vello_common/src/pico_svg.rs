@@ -1,5 +1,5 @@
 // Copyright 2024 the Vello Authors
-// SPDX-License-Identifier:  OR MIT
+// SPDX-License-Identifier: Apache-2.0 OR MIT
 
 // Below is copied, lightly adapted, from Vello.
 

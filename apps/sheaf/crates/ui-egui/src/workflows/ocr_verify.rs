@@ -2200,7 +2200,7 @@ fn do_accept(v: &mut OcrVerify, app: &mut SheafApp) {
 /// cancelled save can simply be tried again.
 fn save_editable(app: &mut SheafApp, bytes: Arc<Vec<u8>>, name: String, doc: Option<DocId>) {
     let source = doc.and_then(|id| app.session.get(id)).and_then(|d| d.path.clone());
-    // The chosen file is the  when both resolve to the same path (a new file does
+    // The chosen file is the open source when both resolve to the same path (a new file does
     // not exist yet, so fall back to its folder and name).
     let is_source = |picked: &std::path::Path, source: &Option<String>| {
         let Some(src) = source else { return false };

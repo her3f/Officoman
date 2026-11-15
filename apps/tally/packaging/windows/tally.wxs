@@ -180,7 +180,7 @@
 
         <!-- Settings > Default apps: lets the user pick Tally for these types. -->
         <RegistryValue Root="HKMU" Key="Software\Tally\Capabilities" Name="ApplicationName" Value="Tally" Type="string" />
-        <RegistryValue Root="HKMU" Key="Software\Tally\Capabilities" Name="ApplicationDescription" Value=" spreadsheet for .xlsx, CSV and TSV files" Type="string" />
+        <RegistryValue Root="HKMU" Key="Software\Tally\Capabilities" Name="ApplicationDescription" Value="Open-source spreadsheet for .xlsx, CSV and TSV files" Type="string" />
         <RegistryValue Root="HKMU" Key="Software\Tally\Capabilities\FileAssociations" Name=".xlsx" Value="Tally.Workbook" Type="string" />
         <RegistryValue Root="HKMU" Key="Software\Tally\Capabilities\FileAssociations" Name=".xlsm" Value="Tally.Workbook" Type="string" />
         <RegistryValue Root="HKMU" Key="Software\Tally\Capabilities\FileAssociations" Name=".csv" Value="Tally.TextData" Type="string" />

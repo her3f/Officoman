@@ -78,7 +78,7 @@ pub fn show(app: &mut SheafApp, ui: &mut egui::Ui) {
         egui::Frame::NONE.inner_margin(egui::Margin { left: 36, right: 36, top: 28, bottom: 28 }).show(ui, |ui| {
             ui.label(egui::RichText::new(tl!("Welcome to Sheaf")).font(theme::semibold(24.0)));
             ui.label(
-                egui::RichText::new(tl!("An  PDF workbench — local, private, and scriptable."))
+                egui::RichText::new(tl!("An open-source PDF workbench — local, private, and scriptable."))
                     .color(t.text_muted)
                     .font(theme::regular(14.0)),
             );

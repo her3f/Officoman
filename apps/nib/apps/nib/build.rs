@@ -17,7 +17,7 @@ fn main() {
         .set("ProductName", "Nib")
         .set("FileDescription", "Nib word processor")
         .set("CompanyName", "White Office")
-        .set("LegalCopyright", "Copyright (c) the Nib authors.  .")
+        .set("LegalCopyright", "Copyright (c) the Nib authors. MIT OR Apache-2.0.")
         .set("OriginalFilename", "nib.exe")
         .set("InternalName", "nib");
     if let Err(e) = res.compile() {

@@ -114,7 +114,7 @@ pub fn open_sample(s: &mut Session) -> Result<()> {
     run(s, "transition.set", json!({"kind": "split"}))?;
 
     // Closing.
-    run(s, "slide.new", json!({"layout": "title", "title": "Clear skies!", "body": "Made with Podium — free and "}))?;
+    run(s, "slide.new", json!({"layout": "title", "title": "Clear skies!", "body": "Made with Podium — free and open source"}))?;
     let moon = run(s, "shape.insert", json!({"preset": "moon", "rect": [820, 40, 80, 120]}))?;
     run(s, "shape.fill", json!({"id": last_id(&moon), "color": "accent6"}))?;
     run(s, "shape.line", json!({"id": last_id(&moon), "none": true}))?;

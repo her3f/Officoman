@@ -21,7 +21,7 @@ icons use the full-bleed tile. macOS icons put it on Apple's grid (an 824 px bod
 
 **Provenance:** the project owner's original drawing, made in White Office (2880 px, keyed to the palette), then
 vectorised (potrace; no filtering or warping).
-Licence: [LICENSE.txt](LICENSE.txt) (` `, like the repo).
+Licence: [LICENSE.txt](LICENSE.txt) (`MIT OR Apache-2.0`, like the repo).
 
 ## Files
 
@@ -43,7 +43,7 @@ hicolor icon.
 
 Windows PDF files use resource 2 (`"sheaf.exe",-2`) when Sheaf is chosen as the default
 reader; the app keeps resource 1. The document outline is adapted from Lucide `file-text`
-1.49.0 (ISC); its badge and outlined lettering are original (` `), covered by
+1.49.0 (ISC); its badge and outlined lettering are original (`MIT OR Apache-2.0`), covered by
 [LICENSE-document.txt](LICENSE-document.txt). Both icons are embedded, requiring no runtime
 sidecar. This provides a file type icon; first-page thumbnails still need a thumbnail provider.
 

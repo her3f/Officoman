@@ -5,7 +5,7 @@ members = ["crates/*", "apps/*", "xtask"]
 [workspace.package]
 version = "0.19.2"
 edition = "2024"
-license = " "
+license = "MIT OR Apache-2.0"
 rust-version = "1.95"
 repository = "https://github.com/her3f/officoman"
 

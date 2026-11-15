@@ -344,7 +344,7 @@ fn save_recording(s: &mut Session, p: &Json, rec: &crate::record::Recorder, star
         None => crate::macros::next_name(&wb),
     };
     let mut converted = crate::macros::recorder::convert(&name, &start, &rec.steps, &rec.ran);
-    // Steps past the macro li its size, and ones recorded in another workbook, are left
+    // Steps past the macro limit or its size, and ones recorded in another workbook, are left
     // out and counted with the ones the recorder dropped.
     let mut cut = converted.cut.saturating_add(converted.mac.steps.len().saturating_sub(tally_model::MAX_MACRO_STEPS));
     converted.mac.steps.truncate(tally_model::MAX_MACRO_STEPS);

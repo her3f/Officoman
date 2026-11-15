@@ -632,7 +632,7 @@ pub fn progress_notice(app: &SheafApp, ctx: &egui::Context) -> bool {
     cancel
 }
 
-/// The White Office wordmark (Storyteller's brand, docs/brand/; not ), sized to `height`.
+/// The White Office wordmark (Storyteller's brand, docs/brand/; not open source), sized to `height`.
 pub fn whiteoffice_logo(ui: &mut egui::Ui, height: f32) -> Response {
     let dark = ui.visuals().dark_mode;
     let (uri, bytes): (&str, &'static [u8]) = if dark {

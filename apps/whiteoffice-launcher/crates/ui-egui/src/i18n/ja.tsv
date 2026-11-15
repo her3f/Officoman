@@ -24,7 +24,7 @@
 	Launcher	Launcher
 	Craft App Suite	Craft App Suite
 	by {name}	{name} 提供
-	 Tools for Creatives, Makers, and Builders	クリエイター、メイカー、ビルダーのためのオープンソースツール
+	Open Source Tools for Creatives, Makers, and Builders	クリエイター、メイカー、ビルダーのためのオープンソースツール
 	Settings	設定
 	Check for updates	更新を確認
 	Grid	グリッド
@@ -443,7 +443,7 @@ materialcraft	Preview materials in 2D and on 3D models.	マテリアルを2Dと3
 	The OCI repository is a preview with GPG verification disabled.	OCI リポジトリはプレビュー版で、GPG 検証は無効になっています。
 anicraft	2D vector animation	2Dベクターアニメーション
 anicraft	Vector animation on a timeline you know.	慣れ親しんだタイムラインでのベクターアニメーション。
-anicraft	 2D vector animation, built in pure Rust.	ピュアRustで構築されたオープンソースの2Dベクターアニメーション。
+anicraft	Open-source 2D vector animation, built in pure Rust.	ピュアRustで構築されたオープンソースの2Dベクターアニメーション。
 anicraft	Familiar by design	直感的なデザイン
 anicraft	Stage, tools, timeline, layers, keyframes, Properties and Library sit where animators expect them, with onion skinning for in-betweening.	ステージ、ツール、タイムライン、レイヤー、キーフレーム、プロパティ、ライブラリが期待通りの場所に配置され、オニオンスキンも備えています。
 anicraft	Tweens that ease	滑らかなトゥイーン

@@ -30,7 +30,7 @@ categories = [
     "rendering",
     "graphics",
 ]
-license = " OR MIT"
+license = "Apache-2.0 OR MIT"
 repository = "https://github.com/linebender/vello"
 resolver = "2"
 

@@ -358,7 +358,7 @@ const MAX_MOVES: usize = 100_000;
 /// of a move when it sits inside a range of that kind; the range's name links both ends.
 #[derive(Default)]
 pub(crate) struct MoveCtx {
-    ///  and destination ranges: (`w:id`, `w:name`).
+    /// Open source and destination ranges: (`w:id`, `w:name`).
     open: [Vec<(String, String)>; 2],
     /// Per name: a source range started / ended, a destination range started / ended (bits 0–3).
     seen: HashMap<String, u8>,

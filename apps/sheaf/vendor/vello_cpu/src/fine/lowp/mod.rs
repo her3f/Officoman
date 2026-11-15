@@ -1,5 +1,5 @@
 // Copyright 2025 the Vello Authors
-// SPDX-License-Identifier:  OR MIT
+// SPDX-License-Identifier: Apache-2.0 OR MIT
 
 //! Low-precision (u8/u16) rendering kernel implementation.
 //!

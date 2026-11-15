@@ -1054,7 +1054,7 @@ impl FixedBackend {
                 pack("el", "Ελληνικά", 2_310_000, "MPL-1.1 OR GPL-2.0-or-later OR LGPL-2.1-or-later", "Embeddable"),
                 pack("fr", "Français", 1_120_000, "MPL-2.0", "Embeddable"),
                 pack("nl", "Nederlands", 1_950_000, "BSD-3-Clause", "Embeddable"),
-                pack("pl", "Polski", 4_620_000, "GPL-2.0-or-later OR LGPL-2.1-or-later OR MPL-1.1 OR  OR CC-BY-4.0", "Embeddable"),
+                pack("pl", "Polski", 4_620_000, "GPL-2.0-or-later OR LGPL-2.1-or-later OR MPL-1.1 OR Apache-2.0 OR CC-BY-4.0", "Embeddable"),
                 pack("sk", "Slovenčina", 2_040_000, "GPL-2.0-only OR LGPL-2.1-only OR MPL-1.1", "Download-only"),
             ],
             ..Default::default()

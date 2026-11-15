@@ -8,10 +8,10 @@ One global rule set is applied to every repository, because the apps reference
 each other by name. Rules run in this order, and the order matters:
 
   1. bundle identifiers          ai.storyteller.*      -> io.github.her3f.*
-  2. links to the White Office site  getWhite Office.com/...   -> the White Office site
+  2. links to the ArtCraft site  getartcraft.com/...   -> the White Office site
   3. self references             storytold/<app>       -> her3f/officoman
   4. product names (4 apps)      DeckCraft / deckcraft / DECKCRAFT / Deckcraft
-  5. parent brand                White Office              -> White Office
+  5. parent brand                ArtCraft              -> White Office
 
 External dependencies that live under the storytold organisation
 (craft-libs, egui, craft-fonts, craft-i18n) are deliberately left untouched:
@@ -83,16 +83,16 @@ def build_rules() -> list[tuple[str, str]]:
         ("ai.storyteller", "io.github.her3f"),
     ]
 
-    # 2. White Office-owned destinations
+    # 2. ArtCraft-owned destinations
     for old, (new, _title) in REPOS.items():
-        rules.append((f"https://getWhite Office.com/apps/{old}", f"{SITE}/apps/{new}.html"))
+        rules.append((f"https://getartcraft.com/apps/{old}", f"{SITE}/apps/{new}.html"))
     rules += [
-        ("https://getWhite Office.com", SITE),
-        ("getWhite Office.com", "officoman.whitebearom.com"),
-        ("discord.gg/White Office", "github.com/her3f/officoman/discussions"),
-        ("https://www.youtube.com/@OfficialWhite OfficeStudios", MONO),
-        ("https://x.com/get_White Office", MONO),
-        ("https://www.linkedin.com/company/White Office-ai", MONO),
+        ("https://getartcraft.com", SITE),
+        ("getartcraft.com", "officoman.whitebearom.com"),
+        ("discord.gg/artcraft", "github.com/her3f/officoman/discussions"),
+        ("https://www.youtube.com/@OfficialArtCraftStudios", MONO),
+        ("https://x.com/get_artcraft", MONO),
+        ("https://www.linkedin.com/company/artcraft-ai", MONO),
     ]
 
     # 3. references to these repositories themselves (the scheme-carrying form first, or
@@ -117,10 +117,10 @@ def build_rules() -> list[tuple[str, str]]:
 
     # 5. parent brand
     rules += [
-        ("White Office Launcher", "White Office Launcher"),
-        ("White Office", "White Office"),
-        ("White Office", "whiteoffice"),
-        ("White Office", "WHITEOFFICE"),
+        ("ArtCraft Launcher", "White Office Launcher"),
+        ("ArtCraft", "White Office"),
+        ("artcraft", "whiteoffice"),
+        ("ARTCRAFT", "WHITEOFFICE"),
         ("ArCraft", "White Office"),
     ]
 

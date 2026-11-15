@@ -162,7 +162,7 @@ Practitioners' praise is real and consistent with these numbers:
   #693, "ridiculously fast and awesome PDF editor" #320, "brilliant" #542, "fantastic and very useful"
   #369, "Gigantic stuff… I love it" #449). Switching reports: #179 switched from Adobe Reader on
   Windows ("covers nearly everything I used Reader for"); #232 replacing macOS Preview; #273
-  " alternative to Acrobat"; #195 would "replace Acrobat completely" once hardware-token
+  "open source alternative to Acrobat"; #195 would "replace Acrobat completely" once hardware-token
   signing exists.
 - **What users hit** (issue titles, excluding 35 agent-filed `fix(...)` reports): installation,
   launch and GPU/window problems 54, rendering and display 46, editing text and images 41, CJK and

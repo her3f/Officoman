@@ -1857,7 +1857,7 @@ mod tests {
         assert!(!load(9));
     }
 
-    // Contributor-original,  . Matches the bounded, uncompressed
+    // Contributor-original, MIT OR Apache-2.0. Matches the bounded, uncompressed
     // synthetic regression used to reproduce the cold-publication race. A second
     // stream optionally checks that racing registration never aliases two ids.
     fn object_stream_fixture(second: bool) -> Vec<u8> {

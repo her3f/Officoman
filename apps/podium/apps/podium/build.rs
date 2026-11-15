@@ -17,7 +17,7 @@ fn main() {
         .set("ProductName", "Podium")
         .set("FileDescription", "Podium presentations")
         .set("CompanyName", "White Office")
-        .set("LegalCopyright", "Copyright (c) the Podium authors.  .")
+        .set("LegalCopyright", "Copyright (c) the Podium authors. MIT OR Apache-2.0.")
         .set("OriginalFilename", "podium.exe")
         .set("InternalName", "podium");
     if let Err(e) = res.compile() {

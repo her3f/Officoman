@@ -1,5 +1,5 @@
 // Copyright 2025 the Vello Authors
-// SPDX-License-Identifier:  OR MIT
+// SPDX-License-Identifier: Apache-2.0 OR MIT
 
 use crate::fine::macros::{f32x16_painter, u8x16_painter};
 use crate::fine::{PosExt, Splat4thExt, u8_to_f32};

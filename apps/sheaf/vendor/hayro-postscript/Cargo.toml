@@ -22,7 +22,7 @@ autotests = false
 autobenches = false
 description = "A lightweight PostScript scanner."
 readme = "README.md"
-license = " OR MIT"
+license = "Apache-2.0 OR MIT"
 repository = "https://github.com/LaurenzV/hayro"
 resolver = "2"
 

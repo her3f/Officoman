@@ -4,7 +4,7 @@ Licensed under the MIT License or the Apache License, Version 2.0, at your optio
 (LICENSE-MIT, LICENSE-APACHE).
 
 The White Office name, wordmark, logo and "A" mark (docs/brand/) are trademarks of the White Office Team.
-They are NOT  and are NOT covered by the   license above. This includes
+They are NOT open source and are NOT covered by the MIT or Apache-2.0 license above. This includes
 everywhere White Office Launcher shows them: the app icon (assets/app-icon/, the blue "A" mark), the
 White Office logo in the window header and the "A" mark used as the tray / menu-bar icon
 (docs/brand/whiteoffice-mark-64.png, whiteoffice-mark-black-44.png).
@@ -22,7 +22,7 @@ Inter font (assets/fonts/Inter-Variable.ttf) — SIL Open Font License 1.1. See 
 Archivo font (assets/fonts/Archivo-Variable.ttf) — SIL Open Font License 1.1. See assets/fonts/OFL-Archivo.txt.
 Geist Mono font (assets/fonts/GeistMono-Variable.ttf) — SIL Open Font License 1.1. See assets/fonts/OFL-GeistMono.txt.
 Craft App Suite app icons (assets/app-icons/*.png) — from each app's repository
-(github.com/storytold/<app>),  , Copyright (c) 2026 White Office Team and the <App>
+(github.com/storytold/<app>), MIT OR Apache-2.0, Copyright (c) 2026 White Office Team and the <App>
 contributors.
 
 

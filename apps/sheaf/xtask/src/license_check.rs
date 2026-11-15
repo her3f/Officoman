@@ -293,7 +293,7 @@ mod tests {
                     sha256: assets::sha256_hex(b"synthetic licence text\n"),
                     licences: match p {
                         "LICENSE-MIT" => vec!["MIT".into()],
-                        "LICENSE-APACHE" => vec!["".into()],
+                        "LICENSE-APACHE" => vec!["Apache-2.0".into()],
                         _ => vec![],
                     },
                     origin: None,
@@ -433,12 +433,12 @@ mod tests {
     #[test]
     fn licence_alternatives_and_combined_obligations_are_distinct() {
         let mit = BTreeSet::from(["MIT"]);
-        assert!(licence_coverage(" ", &mit).unwrap());
-        assert!(!licence_coverage("MIT AND ", &mit).unwrap());
+        assert!(licence_coverage("MIT OR Apache-2.0", &mit).unwrap());
+        assert!(!licence_coverage("MIT AND Apache-2.0", &mit).unwrap());
         let both = BTreeSet::from(["MIT", "Bitstream-Vera"]);
         assert!(licence_coverage("MIT AND Bitstream-Vera", &both).unwrap());
-        assert!(!licence_coverage(" ", &BTreeSet::from(["OFL-1.1"])).unwrap());
-        for expression in ["", "MIT AND", "  AND ISC", "( )", "MIT WITH exception"] {
+        assert!(!licence_coverage("MIT OR Apache-2.0", &BTreeSet::from(["OFL-1.1"])).unwrap());
+        for expression in ["", "MIT AND", "MIT OR Apache-2.0 AND ISC", "(MIT OR Apache-2.0)", "MIT WITH exception"] {
             assert!(licence_coverage(expression, &both).is_err(), "{expression}");
         }
     }

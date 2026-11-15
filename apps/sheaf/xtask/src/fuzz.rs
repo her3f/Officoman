@@ -308,7 +308,7 @@ fn incremental_update_seed() -> Vec<u8> {
 
 /// A file that opens, whose graphs loop: a page whose annotation array holds the page, a form
 /// XObject that draws itself and an outline item that is its own sibling. Every walker needs a
-/// depth li a seen-set; these are what they meet. The page tree stays sound on purpose: a
+/// depth limit or a seen-set; these are what they meet. The page tree stays sound on purpose: a
 /// kid that lists its own parent makes the whole document refuse to open ("no pages"), and a seed
 /// refused at open only reaches the error path.
 fn cyclic_seed() -> Vec<u8> {
