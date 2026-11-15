@@ -3,7 +3,7 @@
 
 [[document]]
 source = "LICENSE-APACHE"
-licences = ["Apache-2.0"]
+licences = [""]
 destination = "LICENSE-APACHE"
 sha256 = "0d542e0c8804e39aa7f37eb00da5a762149dc682d7829451287e11b938e94594"
 
@@ -26,7 +26,7 @@ sha256 = "665a942f9317a358930b470ad522a22a58ff6c346db0395463ec84dd3e19d775"
 
 [[document]]
 source = "vendor/edit-session/LICENSE-APACHE"
-licences = ["Apache-2.0"]
+licences = [""]
 destination = "vendor/edit-session/LICENSE-APACHE"
 sha256 = "cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30"
 
@@ -111,7 +111,7 @@ origin = "https://raw.githubusercontent.com/ralovich/prc-rs/287b671bb5b31b05efb5
 
 [[document]]
 source = "vendor/hayro-interpret/LICENSE-APACHE"
-licences = ["Apache-2.0"]
+licences = [""]
 destination = "vendor/hayro-interpret/LICENSE-APACHE"
 sha256 = "0cec06e0e55fbc3dc5cee4fca9b607f66cb8f4e4dbcf3b3c013594dd156732e9"
 
@@ -176,7 +176,7 @@ documents = ["licenses/egui-emoji-icon-font-mit-license.txt"]
 [[bundled]]
 crate = "hayro-interpret"
 path = "src/font/generated/metrics.rs"
-licence = ""
+licence = " "
 documents = ["vendor/hayro-interpret/LICENSE-MIT", "vendor/hayro-interpret/LICENSE-APACHE"]
 
 [[bundled]]

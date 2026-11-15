@@ -231,7 +231,7 @@ impl Automation {
             settings.region = self.ocr_region(a, id, pages[0], &settings)?;
         }
         // The editable output's destination is checked before anything runs: a NEW file, never
-        // the open source and never an existing file replaced silently.
+        // the  and never an existing file replaced silently.
         let out = match settings.output_mode {
             OutputMode::Searchable => {
                 // `out` belongs to the editable output; a searchable run writes into the open

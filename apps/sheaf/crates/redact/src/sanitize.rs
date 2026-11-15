@@ -195,7 +195,7 @@ fn outline_len_seen(
 /// the same way, and items that are objects of their own go on `next`. Every link counts, not only
 /// `/First` and `/Next`: a damaged outline may reach an item only backwards, and a full save keeps
 /// that item too. `items` counts every item cleaned, inline ones included. Returns how many actions
-/// went, or `None` past the depth limit or past [`OUTLINE_ITEM_BUDGET`] items.
+/// went, or `None` past the depth li past [`OUTLINE_ITEM_BUDGET`] items.
 fn clean_outline_item(doc: &Document, d: &mut Dict, next: &mut Vec<ObjRef>, items: &mut usize, depth: usize) -> Option<usize> {
     *items = items.saturating_add(1);
     if depth > MAX_DIRECT_DEPTH || *items > OUTLINE_ITEM_BUDGET {

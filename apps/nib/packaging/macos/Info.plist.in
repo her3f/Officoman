@@ -43,7 +43,7 @@
   <key>NSRequiresAquaSystemAppearance</key>
   <false/>
   <key>NSHumanReadableCopyright</key>
-  <string>Copyright © the Nib authors. .</string>
+  <string>Copyright © the Nib authors.  .</string>
 
   <!-- Documents Nib opens (system type declarations). -->
   <key>CFBundleDocumentTypes</key>

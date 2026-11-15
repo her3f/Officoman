@@ -1,5 +1,5 @@
 // Copyright 2025 the Vello Authors
-// SPDX-License-Identifier: Apache-2.0 OR MIT
+// SPDX-License-Identifier:  OR MIT
 
 // After you edit the crate's doc comment, run this command, then check README.md for any missing links
 // cargo rdme --workspace-project=vello_common

@@ -2370,7 +2370,7 @@ fn extracting_splitting_and_combining_preserve_page_labels() {
     let extracted_empty_prefix = full_roundtrip(&extract_pages(&empty_prefix, &[1]).unwrap());
     assert_eq!(crate::PageLabels::new(&extracted_empty_prefix).unwrap().label(0).unwrap(), "2");
 
-    // Repeated non-continuing ranges that exceed the 4 MiB total-prefix limit or the range-count
+    // Repeated non-continuing ranges that exceed the 4 MiB total-prefix li the range-count
     // limit are refused rather than writing an unreadable tree or silently dropping labels.
     let mut one = flat_doc(1);
     crate::number_pages(&mut one, 0, 0, Decimal, &"x".repeat(1_000), 1).unwrap();

@@ -217,7 +217,7 @@ pub(super) fn about(app: &mut SlideApp, ui: &mut Ui) {
                 ui.label(RichText::new("Podium").font(theme::bold(24.0)).color(t.text));
             });
             dim(ui, &crate::dialogs::version_line());
-            dim(ui, "");
+            dim(ui, " under  . Not affiliated with Microsoft.");
             ui.add_space(14.0);
             if task(ui, Icon::Help, "Credits", "Credits", "The people and models who built Podium.", true) {
                 let _ = app.run("app.about", json!({}));

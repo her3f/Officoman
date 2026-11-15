@@ -22,7 +22,7 @@
 	Launcher	Launcher
 	Craft App Suite	Craft App Suite
 	by {name}	készítette: {name}
-	Open Source Tools for Creatives, Makers, and Builders	Nyílt forráskódú eszközök alkotóknak, barkácsolóknak és fejlesztőknek
+	 Tools for Creatives, Makers, and Builders	Nyílt forráskódú eszközök alkotóknak, barkácsolóknak és fejlesztőknek
 	Settings	Beállítások
 	Check for updates	Frissítések keresése
 	Grid	Rács
@@ -441,7 +441,7 @@ materialcraft	Preview materials in 2D and on 3D models.	Tekintsd meg az anyagoka
 	The OCI repository is a preview with GPG verification disabled.	Az OCI-tároló előzetes verzió, kikapcsolt GPG-ellenőrzéssel.
 anicraft	2D vector animation	2D vektoros animáció
 anicraft	Vector animation on a timeline you know.	Vektoranimáció egy ismerős idővonalon.
-anicraft	Open-source 2D vector animation, built in pure Rust.	Nyílt forráskódú 2D vektoranimáció, tiszta Rustban írva.
+anicraft	 2D vector animation, built in pure Rust.	Nyílt forráskódú 2D vektoranimáció, tiszta Rustban írva.
 anicraft	Familiar by design	Ismerős kialakítás
 anicraft	Stage, tools, timeline, layers, keyframes, Properties and Library sit where animators expect them, with onion skinning for in-betweening.	Színpad, eszközök, idővonal, rétegek, kulcsképkockák, Tulajdonságok és Könyvtár a megszokott helyen, hagymabőr funkcióval.
 anicraft	Tweens that ease	Finom mozgásinterpolációk

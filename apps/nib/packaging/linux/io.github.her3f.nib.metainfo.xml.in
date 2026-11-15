@@ -4,7 +4,7 @@
 <component type="desktop-application">
   <id>io.github.her3f.nib</id>
   <metadata_license>CC0-1.0</metadata_license>
-  <project_license></project_license>
+  <project_license> </project_license>
   <name>Nib</name>
   <summary>Write and design documents; open and save Word files</summary>
   <developer id="io.github.her3f">
@@ -12,7 +12,7 @@
   </developer>
   <description>
     <p>
-      Nib is a fast, open-source word processor with a familiar ribbon: styles, tables, track changes, references, mail merge, and .docx, PDF, ODT, RTF, HTML and Markdown files. It can be driven by AI agents over MCP.
+      Nib is a fast,  word processor with a familiar ribbon: styles, tables, track changes, references, mail merge, and .docx, PDF, ODT, RTF, HTML and Markdown files. It can be driven by AI agents over MCP.
     </p>
   </description>
   <launchable type="desktop-id">io.github.her3f.nib.desktop</launchable>

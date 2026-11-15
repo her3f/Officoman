@@ -9,7 +9,7 @@
 	Launcher	Launcher
 	Craft App Suite	Craft App Suite
 	by {name}	由 {name} 製作
-	Open Source Tools for Creatives, Makers, and Builders	為創作者、自造者與打造者而生的開源工具
+	 Tools for Creatives, Makers, and Builders	為創作者、自造者與打造者而生的開源工具
 	Settings	設定
 	Check for updates	檢查更新
 	Grid	網格
@@ -399,7 +399,7 @@ materialcraft	Preview materials in 2D and on 3D models.	在 2D 與 3D 模型上�
 	Download size: {size}	下載大小：{size}
 anicraft	2D vector animation	二維向量動畫
 anicraft	Vector animation on a timeline you know.	在您熟悉的時間軸上製作向量動畫。
-anicraft	Open-source 2D vector animation, built in pure Rust.	純 Rust 建構的開源二維向量動畫。
+anicraft	 2D vector animation, built in pure Rust.	純 Rust 建構的開源二維向量動畫。
 anicraft	Familiar by design	設計直觀熟悉
 anicraft	Stage, tools, timeline, layers, keyframes, Properties and Library sit where animators expect them, with onion skinning for in-betweening.	舞台、工具、時間軸、圖層、關鍵影格、「屬性」與「元件庫」皆位於動畫師熟悉的位置，並具備洋蔥皮功能。
 anicraft	Tweens that ease	平滑補間緩動

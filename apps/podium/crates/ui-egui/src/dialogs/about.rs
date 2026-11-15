@@ -24,13 +24,13 @@ pub fn about(_app: &mut SlideApp, ui: &mut Ui) {
         ui.label(egui::RichText::new(version_line()).color(t.text_dim));
         ui.add_space(6.0);
         ui.label("Presentations and slide shows, rebuilt from scratch in pure Rust.");
-        ui.label("An open-source, clean-room project. Not affiliated with Microsoft.");
+        ui.label("An , clean-room project. Not affiliated with Microsoft.");
         ui.add_space(6.0);
         ui.hyperlink_to("Join our community on Discord", podium_engine::links::DISCORD);
         ui.hyperlink_to("officoman.whitebearom.com/apps/podium", podium_engine::links::APP_PAGE);
         ui.hyperlink_to("Source on GitHub", podium_engine::links::GITHUB);
         ui.add_space(6.0);
-        ui.label(egui::RichText::new(" · © 2026 White Office Team and the Podium contributors").size(11.0).color(t.text_faint));
+        ui.label(egui::RichText::new("  · © 2026 White Office Team and the Podium contributors").size(11.0).color(t.text_faint));
     });
 }
 

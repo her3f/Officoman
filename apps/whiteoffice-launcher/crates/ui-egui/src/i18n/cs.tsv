@@ -8,7 +8,7 @@
 	Launcher	Launcher
 	Craft App Suite	Craft App Suite
 	by {name}	od {name}
-	Open Source Tools for Creatives, Makers, and Builders	Open-source nástroje pro kreativce, tvůrce a vývojáře
+	 Tools for Creatives, Makers, and Builders	 nástroje pro kreativce, tvůrce a vývojáře
 	Settings	Nastavení
 	Check for updates	Zkontrolovat aktualizace
 	Grid	Mřížka
@@ -408,7 +408,7 @@ materialcraft	Preview materials in 2D and on 3D models.	Prohlížejte materiály
 	The OCI repository is a preview with GPG verification disabled.	Repozitář OCI je předběžná verze s vypnutým ověřováním GPG.
 anicraft	2D vector animation	2D vektorová animace
 anicraft	Vector animation on a timeline you know.	Vektorová animace na známé časové ose.
-anicraft	Open-source 2D vector animation, built in pure Rust.	Open-source 2D vektorová animace vytvořená v čistém Rustu.
+anicraft	 2D vector animation, built in pure Rust.	 2D vektorová animace vytvořená v čistém Rustu.
 anicraft	Familiar by design	Navrženo tak, jak jste zvyklí
 anicraft	Stage, tools, timeline, layers, keyframes, Properties and Library sit where animators expect them, with onion skinning for in-betweening.	Scéna, nástroje, časová osa, vrstvy, klíčové snímky, Vlastnosti i Knihovna jsou tam, kde je animátoři čekají, včetně cibulového pauzáku.
 anicraft	Tweens that ease	Plynulé mezilehlé pohyby (tweens)

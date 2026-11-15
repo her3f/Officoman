@@ -1,5 +1,5 @@
 // Copyright 2025 the Vello Authors
-// SPDX-License-Identifier: Apache-2.0 OR MIT
+// SPDX-License-Identifier:  OR MIT
 
 //! This example demonstrates the most basic usage of Vello CPU, including
 //! fundamental features in 2D rendering like filling, stroking and applying

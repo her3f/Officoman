@@ -43,7 +43,7 @@ fn enumeration(desc: &str, values: &[&str]) -> Value {
     json!({"type": "string", "enum": values, "description": desc})
 }
 fn params_schema() -> Value {
-    json!({"type": "object", "description": "Command parameters (see the `params` field of list_commands); omit or {} for defaults"})
+    json!({"type": "object", "description": "Command parameters (see the `params` field of list_commands); o {} for defaults"})
 }
 fn color(desc: &str) -> Value {
     json!({"type": "string", "description": desc})

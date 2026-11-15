@@ -17,7 +17,7 @@ fn main() {
         .set("ProductName", "Tally")
         .set("FileDescription", "Tally spreadsheet")
         .set("CompanyName", "White Office")
-        .set("LegalCopyright", "Copyright (c) the Tally authors. .")
+        .set("LegalCopyright", "Copyright (c) the Tally authors.  .")
         .set("OriginalFilename", "tally.exe")
         .set("InternalName", "tally");
     if let Err(e) = res.compile() {

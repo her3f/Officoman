@@ -45,7 +45,7 @@ categories = [
     "gui",
     "game-development",
 ]
-license = ""
+license = " "
 repository = "https://github.com/emilk/egui/tree/main/crates/egui-wgpu"
 resolver = "2"
 

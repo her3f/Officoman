@@ -1174,13 +1174,13 @@ fn about_dialog(ui: &mut Ui, d: &mut Dialog) -> bool {
             ui.label(egui::RichText::new(tl!("Nib")).font(semibold(22.0)));
             let build = option_env!("NIB_BUILD_SHA").map(|s| s.get(..8).unwrap_or(s)).unwrap_or(tl!("development build"));
             ui.label(crate::i18n::fmt(tl!("Version {version} ({build})"), &[("version", env!("CARGO_PKG_VERSION")), ("build", build)]));
-            ui.label(tl!("A free, open-source word processor written from scratch in Rust.\nPart of the Crafting Apps from the White Office team."));
+            ui.label(tl!("A free,  word processor written from scratch in Rust.\nPart of the Crafting Apps from the White Office team."));
             ui.add_space(6.0);
             ui.hyperlink_to(tl!("officoman.whitebearom.com/apps/nib"), "https://officoman.whitebearom.com/apps/nib.html");
             ui.hyperlink_to(tl!("Join us on Discord: github.com/her3f/officoman/discussions"), "https://github.com/her3f/officoman/discussions");
             ui.hyperlink_to(tl!("Source code: https://github.com/her3f/officoman"), "https://github.com/her3f/officoman");
             ui.add_space(6.0);
-            ui.label(egui::RichText::new(tl!(". Copyright (c) 2026 White Office Team and the Nib contributors.")).small().weak());
+            ui.label(egui::RichText::new(tl!(" . Copyright (c) 2026 White Office Team and the Nib contributors.")).small().weak());
         }
     }
     // One Close button: About has nothing to cancel.

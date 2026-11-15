@@ -67,7 +67,7 @@
   <key>NSRequiresAquaSystemAppearance</key>
   <false/>
   <key>NSHumanReadableCopyright</key>
-  <string>Copyright © the Tally authors. .</string>
+  <string>Copyright © the Tally authors.  .</string>
 
   <!-- Files Tally opens. Rank Alternate: it's offered under "Open With" without taking
        over the default app (Numbers, another spreadsheet) for these types. -->

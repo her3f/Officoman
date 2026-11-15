@@ -10,9 +10,9 @@ presentations and PDF — each a full program in its own right, all written in R
 sharing one set of conventions.
 
 > [!IMPORTANT]
-> **Status: imported, not yet built.** All four applications are in the repository and fully
-> rebranded. The rebranded trees have **not** been compiled or tested yet — build each app
-> before trusting it with real work. See [apps/podium](apps/podium) and its siblings.
+> **Status: early desktop builds.** All four rebranded applications have successful local
+> Windows release builds. This is not a claim that every feature or format is verified;
+> keep backups of important documents when trying a new version.
 
 ## The apps
 
@@ -57,20 +57,27 @@ The project site lives in [`docs/`](docs) and is published from that folder with
 To point GitHub Pages at it: **Settings → Pages → Source: Deploy from a branch →
 `main` / `/docs`**.
 
-The site is available in English and [Arabic](docs/ar/index.html). The language
-switch opens the equivalent page, and navigation stays in the selected language.
-Arabic pages use right-to-left layout, with Latin names and file identifiers isolated
-for readability. Both languages work without JavaScript.
+The static site has no npm dependencies. Python 3.11 or newer builds all eight pages:
 
 ```sh
-python -X utf8 tools/build_docs.py --site-only
-python -X utf8 -m unittest discover -s tools -p test_site_localization.py -v
+python tools/build_docs.py
+python tools/check_site.py
+python -m unittest discover -s tools -p test_site.py -v
+python -m http.server 8765 --bind 127.0.0.1 --directory docs
 ```
 
-`--site-only` leaves application READMEs unchanged. Edit English content in
-`tools/build_docs.py` and Arabic translations in `tools/site/ar.json`; the generator
-updates both sets of pages and the sitemap. Missing translations fail the build
-instead of silently showing English prose on an Arabic page.
+Open `http://127.0.0.1:8765/` for a local preview. Edit page rendering in
+`tools/site_builder.py`, app descriptions in `tools/build_docs.py`, and CSS/JavaScript
+in `tools/site/`; files under `docs/` are generated. The generator leaves application
+READMEs untouched. No build or preview command publishes the site.
+
+Download metadata is tracked in `tools/site/releases.json`, so a clean checkout renders
+the same links without local packages. After packaging new releases, run
+`python tools/build_docs.py --refresh-releases`, review the catalog, and publish the
+matching artifacts and `SHA256SUMS.txt` to the project's `/dl/` mirror before deploying
+the site. Download links use the mirror's absolute URL, including in local previews or
+GitHub Pages. Stable versions are compared numerically; packages from older versions
+are never silently mixed into the latest release.
 
 ## Repository layout
 
@@ -117,10 +124,10 @@ uninstall. They are **unsigned**, so Windows SmartScreen warns on first run.
 
 | App | Version | Portable zip |
 |---|---|---|
-| Nib | 0.15.0 | `dist/Nib-0.15.0-windows-x64-portable.zip` |
-| Tally | 0.16.0 | `dist/Tally-0.16.0-windows-x64-portable.zip` |
-| Podium | 0.15.0 | `dist/Podium-0.15.0-windows-x64-portable.zip` |
-| Sheaf | 0.18.0 | `dist/Sheaf-0.18.0-windows-x64-portable.zip` |
+| Nib | 0.18.1 | `dist/nib-0.18.1-windows-x64-portable.zip` |
+| Tally | 0.19.1 | `dist/tally-0.19.1-windows-x64-portable.zip` |
+| Podium | 0.18.1 | `dist/podium-0.18.1-windows-x64-portable.zip` |
+| Sheaf | 0.21.1 | `dist/sheaf-0.21.1-windows-x64-portable.zip` |
 
 `dist/` is git-ignored; attach those zips to a GitHub release to publish them.
 
@@ -132,23 +139,23 @@ The rebrand is scripted, not hand-edited, so it can be re-run or audited:
 |---|---|
 | [`tools/rebrand.py`](tools/rebrand.py) | Copies each upstream repo into `apps/<name>`, renames every product name, moves bundle identifiers to `io.github.her3f.*`, rewrites links, removes the upstream brand assets |
 | [`tools/make_icons.py`](tools/make_icons.py) | Draws every app icon — PNG set, `.ico`, `.icns` and the scalable SVG |
-| [`tools/build_docs.py`](tools/build_docs.py) | Generates the website and the four app READMEs from one data table |
+| [`tools/build_docs.py`](tools/build_docs.py) | Generates the website from app descriptions, templates and a tracked release catalog |
 
 Run them in that order to regenerate the tree from `_vendor/`.
 
 ## Where this comes from
 
-White Office is a **fork and rebrand** of the four open-source *Crafting Apps* published by the
-[ArtCraft](https://getartcraft.com/) team. Those projects are dual-licensed ****,
+White Office is a **fork and rebrand** of the four  *Crafting Apps* published by the
+[ArtCraft](https://github.com/storytold) team. Those projects are dual-licensed **MIT OR Apache-2.0**,
 which permits exactly this: copying, modifying, renaming and redistributing, including
 commercially.
 
 In return the licences ask for attribution, which this project keeps in full — see
-[NOTICE](NOTICE). The ArtCraft names, the `-Craft` app family and its logos are **trademarks**
+[NOTICE](NOTICE). The upstream ArtCraft name, the `-Craft` app family and its logos are **trademarks**
 and are explicitly *not* licensed; upstream requires forks to remove them, and White Office does
 not use them anywhere. Every upstream icon and brand asset has been deleted and replaced.
 
-Nothing here is affiliated with, endorsed by, or sponsored by the ArtCraft Team.
+Nothing here is affiliated with, endorsed by, or sponsored by the upstream ArtCraft Team.
 
 ## License
 

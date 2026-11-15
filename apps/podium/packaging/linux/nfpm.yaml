@@ -15,9 +15,9 @@ priority: optional
 maintainer: ${PODIUM_MAINTAINER}
 vendor: White Office
 homepage: https://officoman.whitebearom.com/apps/podium.html
-license: 
+license:  
 description: |-
-  Open-source, native presentation app that works the way PowerPoint users
+  , native presentation app that works the way PowerPoint users
   expect. Themes, layouts, shapes, pictures, tables, charts, transitions and
   animations; opens and saves PowerPoint (.pptx) files; full-screen slide show
   with presenter view; GPU rendering (wgpu).

@@ -4,7 +4,7 @@
 <component type="desktop-application">
   <id>io.github.her3f.sheaf</id>
   <metadata_license>CC0-1.0</metadata_license>
-  <project_license></project_license>
+  <project_license> </project_license>
   <name>Sheaf</name>
   <summary>Read, organize, combine, split and secure PDFs</summary>
   <developer id="io.github.her3f">
@@ -12,7 +12,7 @@
   </developer>
   <description>
     <p>
-      Sheaf is an open-source PDF workbench. Read, comment on, fill in and sign PDFs;
+      Sheaf is an  PDF workbench. Read, comment on, fill in and sign PDFs;
       organize, combine and split pages; edit, redact, protect and export documents.
     </p>
   </description>

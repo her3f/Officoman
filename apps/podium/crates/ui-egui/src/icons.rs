@@ -1,7 +1,7 @@
 //! Ribbon and UI icons, drawn in code.
 //!
 //! Every icon here is an original drawing made from egui painter primitives on a 24×24 design
-//! grid (contributor-original, ``). Nothing is traced from or modelled on any
+//! grid (contributor-original, ` `). Nothing is traced from or modelled on any
 //! vendor's artwork (AGENTS.md §1).
 //!
 //! Style: line icons in the theme's ink colour with one or two fixed accent colours. When an icon

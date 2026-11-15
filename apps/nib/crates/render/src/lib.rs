@@ -503,7 +503,7 @@ fn is_upright(view: Affine) -> bool {
 }
 
 /// How far, in device pixels, macOS-style font smoothing pushes each side of a glyph outline out
-/// at `ppem` device pixels per em. Values from Pathfinder (MIT/Apache-2.0), which measured them
+/// at `ppem` device pixels per em. Values from Pathfinder (MIT/), which measured them
 /// against macOS: 1.21% of the pixel size horizontally and 1.25 times that vertically, each
 /// capped at 0.3 px, and no darkening past 72 px per em. We stroke the outline, which grows it
 /// evenly, so this is the mean of the two.

@@ -6,7 +6,7 @@
 -->
 <WixLocalization Culture="en-US" xmlns="http://wixtoolset.org/schemas/v4/wxl">
   <String Id="WelcomeDlgTitle" Value="{\WixUI_Font_Bigger}Welcome to [ProductName] [WhiteOfficeLauncherVersion]" />
-  <String Id="WelcomeDlgDescription" Value="White Office Launcher installs, updates and opens the Craft App Suite: PhotoCraft, VectorCraft, FilmCraft and the rest of the open-source White Office apps.&#13;&#10;&#13;&#10;It installs for you only, so no administrator rights are needed. Click Next to continue." />
+  <String Id="WelcomeDlgDescription" Value="White Office Launcher installs, updates and opens the Craft App Suite: PhotoCraft, VectorCraft, FilmCraft and the rest of the  White Office apps.&#13;&#10;&#13;&#10;It installs for you only, so no administrator rights are needed. Click Next to continue." />
   <!-- The folder page (WhiteOfficeInstallDirDlg). -->
   <String Id="InstallDirDlgTitle" Value="{\WixUI_Font_Title}Choose where to install" />
   <String Id="InstallDirDlgDescription" Value="Click Next to install to the default folder, or click Change to pick another." />

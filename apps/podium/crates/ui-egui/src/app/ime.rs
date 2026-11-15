@@ -385,7 +385,7 @@ impl SlideApp {
     /// batch is treated as new input; egui's event payload has no generation, so an OS-queued
     /// event that crosses that reset cannot be distinguished from a legitimate one.
     ///
-    /// A receipt is captured immediately before and after a successful commit or
+    /// A receipt is captured immediately before and after a successful com
     /// delete-surrounding mutation. Preedit, rejected/failed events and no-ops never earn
     /// [`egui::output::ImeChangeCause::InputMethod`].
     pub(crate) fn ime_event(&mut self, ctx: &egui::Context, e: &egui::ImeEvent) {
@@ -428,13 +428,13 @@ impl SlideApp {
     /// Drop an event that belongs to a composition the application already settled, or to another
     /// owner; returns `true` when the event must not be applied.
     ///
-    /// A commit or deletion belongs to the composition that began the pre-edit: another owner
+    /// A com deletion belongs to the composition that began the pre-edit: another owner
     /// (the user clicked elsewhere) or a composition the app already settled makes it stale.
     /// While the reset is still pending, the tombstone rejects pre-edits too (the platform has
     /// not yet been told to cancel its copy). `observe_ime` retires the tombstone in the pass
     /// that publishes the interrupt (or in an accepted no-descriptor pass, which resets the
     /// backend just the same), so a later commit-only is not lost forever: it is a
-    /// legitimate direct commit or a new platform composition. egui's events carry no
+    /// legitimate direct com a new platform composition. egui's events carry no
     /// generation, so an event queued by the OS across that reset is indistinguishable from
     /// one the user just typed; only events in the same input batch as the settle are rejected
     /// deterministically. A cleared-preedit terminal is a distinct case: its pending owner

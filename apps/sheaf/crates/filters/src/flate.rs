@@ -1,7 +1,7 @@
 //! FlateDecode (ISO 32000-2 §7.4.4): zlib (RFC 1950) wrapping deflate (RFC 1951).
 //!
 //! Real-world quirks handled:
-//! - the Adler-32 trailer is not required (some producers omit or corrupt it), because the
+//! - the Adler-32 trailer is not required (some producers o corrupt it), because the
 //!   deflate stream is inflated raw after the 2-byte zlib header;
 //! - streams without a valid zlib header are inflated as raw deflate;
 //! - data after the end of the deflate stream is ignored.

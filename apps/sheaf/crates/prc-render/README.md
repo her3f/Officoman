@@ -4,7 +4,7 @@ A headless CPU renderer for PRC 3D models read by `sheaf-prc`: placed meshes in 
 depth-buffered triangle fill and headlight shading, into a straight-RGBA image.
 
 - **Layer:** L3. Depends on `sheaf-prc` only.
-- **Licence:** .
+- **Licence:**  .
 - `#![forbid(unsafe_code)]`. Never panics on input: image size, triangle count and every index are checked, and
   damage returns `RenderError`.
 

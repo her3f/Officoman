@@ -24,7 +24,7 @@ stick. To offer it in Settings > Apps > Default apps, open PowerShell in this fo
   Set-Item -Path "$c\Sheaf.Portable\shell\open\command" -Value "`"$exe`" `"%1`""
   New-ItemProperty -Path "$c\.pdf\OpenWithProgids" -Name Sheaf.Portable -Value "" -PropertyType String -Force | Out-Null
   New-ItemProperty -Path $cap -Name ApplicationName -Value "Sheaf (portable)" -PropertyType String -Force | Out-Null
-  New-ItemProperty -Path $cap -Name ApplicationDescription -Value "Open-source PDF workbench" -PropertyType String -Force | Out-Null
+  New-ItemProperty -Path $cap -Name ApplicationDescription -Value " PDF workbench" -PropertyType String -Force | Out-Null
   New-ItemProperty -Path "$cap\FileAssociations" -Name .pdf -Value Sheaf.Portable -PropertyType String -Force | Out-Null
   New-ItemProperty -Path "HKCU:\Software\RegisteredApplications" -Name "Sheaf (portable)" -Value "Software\Sheaf.Portable\Capabilities" -PropertyType String -Force | Out-Null
 

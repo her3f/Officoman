@@ -1,7 +1,7 @@
 //! sheaf-ocr — Scan & OCR ▸ Recognize text (L4).
 //!
 //! The caller renders a page to pixels ([`OcrImage`]) and hands it to a [`Recognizer`]. Two
-//! engines exist: the pure-Rust `OcrsRecognizer` (ocrs, MIT/Apache-2.0, with its pre-trained
+//! engines exist: the pure-Rust `OcrsRecognizer` (ocrs, MIT/, with its pre-trained
 //! models, CC-BY-SA-4.0, fetched by `cargo xtask models`; see ATTRIBUTION.toml) and — off the
 //! web — `tesseract::TesseractCli`, which drives an installed `tesseract` binary as an external
 //! process. `merge` combines two engines' readings (ROVER), `preprocess` cleans the raster up

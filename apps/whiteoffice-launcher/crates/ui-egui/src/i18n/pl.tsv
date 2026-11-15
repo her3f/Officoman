@@ -22,7 +22,7 @@
 	Launcher	Launcher
 	Craft App Suite	Craft App Suite
 	by {name}	przez {name}
-	Open Source Tools for Creatives, Makers, and Builders	Narzędzia open source dla artystów, twórców i konstruktorów
+	 Tools for Creatives, Makers, and Builders	Narzędzia  dla artystów, twórców i konstruktorów
 	Settings	Ustawienia
 	Check for updates	Sprawdź dostępność aktualizacji
 	Grid	Siatka
@@ -442,7 +442,7 @@ materialcraft	Preview materials in 2D and on 3D models.	Przeglądaj materiały w
 	The OCI repository is a preview with GPG verification disabled.	Repozytorium OCI jest wersją testową z wyłączoną weryfikacją GPG.
 anicraft	2D vector animation	Animacja wektorowa 2D
 anicraft	Vector animation on a timeline you know.	Animacja wektorowa na znanej osi czasu.
-anicraft	Open-source 2D vector animation, built in pure Rust.	Animacja wektorowa 2D open source, stworzona w czystym Rust.
+anicraft	 2D vector animation, built in pure Rust.	Animacja wektorowa 2D , stworzona w czystym Rust.
 anicraft	Familiar by design	Znany i intuicyjny interfejs
 anicraft	Stage, tools, timeline, layers, keyframes, Properties and Library sit where animators expect them, with onion skinning for in-betweening.	Scena, narzędzia, oś czasu, warstwy, klatki kluczowe, Właściwości i Biblioteka znajdują się tam, gdzie oczekują animatorzy, wraz z łuskami cebuli.
 anicraft	Tweens that ease	Płynne klatki pośrednie (tweens)
