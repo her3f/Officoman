@@ -57,12 +57,15 @@ The project site lives in [`docs/`](docs) and is published from that folder with
 To point GitHub Pages at it: **Settings → Pages → Source: Deploy from a branch →
 `main` / `/docs`**.
 
-The static site has no npm dependencies. Python 3.11 or newer builds all eight pages:
+The static site has no npm dependencies. Python 3.11 or newer builds seven pages in
+both English and Arabic (14 pages):
 
 ```sh
 python tools/build_docs.py
 python tools/check_site.py
 python -m unittest discover -s tools -p test_site.py -v
+python -X utf8 -m unittest discover -s tools -p test_site_localization.py -v
+node --test tools/test_site_ui.cjs
 python -m http.server 8765 --bind 127.0.0.1 --directory docs
 ```
 
@@ -70,6 +73,13 @@ Open `http://127.0.0.1:8765/` for a local preview. Edit page rendering in
 `tools/site_builder.py`, app descriptions in `tools/build_docs.py`, and CSS/JavaScript
 in `tools/site/`; files under `docs/` are generated. The generator leaves application
 READMEs untouched. No build or preview command publishes the site.
+
+Arabic is available at `ar/index.html`. Every page has a language switch to its
+equivalent page, and navigation stays in the selected language. Update shared
+translations in `tools/site/ar.json` and the current interface text in
+`tools/site/ar-ui.json`. The build rejects untranslated prose, translates social
+metadata and accessibility labels, and generates both languages automatically.
+Arabic layout, download status messages and keyboard tab navigation support RTL.
 
 Download metadata is tracked in `tools/site/releases.json`, so a clean checkout renders
 the same links without local packages. After packaging new releases, run

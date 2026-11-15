@@ -15,16 +15,15 @@ from urllib.parse import urlsplit
 SITE_URL = "https://officoman.whitebearom.com"
 TRANSLATIONS = {
     " ".join(key.split()): value
-    for key, value in json.loads((Path(__file__).parent / "site/ar.json").read_text(encoding="utf-8")).items()
+    for filename in ('ar.json', 'ar-ui.json')
+    for key, value in json.loads((Path(__file__).parent / "site" / filename).read_text(encoding="utf-8")).items()
 }
 NAMES = {"Nib", "Tally", "Podium", "Sheaf", "WordCraft", "GridCraft", "DeckCraft", "PdfCraft",
          "Windows", "Windows x64", "macOS", "Linux", "Linux x86_64",
-         "ArtCraft, DeckCraft, GridCraft, PdfCraft, WordCraft", ".msi", ".zip", ".tar.gz"}
+         "ArtCraft, DeckCraft, GridCraft, PdfCraft, WordCraft", ".msi", ".zip", ".tar.gz",
+         "x64", "x86_64", "ƒx", "=SUM(B2:B5)"}
 TECHNICAL = re.compile(r"(?<!\w)\.?[A-Za-z][A-Za-z0-9_./*+-]*(?:[ \t]+[A-Za-z][A-Za-z0-9_./*+-]*)*")
 VOID = {"area", "base", "br", "col", "embed", "hr", "img", "input", "link", "meta", "param", "source", "track", "wbr"}
-
-
-MISSING: set[str] = set()
 
 
 def translate(text: str) -> str:
@@ -33,11 +32,17 @@ def translate(text: str) -> str:
         return text
     if key in TRANSLATIONS:
         return TRANSLATIONS[key]
-    if key in NAMES or re.fullmatch(r"[\d\s.,·—–()]+", key):
+    if key in NAMES or re.fullmatch(r"[\d\s.,·—–()/←→↓↗●☰]+", key):
         return key
     if re.fullmatch(r"[\d.]+ MB", key):
         return key.removesuffix(" MB") + " ميغابايت"
     for name in ("Nib", "Tally", "Podium", "Sheaf"):
+        if key == f"Meet {name}":
+            return f"تعرّف إلى {name}"
+        if key == f"Get {name} ↗":
+            return f"نزّل {name} ↗"
+        if key == f"White Office / {name}":
+            return f"وايت أوفيس / {name}"
         if key == f"{name} — White Office":
             return f"{name} — وايت أوفيس"
         if key.startswith(f"{name}: "):
@@ -45,8 +50,15 @@ def translate(text: str) -> str:
     match = re.fullmatch(r"is derived from (WordCraft|GridCraft|DeckCraft|PdfCraft)\. The source is imported in this repository under", key)
     if match:
         return f"مشتق من {match[1]}. توجد الشيفرة المصدرية في هذا المستودع ضمن"
-    MISSING.add(key)
-    return text
+    match = re.fullmatch(r"Download (Launcher|Nib|Tally|Podium|Sheaf) ([\d.]+) (windows|macos|linux) (Installer|Portable ZIP|Universal archive|Linux archive)", key)
+    if match:
+        name = 'مشغّل الحزمة' if match[1] == 'Launcher' else match[1]
+        os = {'windows': 'Windows', 'macos': 'macOS', 'linux': 'Linux'}[match[3]]
+        return f"تنزيل {name} {match[2]} لنظام {os} — {translate(match[4])}"
+    match = re.fullmatch(r"(Nib|Tally|Podium|Sheaf) is an independent fork of (WordCraft|GridCraft|DeckCraft|PdfCraft)\. Desktop packages are listed on the download page when available\. Compatibility and features continue to evolve; keep a copy of important files when trying a new build\.", key)
+    if match:
+        return f"{match[1]} مشروع مستقل مشتق من {match[2]}. تجد حزم سطح المكتب في صفحة التنزيل عند توفرها. يجري تطوير التوافق والمزايا باستمرار؛ احتفظ بنسخة من ملفاتك المهمة عند تجربة إصدار جديد."
+    raise ValueError(f"Missing Arabic translation: {key}")
 
 
 def isolate(text: str) -> str:
@@ -77,12 +89,16 @@ class LocalizedPage(HTMLParser):
 
     def handle_starttag(self, tag, attrs):
         attrs = dict(attrs)
+        if tag == 'link' and attrs.get('rel') == 'canonical':
+            return  # A single language-specific canonical is emitted at the end of head.
         if tag == "html":
             attrs.update(lang=self.lang, dir="rtl" if self.lang == "ar" else "ltr")
         if self.lang == "ar":
-            if tag == "meta" and attrs.get("name") == "description":
+            if tag == "meta" and (attrs.get("name") == "description" or attrs.get('property') in {'og:title', 'og:description'}):
                 attrs['content'] = translate(attrs['content'])
-            if tag == "code":
+            if tag == 'meta' and attrs.get('property') == 'og:url':
+                attrs['content'] = f'{SITE_URL}/ar/{self.path}'
+            if tag == "code" or 'formula' in attrs.get('class', '').split():
                 attrs['dir'] = 'ltr'
             for key in ('alt', 'title', 'aria-label'):
                 if attrs.get(key):
@@ -118,7 +134,7 @@ class LocalizedPage(HTMLParser):
         if self.stack and self.stack[-1] in {'style', 'script'}:
             self.output.append(data)
             return
-        if self.lang == 'ar' and data.strip() and 'code' not in self.stack:
+        if self.lang == 'ar' and data.strip() and ('code' not in self.stack or data.strip() in TRANSLATIONS):
             text = translate(data)
             leading = data[:len(data) - len(data.lstrip())]
             trailing = data[len(data.rstrip()):]
@@ -148,10 +164,6 @@ def build_locales(site: Path) -> None:
     for path, content in rendered:
         path.parent.mkdir(parents=True, exist_ok=True)
         path.write_text(content, encoding='utf-8')
-    if MISSING:
-        (Path(__file__).parent / "site" / "missing-ar.txt").write_text(
-            "\n".join(sorted(MISSING)) + "\n", encoding="utf-8")
-        print(f"warning: {len(MISSING)} string(s) left untranslated — see tools/site/missing-ar.txt")
     urls = ''.join(f'<url><loc>{SITE_URL}/{path.relative_to(site).as_posix()}</loc></url>' for path, _ in rendered)
     (site / 'sitemap.xml').write_text('<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">' + urls + '</urlset>\n', encoding='utf-8')
 

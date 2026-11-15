@@ -40,8 +40,12 @@ def validate(site: Path) -> list[str]:
     site = site.resolve()
     pages = {p.resolve(): Page(p.read_text(encoding='utf-8')) for p in site.rglob('*.html')}
     errors = []
-    if len(pages) != 8:
-        errors.append(f'Expected 8 pages, found {len(pages)}')
+    routes = {'index.html', 'download.html', 'apps/index.html',
+              'apps/nib.html', 'apps/tally.html', 'apps/podium.html', 'apps/sheaf.html'}
+    expected = routes | {'ar/' + route for route in routes}
+    actual = {p.relative_to(site).as_posix() for p in pages}
+    for path in sorted(expected - actual):
+        errors.append(f'Missing page: {path}')
     for path, page in pages.items():
         label = path.relative_to(site)
         errors.extend(f'{label}: {error}' for error in page.errors)

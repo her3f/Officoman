@@ -270,3 +270,30 @@ h1{font-size:47px;letter-spacing:-2.5px}
 *,*::before,*::after{transition:none!important;animation:none!important}
 .btn:hover,.app-card:hover{transform:none}
 }
+
+/* Arabic keeps the same layout with logical spacing and readable letterforms. */
+.language-switch{white-space:nowrap;font-weight:700}
+html[dir="rtl"] body{font-family:"Segoe UI",Tahoma,"Noto Sans Arabic",system-ui,sans-serif}
+html[dir="rtl"] h1,html[dir="rtl"] h2,html[dir="rtl"] h3,
+html[dir="rtl"] .eyebrow,html[dir="rtl"] .brand,html[dir="rtl"] .doc-label,
+html[dir="rtl"] .doc-page{letter-spacing:normal}
+html[dir="rtl"] h1{font-size:clamp(38px,4.6vw,60px);line-height:1.5}
+html[dir="rtl"] h2{line-height:1.55}
+html[dir="rtl"] .document-preview h3,html[dir="rtl"] .pdf-page h3{font-family:inherit;line-height:1.6}
+html[dir="rtl"] .slide-preview h3{line-height:1.6}
+html[dir="rtl"] .lede,html[dir="rtl"] .app-card p,html[dir="rtl"] .feature-grid p{line-height:1.95}
+html[dir="rtl"] .eyebrow{font-size:12px}
+html[dir="rtl"] .brand-dot{margin-left:0;margin-inline-start:-8px}
+html[dir="rtl"] table,html[dir="rtl"] .sheet-preview caption{text-align:start}
+html[dir="rtl"] .document-preview blockquote{border-left:0;padding-left:0;border-inline-start:2px solid #c0c8ee;padding-inline-start:12px}
+html[dir="rtl"] .preview-caption>span:last-child{margin-left:0;margin-inline-start:auto}
+html[dir="rtl"] .card-link>span{transform:scaleX(-1)}
+html[dir="rtl"] .file-size,html[dir="rtl"] .download-app code,
+html[dir="rtl"] .sheet-preview td:nth-child(2){direction:ltr;unicode-bidi:isolate}
+code,bdi{unicode-bidi:isolate}
+.formula[dir="ltr"]{direction:ltr;text-align:left}
+@media(max-width:480px){
+  html[dir="rtl"] h1{font-size:38px}
+  html[dir="rtl"] .preview-caption{font-size:8px;flex-wrap:wrap}
+  html[dir="rtl"] .platform-filter button{padding-inline:10px}
+}

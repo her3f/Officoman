@@ -1,5 +1,8 @@
 "use strict";
 
+const isArabic = document.documentElement.lang === "ar";
+const isRtl = document.documentElement.dir === "rtl";
+
 const header = document.querySelector("header.site");
 const menu = document.querySelector(".menu-toggle");
 if (header && menu) {
@@ -36,8 +39,9 @@ tabs.forEach((tab, index) => {
   tab.addEventListener("click", () => selectTab(tab));
   tab.addEventListener("keydown", (event) => {
     let next;
-    if (event.key === "ArrowRight") next = (index + 1) % tabs.length;
-    if (event.key === "ArrowLeft") next = (index + tabs.length - 1) % tabs.length;
+    const step = isRtl ? -1 : 1;
+    if (event.key === "ArrowRight") next = (index + step + tabs.length) % tabs.length;
+    if (event.key === "ArrowLeft") next = (index - step + tabs.length) % tabs.length;
     if (event.key === "Home") next = 0;
     if (event.key === "End") next = tabs.length - 1;
     if (next !== undefined) {
@@ -51,7 +55,9 @@ tabs.forEach((tab, index) => {
 const filters = document.querySelector(".platform-filter");
 if (filters) {
   filters.hidden = false;
-  const names = { all: "All platforms", windows: "Windows x64", macos: "macOS · Apple silicon + Intel", linux: "Linux x86_64" };
+  const names = isArabic
+    ? { all: "جميع الأنظمة", windows: "Windows x64", macos: "macOS · أجهزة Apple silicon وIntel", linux: "Linux x86_64" }
+    : { all: "All platforms", windows: "Windows x64", macos: "macOS · Apple silicon + Intel", linux: "Linux x86_64" };
   filters.querySelectorAll("button").forEach((button) => {
     button.addEventListener("click", () => {
       const platform = button.dataset.os;
@@ -60,7 +66,9 @@ if (filters) {
         cell.hidden = platform !== "all" && cell.dataset.platform !== platform;
       });
       document.querySelector(".downloads").classList.toggle("filtered", platform !== "all");
-      document.getElementById("download-status").textContent = `Showing downloads for ${names[platform]}`;
+      document.getElementById("download-status").textContent = isArabic
+        ? `عرض التنزيلات: ${names[platform]}`
+        : `Showing downloads for ${names[platform]}`;
     });
   });
 }

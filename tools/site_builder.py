@@ -8,6 +8,7 @@ import shutil
 from pathlib import Path
 
 from release_assets import latest_assets
+from localize_site import build_locales
 
 ROOT = Path(__file__).resolve().parent.parent
 SITE_URL = "https://officoman.whitebearom.com"
@@ -147,6 +148,7 @@ def build(apps: list[dict], site: Path, catalog: dict) -> None:
     (site / ".nojekyll").write_text("", encoding="utf-8")
     (site / "sitemap.xml").write_text('<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">' + ''.join(f'<url><loc>{SITE_URL}/{p[0]}</loc></url>' for p in pages) + '</urlset>\n', encoding="utf-8")
     (site / "robots.txt").write_text(f"User-agent: *\nAllow: /\nSitemap: {SITE_URL}/sitemap.xml\n", encoding="utf-8")
+    build_locales(site)
 
 
 def main(apps: list[dict]) -> int:
@@ -162,5 +164,5 @@ def main(apps: list[dict]) -> int:
         manifest.write_text(json.dumps(catalog, indent=2) + "\n", encoding="utf-8")
     catalog = json.loads(manifest.read_text(encoding="utf-8")) if manifest.exists() else {}
     build(apps, args.output, catalog)
-    print(f"Built 8 pages in {args.output}; application READMEs unchanged.")
+    print(f"Built English and Arabic pages in {args.output}; application READMEs unchanged.")
     return 0

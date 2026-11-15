@@ -1,5 +1,6 @@
 """Check Arabic coverage, mirrored navigation, downloads and repeatable generation."""
 from html.parser import HTMLParser
+import json
 from pathlib import Path
 import tempfile
 import unittest
@@ -7,7 +8,8 @@ from unittest.mock import patch
 from urllib.parse import urlsplit
 import xml.etree.ElementTree as ET
 
-import build_docs
+from build_docs import APPS
+from site_builder import build, SOURCE
 from localize_site import build_locales, render, translate
 
 
@@ -29,10 +31,8 @@ class LocalizationTests(unittest.TestCase):
     def setUpClass(cls):
         cls.directory = tempfile.TemporaryDirectory(prefix='whiteoffice-locales-')
         cls.site = Path(cls.directory.name)
-        with patch.object(build_docs, 'SITE', cls.site):
-            build_docs.build_pages()
-            build_docs.build_downloads()
-        build_locales(cls.site)
+        catalog = json.loads((SOURCE / 'releases.json').read_text(encoding='utf-8'))
+        build(APPS, cls.site, catalog)
 
     @classmethod
     def tearDownClass(cls):
@@ -40,8 +40,8 @@ class LocalizationTests(unittest.TestCase):
 
     def test_all_pages_have_arabic_counterparts_and_reciprocal_switches(self):
         english = [p for p in self.site.rglob('*.html') if 'ar' not in p.relative_to(self.site).parts]
-        self.assertEqual(len(english), 8)
-        self.assertEqual(len(list(self.site.rglob('*.html'))), 16)
+        self.assertEqual(len(english), 7)
+        self.assertEqual(len(list(self.site.rglob('*.html'))), 14)
         for en in english:
             ar = self.site / 'ar' / en.relative_to(self.site)
             for current, other, lang, direction in ((en, ar, 'en', 'ltr'), (ar, en, 'ar', 'rtl')):
@@ -53,7 +53,12 @@ class LocalizationTests(unittest.TestCase):
                 alternatives = page.matching('link', rel='alternate')
                 self.assertEqual({a['hreflang'] for a in alternatives}, {'en', 'ar', 'x-default'})
                 expected = 'https://officoman.whitebearom.com/' + current.relative_to(self.site).as_posix()
+                self.assertEqual(len(page.matching('link', rel='canonical')), 1)
                 self.assertEqual(page.matching('link', rel='canonical')[0]['href'], expected)
+                self.assertEqual(page.matching('meta', property='og:url')[0]['content'], expected)
+                if lang == 'ar':
+                    for prop in ('og:title', 'og:description'):
+                        self.assertRegex(page.matching('meta', property=prop)[0]['content'], '[\u0600-\u06ff]')
 
     def test_local_assets_and_navigation_resolve_and_stay_in_selected_language(self):
         for path in self.site.rglob('*.html'):
@@ -70,7 +75,8 @@ class LocalizationTests(unittest.TestCase):
 
     def test_download_targets_and_versions_are_preserved(self):
         def downloads(path):
-            return [a['href'] for a in Page(path).matching('a') if a.get('href', '').startswith('/dl/')]
+            return [a['href'] for a in Page(path).matching('a') if '/dl/' in a.get('href', '')]
+        self.assertGreater(len(downloads(self.site / 'download.html')), 0)
         self.assertEqual(downloads(self.site / 'download.html'), downloads(self.site / 'ar/download.html'))
         self.assertTrue(Page(self.site / 'ar/download.html').matching('code', dir='ltr'))
 
@@ -80,7 +86,7 @@ class LocalizationTests(unittest.TestCase):
         build_locales(self.site)
         self.assertEqual(original, {p: p.read_bytes() for p in paths})
         sitemap = ET.parse(self.site / 'sitemap.xml')
-        self.assertEqual(len(sitemap.getroot()), 16)
+        self.assertEqual(len(sitemap.getroot()), 14)
 
     def test_untranslated_new_content_is_rejected(self):
         with self.assertRaisesRegex(ValueError, 'Missing Arabic translation'):
@@ -89,12 +95,12 @@ class LocalizationTests(unittest.TestCase):
     def test_empty_download_state_is_translated(self):
         with tempfile.TemporaryDirectory(prefix='whiteoffice-empty-downloads-') as directory:
             root = Path(directory)
-            with patch.object(build_docs, 'SITE', root), patch.object(build_docs, 'ROOT', root):
-                build_docs.build_downloads()
-            source = (root / 'download.html').read_text(encoding='utf-8')
-            arabic = render(source, 'ar', 'download.html')
-            self.assertIn('لا تتوفر إصدارات جاهزة بعد.', arabic)
-            self.assertNotIn('No builds yet.', arabic)
+            build(APPS, root, {})
+            arabic = (root / 'ar/download.html').read_text(encoding='utf-8')
+            self.assertIn('غير متوفر بعد', arabic)
+            self.assertIn('قريبًا', arabic)
+            self.assertNotIn('Not available yet', arabic)
+            self.assertNotIn('Coming soon', arabic)
 
 
 if __name__ == '__main__':
