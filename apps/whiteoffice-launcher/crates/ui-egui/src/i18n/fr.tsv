@@ -20,7 +20,7 @@
 	Launcher	Launcher
 	Craft App Suite	Craft App Suite
 	by {name}	par {name}
-	Open Source Tools for Creatives, Makers, and Builders	Des outils open source pour les créatifs, les makers et les bâtisseurs
+	 Tools for Creatives, Makers, and Builders	Des outils  pour les créatifs, les makers et les bâtisseurs
 	Settings	Réglages
 	Check for updates	Rechercher des mises à jour
 	Grid	Grille
@@ -438,7 +438,7 @@ materialcraft	Preview materials in 2D and on 3D models.	Visualisez les matériau
 	The OCI repository is a preview with GPG verification disabled.	Le dépôt OCI est une version préliminaire avec la vérification GPG désactivée.
 anicraft	2D vector animation	Animation vectorielle 2D
 anicraft	Vector animation on a timeline you know.	Animation vectorielle sur une chronologie familière.
-anicraft	Open-source 2D vector animation, built in pure Rust.	Animation vectorielle 2D open source, conçue en pur Rust.
+anicraft	 2D vector animation, built in pure Rust.	Animation vectorielle 2D , conçue en pur Rust.
 anicraft	Familiar by design	Conception familière
 anicraft	Stage, tools, timeline, layers, keyframes, Properties and Library sit where animators expect them, with onion skinning for in-betweening.	Scène, outils, chronologie, calques, images clés, Propriétés et Bibliothèque là où les animateurs les attendent, avec pelure d'oignon.
 anicraft	Tweens that ease	Interpolations fluides

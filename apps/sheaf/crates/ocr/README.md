@@ -20,7 +20,7 @@ let layer = visible_text_layer(&placed, &plan);          // visible text: the ed
 
 - **Engines behind one trait.** A [`Recognizer`] reports its `id`, whether it is `available`,
   the languages it reads, and reads `Vec<Line>` from an image. Two exist: the pure-Rust
-  `OcrsRecognizer` (the `ocrs` crate, MIT/Apache-2.0, with its pre-trained models,
+  `OcrsRecognizer` (the `ocrs` crate, MIT/, with its pre-trained models,
   CC-BY-SA-4.0, fetched by `cargo xtask models`; found via `$SHEAF_MODELS` or `models/`
   beside the executable — see ATTRIBUTION.toml), and — off the web build —
   `tesseract::TesseractCli`, which drives an installed `tesseract` binary as an external

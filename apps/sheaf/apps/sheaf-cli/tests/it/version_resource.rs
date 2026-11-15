@@ -35,7 +35,7 @@ fn the_exe_has_version_info_with_the_package_version() {
     for (key, value) in [
         ("ProductName", "Sheaf"),
         ("FileDescription", "Sheaf command-line tool"),
-        ("LegalCopyright", "Copyright (c) the Sheaf contributors. MIT OR Apache-2.0."),
+        ("LegalCopyright", "Copyright (c) the Sheaf contributors.  ."),
         ("OriginalFilename", "sheaf-cli.exe"),
         ("InternalName", "sheaf-cli"),
         ("FileVersion", env!("CARGO_PKG_VERSION")),

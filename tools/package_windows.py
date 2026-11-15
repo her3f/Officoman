@@ -110,7 +110,7 @@ def main() -> int:
         "Nothing is installed and no registry keys are written: delete this folder to remove it.\n\n"
         "This build was produced with the MinGW-w64 toolchain for testing. It is not\n"
         "code-signed, so Windows SmartScreen may warn on first run.\n\n"
-        "Licence: MIT or Apache-2.0. See NOTICE for upstream attribution.\n",
+        "Licence: MIT OR Apache-2.0. See NOTICE for upstream attribution.\n",
         encoding="utf-8",
     )
 

@@ -1677,7 +1677,7 @@ fn dialog_about(ui: &mut egui::Ui, req: &mut Pending) -> bool {
                 });
             });
             ui.add_space(6.0);
-            ui.label(tl!("A clean-room, open-source PDF application written in Rust. MIT OR Apache-2.0."));
+            ui.label(tl!("A clean-room,  PDF application written in Rust.  ."));
             ui.label(
                 egui::RichText::new(
                     "Rendering: hayro (bootstrap) · UI: egui · Icons: Lucide (ISC) · Fonts: Inter, JetBrains Mono, Dancing Script (OFL)",

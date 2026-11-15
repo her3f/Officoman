@@ -37,7 +37,7 @@ fn main() {
         .set_manifest(windows_manifest::WINDOWS_MANIFEST)
         .set("ProductName", "Sheaf")
         .set("FileDescription", "Sheaf PDF workbench")
-        .set("LegalCopyright", "Copyright (c) the Sheaf contributors. MIT OR Apache-2.0.")
+        .set("LegalCopyright", "Copyright (c) the Sheaf contributors.  .")
         .set("OriginalFilename", "sheaf.exe")
         .set("InternalName", "sheaf");
     if let Err(e) = res.compile() {

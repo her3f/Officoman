@@ -1,5 +1,5 @@
 // Copyright 2025 the Vello Authors
-// SPDX-License-Identifier: Apache-2.0 OR MIT
+// SPDX-License-Identifier:  OR MIT
 
 use crate::fine::common::gradient::SimdGradientKind;
 use vello_common::encode::{FocalData, RadialKind};

@@ -4,7 +4,7 @@
 <component type="desktop-application">
   <id>io.github.her3f.podium</id>
   <metadata_license>CC0-1.0</metadata_license>
-  <project_license>MIT OR Apache-2.0</project_license>
+  <project_license> </project_license>
   <name>Podium</name>
   <summary>Create and present slide decks</summary>
   <developer id="io.github.her3f">

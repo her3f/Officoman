@@ -6,7 +6,7 @@
 
 <p align="center"><b>Numbers that keep up with you.</b></p>
 
-<p align="center">Part of <a href="../../">White Office</a>, an open-source office suite.</p>
+<p align="center">Part of <a href="../../">White Office</a>, an  office suite.</p>
 
 ---
 
@@ -44,14 +44,14 @@ not been compiled or tested on this machine yet. Build it before trusting it wit
 
 ## Provenance and licence
 
-This is a modified fork of **GridCraft**, copyright (c) 2026 the ArtCraft Team and the
-GridCraft contributors, dual-licensed MIT or Apache-2.0.
+This is a modified fork of **GridCraft**, copyright (c) 2026 the White Office Team and the
+GridCraft contributors, dual-licensed  .
 
 Modifications: renamed, rebranded and restructured for White Office, 2026. See the repository
 [NOTICE](../../NOTICE) for the full attribution, and [BRAND.md](../../BRAND.md) for what the
 rebrand covers.
 
-The ArtCraft, GridCraft and related names and logos are trademarks of the ArtCraft Team
+The White Office, GridCraft and related names and logos are trademarks of the White Office Team
 and are not used by this project. White Office is not affiliated with them.
 
-White Office itself is MIT or Apache-2.0, at your option.
+White Office itself is  , at your option.

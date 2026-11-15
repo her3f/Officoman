@@ -122,7 +122,7 @@
         <RegistryValue Root="HKMU" Key="Software\Classes\Applications\sheaf.exe\SupportedTypes" Name=".pdf" Value="" Type="string" />
         <RegistryValue Root="HKMU" Key="Software\Classes\Applications\sheaf.exe\shell\open\command" Value="&quot;[#SheafExe]&quot; &quot;%1&quot;" Type="string" />
         <RegistryValue Root="HKMU" Key="Software\Sheaf\Capabilities" Name="ApplicationName" Value="Sheaf" Type="string" />
-        <RegistryValue Root="HKMU" Key="Software\Sheaf\Capabilities" Name="ApplicationDescription" Value="Open-source PDF workbench" Type="string" />
+        <RegistryValue Root="HKMU" Key="Software\Sheaf\Capabilities" Name="ApplicationDescription" Value=" PDF workbench" Type="string" />
         <RegistryValue Root="HKMU" Key="Software\Sheaf\Capabilities" Name="ApplicationIcon" Value="[#SheafExe],0" Type="string" />
         <RegistryValue Root="HKMU" Key="Software\Sheaf\Capabilities\FileAssociations" Name=".pdf" Value="Sheaf.Document" Type="string" />
         <RegistryValue Root="HKMU" Key="Software\RegisteredApplications" Name="Sheaf" Value="Software\Sheaf\Capabilities" Type="string" />

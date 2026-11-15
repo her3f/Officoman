@@ -397,7 +397,7 @@ pub(crate) mod flate {
                 }
             }
 
-            /// Copies the stored block's bytes, up to the limit or the end of the data.
+            /// Copies the stored block's bytes, up to the li the end of the data.
             fn copy_stored(&mut self) {
                 let Block::Stored { mut left, last } = self.block else {
                     return;
@@ -449,7 +449,7 @@ pub(crate) mod flate {
                 };
             }
 
-            /// Decodes the codes of a Huffman-coded block until its end, the limit or the end of
+            /// Decodes the codes of a Huffman-coded block until its end, the li the end of
             /// the data.
             fn read_codes(&mut self) {
                 let Block::Coded {

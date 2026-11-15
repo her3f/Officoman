@@ -28,7 +28,7 @@ fn main() {
     let mut res = winresource::WindowsResource::new();
     res.set("ProductName", "Sheaf")
         .set("FileDescription", "Sheaf command-line tool")
-        .set("LegalCopyright", "Copyright (c) the Sheaf contributors. MIT OR Apache-2.0.")
+        .set("LegalCopyright", "Copyright (c) the Sheaf contributors.  .")
         .set("OriginalFilename", "sheaf-cli.exe")
         .set("InternalName", "sheaf-cli");
     if let Err(e) = res.compile() {

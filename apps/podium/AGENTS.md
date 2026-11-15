@@ -39,7 +39,7 @@ Dependencies and assets use SPDX identifiers. An expression is allowed when ever
 - `MIT`
 - `BSD-2-Clause`
 - `BSD-3-Clause`
-- `Apache-2.0`
+- ``
 - `OFL-1.1`
 - `Ubuntu-font-1.0`
 - `Bitstream-Vera`
@@ -53,7 +53,7 @@ Dependencies and assets use SPDX identifiers. An expression is allowed when ever
 
 # AGENTS.md — rules for every agent and contributor
 
-Podium is a clean-room, open-source, pure-Rust presentation application targeting Microsoft
+Podium is a clean-room, , pure-Rust presentation application targeting Microsoft
 PowerPoint parity — and superiority (speed, openness, agent control). It runs natively on macOS,
 Windows, Linux and FreeBSD, and on the web via WASM. Siblings with the same conventions:
 PhotoCraft, VectorCraft, FilmCraft, LightCraft, Sheaf, EffectCraft, DesignCraft
@@ -92,13 +92,13 @@ the app renders from those.
 
 ### 1.2 Only open, provable licences
 
-Every asset must be one of: open source (ISC, MIT, BSD-2/3-Clause, Apache-2.0, OFL-1.1,
+Every asset must be one of:  (ISC, MIT, BSD-2/3-Clause, , OFL-1.1,
 Ubuntu-Font-1.0, Bitstream-Vera); Creative Commons (CC0-1.0, CC-BY-4.0, CC-BY-SA-4.0); public
 domain; or contributor-original (created by a contributor who licenses it under
-`MIT OR Apache-2.0`).
+` `).
 
 One narrow exception: the White Office name, wordmark and logos in `docs/brand/` are trademarks of the
-White Office Team (not open source, terms in `docs/brand/LICENSE-brand.txt`), used only unmodified to
+White Office Team (not , terms in `docs/brand/LICENSE-brand.txt`), used only unmodified to
 identify the project.
 
 Forbidden: system fonts that are not openly licensed, vendor emoji artwork, stock photos, "free

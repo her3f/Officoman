@@ -41,7 +41,7 @@ body with a transparent margin.
 | `tally.ico` | Windows exe icon, 16–256 px (embedded by `apps/tally/build.rs`) |
 | `hicolor/<size>/apps/io.github.her3f.tally.png` | Linux icon theme, 16–512 px; the 256 px one is also the runtime window icon on Windows and Linux |
 | `hicolor/scalable/apps/io.github.her3f.tally.svg` | Linux scalable icon |
-| `LICENSE.txt` | MIT OR Apache-2.0 |
+| `LICENSE.txt` |   |
 
 The app ID is `io.github.her3f.tally`. It's used for the hicolor icon names, the Wayland app
 ID and `packaging/linux/io.github.her3f.tally.desktop`.

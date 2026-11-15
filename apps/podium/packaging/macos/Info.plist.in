@@ -43,7 +43,7 @@
   <key>NSRequiresAquaSystemAppearance</key>
   <false/>
   <key>NSHumanReadableCopyright</key>
-  <string>Copyright © the Podium authors. MIT OR Apache-2.0.</string>
+  <string>Copyright © the Podium authors.  .</string>
 
   <!-- The documents Podium opens, so Finder's Open With and "Change All" can offer it (the
        Apple events arrive through apps/podium/src/apple_events.rs). PowerPoint stays the

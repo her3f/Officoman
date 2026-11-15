@@ -51,11 +51,11 @@ aws-lc-rs = { version = "1.18", default-features = false, features = ["aws-lc-sy
 getrandom = "0.4"
 
 [target.'cfg(target_os = "windows")'.dependencies]
-# Safe Windows certificate store and CNG signing wrappers (MIT OR Apache-2.0).
+# Safe Windows certificate store and CNG signing wrappers ( ).
 rustls-cng = { version = "0.7.1", default-features = false }
 
 [target.'cfg(target_os = "macos")'.dependencies]
-# Signing with Keychain identities (MIT OR Apache-2.0).
+# Signing with Keychain identities ( ).
 security-framework = "3.7"
 
 [target.'cfg(target_arch = "wasm32")'.dependencies]

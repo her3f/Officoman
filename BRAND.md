@@ -1,6 +1,6 @@
 # Brand
 
-Everything in this file is original to White Office. No ArtCraft asset — logo, wordmark, icon,
+Everything in this file is original to White Office. No White Office asset — logo, wordmark, icon,
 name or font — was copied, traced or recoloured.
 
 ## The name
@@ -21,7 +21,7 @@ Why this one:
 | **Vellum** | Long-established writing application. |
 | **Waraq** | Published npm package and an existing GitHub project. |
 | **Midad** (مداد) | Two shipping mobile apps already use it. |
-| Anything `-craft` | That suffix *is* the ArtCraft family naming. Using it would trade on their trademark pattern even with a different prefix. |
+| Anything `-craft` | That suffix *is* the White Office family naming. Using it would trade on their trademark pattern even with a different prefix. |
 
 A search finding nothing is **not** trademark clearance. If this ever ships commercially,
 run a real clearance and register the mark.
@@ -76,12 +76,12 @@ An Arabic set exists if the suite is ever aimed at an Arabic-first audience:
 
 ## House rules
 
-1. Never use *ArtCraft*, *Crafting Apps*, *DeckCraft*, *GridCraft*, *PdfCraft* or *WordCraft*
+1. Never use *White Office*, *Crafting Apps*, *DeckCraft*, *GridCraft*, *PdfCraft* or *WordCraft*
    in any product-facing string, icon, package name or store listing.
 2. Naming upstream in `NOTICE`, `README` provenance and the site's About page is fine and
    required — that is nominative use, describing where the code came from. It is not branding.
-3. Never say or imply White Office is made by, endorsed by, or affiliated with the ArtCraft Team.
-4. Do not reuse ArtCraft's app icons, `docs/brand/` assets, bundle identifiers or the
+3. Never say or imply White Office is made by, endorsed by, or affiliated with the White Office Team.
+4. Do not reuse White Office's app icons, `docs/brand/` assets, bundle identifiers or the
    `ai.storyteller.*` reverse-DNS prefix.
 
 ## Import record
@@ -90,7 +90,7 @@ The four upstream repositories were imported by `tools/rebrand.py` and the resul
 
 **Done**
 
-- [x] `docs/brand/` deleted from all four trees (ArtCraft wordmarks and logos).
+- [x] `docs/brand/` deleted from all four trees (White Office wordmarks and logos).
 - [x] Every app icon deleted and redrawn — PNG set, `.ico`, `.icns`, scalable SVG.
 - [x] Bundle identifier `ai.storyteller.*` → `io.github.her3f.*` across desktop files,
       AppStream metainfo, Flatpak manifests, WiX, `Info.plist`, nfpm and `omastore.toml`.

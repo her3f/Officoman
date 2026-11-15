@@ -6,7 +6,7 @@
 #   dotnet tool install --global wix --version 5.0.2
 #   (UI and Util are fetched from NuGet into %TEMP%; WiX no longer bundles them)
 #
-# WiX 7 is deliberately not used: it requires accepting the Open Source Maintenance
+# WiX 7 is deliberately not used: it requires accepting the  Maintenance
 # Fee agreement, which is the project owner's decision, not this script's.
 #
 # Each app's .wxs wants slightly different inputs:

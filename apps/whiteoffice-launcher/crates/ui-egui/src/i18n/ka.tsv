@@ -25,7 +25,7 @@
 
 	Launcher	Launcher
 	Craft App Suite	Craft App Suite
-	Open Source Tools for Creatives, Makers, and Builders	ღია კოდის ხელსაწყოები შემოქმედთათვის, ოსტატებისა და მშენებლებისთვის
+	 Tools for Creatives, Makers, and Builders	ღია კოდის ხელსაწყოები შემოქმედთათვის, ოსტატებისა და მშენებლებისთვის
 	Settings	პარამეტრები
 	Check for updates	განახლებების შემოწმება
 	Grid	ბადე
@@ -439,7 +439,7 @@ materialcraft	Preview materials in 2D and on 3D models.	მასალები
 	Download size: {size}	ჩამოტვირთვის ზომა: {size}
 anicraft	2D vector animation	2D ვექტორული ანიმაცია
 anicraft	Vector animation on a timeline you know.	ვექტორული ანიმაცია ნაცნობ ქრონოლოგიაზე.
-anicraft	Open-source 2D vector animation, built in pure Rust.	ღია კოდის 2D ვექტორული ანიმაცია, შექმნილი სუფთა Rust-ში.
+anicraft	 2D vector animation, built in pure Rust.	ღია კოდის 2D ვექტორული ანიმაცია, შექმნილი სუფთა Rust-ში.
 anicraft	Familiar by design	ნაცნობი დიზაინი
 anicraft	Stage, tools, timeline, layers, keyframes, Properties and Library sit where animators expect them, with onion skinning for in-betweening.	სცენა, ხელსაწყოები, დროის ხაზი, ფენები, საკვანძო კადრები, თვისებები და ბიბლიოთეკა იქ, სადაც ანიმატორები ელიან.
 anicraft	Tweens that ease	გლუვი ანიმაცია

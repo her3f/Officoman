@@ -4,7 +4,7 @@
 <component type="desktop-application">
   <id>io.github.her3f.tally</id>
   <metadata_license>CC0-1.0</metadata_license>
-  <project_license>MIT OR Apache-2.0</project_license>
+  <project_license> </project_license>
   <name>Tally</name>
   <summary>Calculate, analyse and chart data in workbooks</summary>
   <developer id="io.github.her3f">
@@ -12,7 +12,7 @@
   </developer>
   <description>
     <p>
-      Tally is an open-source, native spreadsheet. It opens and saves .xlsx workbooks and
+      Tally is an , native spreadsheet. It opens and saves .xlsx workbooks and
       CSV/TSV files, evaluates hundreds of worksheet functions, and formats, sorts, filters and
       charts your data.
     </p>

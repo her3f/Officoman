@@ -4,7 +4,7 @@ Licensed under the MIT License or the Apache License, Version 2.0, at your optio
 (LICENSE-MIT, LICENSE-APACHE).
 
 The White Office name, wordmark and logos in docs/brand/ are trademarks of the White Office Team. They are
-not open source and are not covered by the license above; their terms are in
+not  and are not covered by the license above; their terms are in
 docs/brand/LICENSE-brand.txt.
 
 Third-party material
@@ -159,13 +159,13 @@ list (author, source, license) is in ATTRIBUTION.md.
     FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
     OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
     DEALINGS IN THE SOFTWARE.
-- Application-drawn UI icons (crates/ui-egui/src/icons.rs) are original work, MIT OR Apache-2.0;
+- Application-drawn UI icons (crates/ui-egui/src/icons.rs) are original work,  ;
   the bundled egui font icons have the separate notice below.
 
 Rust dependencies (egui, eframe, vello_cpu, skrifa, harfrust, krilla, quick-xml, zip, image, …)
-are permissively licensed (MIT/Apache-2.0/BSD/ISC/Zlib) and fetched through crates.io or pinned Git sources.
+are permissively licensed (MIT//BSD/ISC/Zlib) and fetched through crates.io or pinned Git sources.
 The craft-pdf writer and Krilla 0.8.2 backend are pinned to storytold/craft-libs revision
-b926b5c03e256c86ca10934f58d03f628810b5b7. The backend retains its MIT OR Apache-2.0 licensing
+b926b5c03e256c86ca10934f58d03f628810b5b7. The backend retains its   licensing
 and upstream bundled material; see that revision's licenses/pdf-writer/ and ATTRIBUTION.md.
 The backend patch prevents finalization during an unwind and rejects a writer after failed
 cleanup. Nib enables only writing; PDF import and its image decoders are not enabled.

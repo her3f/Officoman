@@ -11,6 +11,10 @@ node_modules/
 dist/
 .pnpm-store/
 
+# Python tooling
+__pycache__/
+*.py[cod]
+
 # Build output
 /build/
 *.msi
