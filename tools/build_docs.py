@@ -7,8 +7,11 @@ per-app README, so they cannot drift apart.
 from __future__ import annotations
 
 import html
+import argparse
 import shutil
 from pathlib import Path
+
+from localize_site import build_locales
 
 ROOT = Path(__file__).resolve().parent.parent
 SITE = ROOT / "docs"
@@ -125,7 +128,7 @@ header.site{
 header.site .wrap{display:flex;align-items:center;gap:14px;height:64px}
 header.site .brand{display:flex;align-items:center;gap:10px;font-weight:700;
   letter-spacing:-.4px;text-decoration:none;font-size:1.02rem}
-nav.site{margin-left:auto;display:flex;gap:24px;font-size:.9rem}
+nav.site{margin-inline-start:auto;display:flex;gap:24px;font-size:.9rem;align-items:center}
 nav.site a{text-decoration:none;color:var(--muted)}
 nav.site a:hover{color:var(--ink)}
 
@@ -161,7 +164,7 @@ a.card p{margin:0;color:var(--muted);font-size:.92rem}
 .feature p{margin:0;color:var(--muted);font-size:.89rem}
 
 table{width:100%;border-collapse:collapse;font-size:.93rem}
-th,td{text-align:left;padding:12px 14px;border-bottom:1px solid var(--line);vertical-align:top}
+th,td{text-align:start;padding:12px 14px;border-bottom:1px solid var(--line);vertical-align:top}
 th{font-size:.72rem;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);font-weight:700}
 code{background:#EFEDE5;padding:1px 6px;border-radius:5px;font-size:.87em}
 
@@ -172,7 +175,7 @@ code{background:#EFEDE5;padding:1px 6px;border-radius:5px;font-size:.87em}
 footer.site{border-top:1px solid var(--line);padding:34px 0 56px;color:var(--muted);font-size:.86rem}
 footer.site .wrap{display:flex;gap:18px;flex-wrap:wrap;align-items:center}
 
-td .btn,td .btn.ghost{padding:6px 14px;font-size:.83rem;border-radius:7px;margin-right:6px}
+td .btn,td .btn.ghost{padding:6px 14px;font-size:.83rem;border-radius:7px;margin-inline-end:6px}
 .apphero{padding:64px 0 40px;display:flex;gap:26px;align-items:center;flex-wrap:wrap}
 table.platforms th,table.platforms td{padding:18px 14px;vertical-align:top}
 table.platforms tbody tr:hover{background:#FCFBF8}
@@ -195,6 +198,32 @@ tr.featured{background:#FCFBF8}
 .apphero p{margin:8px 0 0;color:var(--muted);max-width:62ch}
 .pill{display:inline-block;font-size:.74rem;font-weight:700;letter-spacing:.06em;
   padding:3px 10px;border-radius:99px;border:1px solid var(--line);background:var(--card);color:var(--muted)}
+
+/* Shared navigation and Arabic typography. Latin identifiers retain their direction. */
+nav.site .language-switch{border:1px solid var(--line);border-radius:7px;padding:5px 10px;
+  color:var(--indigo);font-weight:600;white-space:nowrap}
+a:focus-visible{outline:3px solid var(--indigo);outline-offset:4px}
+html[dir="rtl"] body{font-family:"Segoe UI",Tahoma,"Noto Sans Arabic",system-ui,sans-serif}
+html[dir="rtl"] h1,html[dir="rtl"] h2,html[dir="rtl"] h3,
+html[dir="rtl"] .eyebrow,html[dir="rtl"] .role,html[dir="rtl"] .pill,
+html[dir="rtl"] th,html[dir="rtl"] .brand{letter-spacing:normal}
+html[dir="rtl"] h1{line-height:1.5}
+html[dir="rtl"] p{line-height:1.9}
+code,bdi{unicode-bidi:isolate}
+code[dir="ltr"]{display:inline-block;direction:ltr}
+.pill{max-width:100%;overflow-wrap:anywhere}
+.wrap section{max-width:100%;overflow-x:auto}
+table.platforms{min-width:720px}
+@media(max-width:640px){
+  .wrap{padding-inline:18px}
+  header.site .wrap{height:auto;min-height:64px;flex-wrap:wrap;padding-block:12px;gap:10px}
+  nav.site{width:100%;justify-content:space-between;gap:8px;font-size:.83rem}
+  .hero{padding-block:48px 36px}
+  .apphero{padding-top:36px;gap:18px}
+  .grid.apps,.features{grid-template-columns:minmax(0,1fr)}
+  footer.site .wrap{gap:10px}
+}
+@media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}a.card{transition:none}}
 """
 
 
@@ -225,7 +254,7 @@ def page(title: str, body: str, root: str = "", description: str = "") -> str:
 {body}
 <footer class="site">
   <div class="wrap">
-    <span>White Office — MIT or Apache-2.0</span>
+    <span>White Office — </span>
     <span>·</span>
     <span>Built on the open-source Crafting Apps by the ArtCraft team</span>
     <span>·</span>
@@ -299,7 +328,7 @@ def build_pages() -> None:
       can drive the same buttons you click.</p></div>
     <div class="feature"><h4>Four platforms</h4><p>macOS, Windows, Linux and BSD, plus a
       WebAssembly build.</p></div>
-    <div class="feature"><h4>MIT or Apache-2.0</h4><p>Dual-licensed, forkable, and yours to
+    <div class="feature"><h4></h4><p>Dual-licensed, forkable, and yours to
       build on.</p></div>
   </div>
 </section></div>
@@ -316,7 +345,7 @@ def build_pages() -> None:
   <h2 class="section">Where this comes from</h2>
   <div class="note">
     <b>White Office is a fork and rebrand.</b> The four applications are derived from the open-source
-    Crafting Apps published by the ArtCraft team under MIT or Apache-2.0, which permits this.
+    Crafting Apps published by the ArtCraft team under , which permits this.
     The licences require attribution, which White Office keeps in full; the ArtCraft names and logos
     are trademarks and are not used here. <a href="about.html">Read the full provenance</a>.
   </div>
@@ -403,10 +432,10 @@ def build_pages() -> None:
   <table>
     <thead><tr><th>White Office</th><th>Derived from</th><th>Licence</th></tr></thead>
     <tbody>
-      <tr><td><b>Nib</b></td><td>WordCraft</td><td>MIT or Apache-2.0</td></tr>
-      <tr><td><b>Tally</b></td><td>GridCraft</td><td>MIT or Apache-2.0</td></tr>
-      <tr><td><b>Podium</b></td><td>DeckCraft</td><td>MIT or Apache-2.0</td></tr>
-      <tr><td><b>Sheaf</b></td><td>PdfCraft</td><td>MIT or Apache-2.0</td></tr>
+      <tr><td><b>Nib</b></td><td>WordCraft</td><td></td></tr>
+      <tr><td><b>Tally</b></td><td>GridCraft</td><td></td></tr>
+      <tr><td><b>Podium</b></td><td>DeckCraft</td><td></td></tr>
+      <tr><td><b>Sheaf</b></td><td>PdfCraft</td><td></td></tr>
     </tbody>
   </table>
   <p style="color:var(--muted);max-width:66ch">
@@ -598,7 +627,7 @@ not been compiled or tested on this machine yet. Build it before trusting it wit
 ## Provenance and licence
 
 This is a modified fork of **{app['upstream']}**, copyright (c) 2026 the ArtCraft Team and the
-{app['upstream']} contributors, dual-licensed MIT or Apache-2.0.
+{app['upstream']} contributors, dual-licensed .
 
 Modifications: renamed, rebranded and restructured for White Office, 2026. See the repository
 [NOTICE](../../NOTICE) for the full attribution, and [BRAND.md](../../BRAND.md) for what the
@@ -607,17 +636,24 @@ rebrand covers.
 The ArtCraft, {app['upstream']} and related names and logos are trademarks of the ArtCraft Team
 and are not used by this project. White Office is not affiliated with them.
 
-White Office itself is MIT or Apache-2.0, at your option.
+White Office itself is , at your option.
 """
         (APPS_DIR / app["slug"] / "README.md").write_text(md, encoding="utf-8")
 
 
 def main() -> int:
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument('--site-only', action='store_true', help='Generate the bilingual website without rewriting application READMEs')
+    args = parser.parse_args()
     build_pages()
     build_downloads()
-    build_readmes()
+    build_locales(SITE)
+    if not args.site_only:
+        build_readmes()
     print(f"site:   {SITE.relative_to(ROOT)}/ ({len(list(SITE.rglob('*.html')))} pages)")
-    print(f"readmes: {len(APPS)} rewritten")
+    print('languages: English, Arabic (RTL)')
+    if not args.site_only:
+        print(f"readmes: {len(APPS)} rewritten")
     return 0
 
 

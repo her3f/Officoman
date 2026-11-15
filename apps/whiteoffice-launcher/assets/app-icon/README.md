@@ -5,7 +5,7 @@ The app icon is the **White Office "A" mark in blue** (officoman.whitebearom.com
 directory is rendered from it by `packaging/icons.sh`.
 
 **These files are an White Office trademark. They are not open source and not covered by White Office
-Launcher's MIT or Apache-2.0 license.** Their terms are in
+Launcher's  license.** Their terms are in
 [`docs/brand/LICENSE-brand.txt`](../../docs/brand/LICENSE-brand.txt): use them only as part of
 White Office Launcher, never redraw, recolor or crop them, and remove them from forks and modified
 versions.

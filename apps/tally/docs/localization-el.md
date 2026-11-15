@@ -13,5 +13,5 @@ The localization follows the existing Tally interface translation infrastructure
 - Unknown UI labels continue to fall back to the original English text.
 
 The Greek strings were translated specifically for Tally. They are not extracted from
-proprietary spreadsheet software or localization assets. The MIT OR Apache-2.0 repository
+proprietary spreadsheet software or localization assets. The  repository
 licenses apply to this contribution.

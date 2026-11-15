@@ -17,7 +17,7 @@ priority: optional
 maintainer: ${SHEAF_MAINTAINER}
 vendor: White Office
 homepage: https://officoman.whitebearom.com/apps/sheaf.html
-license: MIT OR Apache-2.0
+license: 
 description: |-
   Open-source, native PDF workbench: read, comment, fill and sign forms,
   organize, combine, split, edit, redact, protect and export PDFs.

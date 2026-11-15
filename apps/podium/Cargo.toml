@@ -6,7 +6,7 @@ default-members = ["crates/*", "apps/podium", "apps/podium-cli"]
 [workspace.package]
 version = "0.18.1"
 edition = "2024"
-license = "MIT OR Apache-2.0"
+license = ""
 rust-version = "1.95"
 repository = "https://github.com/her3f/officoman"
 

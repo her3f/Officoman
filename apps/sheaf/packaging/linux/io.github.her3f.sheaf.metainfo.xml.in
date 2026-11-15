@@ -4,7 +4,7 @@
 <component type="desktop-application">
   <id>io.github.her3f.sheaf</id>
   <metadata_license>CC0-1.0</metadata_license>
-  <project_license>MIT OR Apache-2.0</project_license>
+  <project_license></project_license>
   <name>Sheaf</name>
   <summary>Read, organize, combine, split and secure PDFs</summary>
   <developer id="io.github.her3f">

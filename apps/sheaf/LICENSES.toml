@@ -176,7 +176,7 @@ documents = ["licenses/egui-emoji-icon-font-mit-license.txt"]
 [[bundled]]
 crate = "hayro-interpret"
 path = "src/font/generated/metrics.rs"
-licence = "MIT OR Apache-2.0"
+licence = ""
 documents = ["vendor/hayro-interpret/LICENSE-MIT", "vendor/hayro-interpret/LICENSE-APACHE"]
 
 [[bundled]]

@@ -30,7 +30,7 @@ pub fn about(_app: &mut SlideApp, ui: &mut Ui) {
         ui.hyperlink_to("officoman.whitebearom.com/apps/podium", podium_engine::links::APP_PAGE);
         ui.hyperlink_to("Source on GitHub", podium_engine::links::GITHUB);
         ui.add_space(6.0);
-        ui.label(egui::RichText::new("MIT OR Apache-2.0 · © 2026 White Office Team and the Podium contributors").size(11.0).color(t.text_faint));
+        ui.label(egui::RichText::new(" · © 2026 White Office Team and the Podium contributors").size(11.0).color(t.text_faint));
     });
 }
 

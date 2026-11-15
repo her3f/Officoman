@@ -15,7 +15,7 @@ priority: optional
 maintainer: ${WHITEOFFICE_LAUNCHER_MAINTAINER}
 vendor: White Office
 homepage: https://github.com/her3f/officoman
-license: MIT OR Apache-2.0
+license: 
 description: |-
   Install, update and launch the Craft App Suite.
   White Office Launcher lists PhotoCraft, LightCraft, FilmCraft, DesignCraft,

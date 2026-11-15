@@ -1,5 +1,5 @@
 Sheaf PDF document icon (sheaf-document.svg and sheaf-document.ico).
-SPDX-License-Identifier: ISC AND (MIT OR Apache-2.0)
+SPDX-License-Identifier: ISC AND ()
 
 The document outline and fold are adapted from Lucide file-text (lucide-static 1.49.0):
 https://github.com/lucide-icons/lucide

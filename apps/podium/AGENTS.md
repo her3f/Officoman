@@ -95,7 +95,7 @@ the app renders from those.
 Every asset must be one of: open source (ISC, MIT, BSD-2/3-Clause, Apache-2.0, OFL-1.1,
 Ubuntu-Font-1.0, Bitstream-Vera); Creative Commons (CC0-1.0, CC-BY-4.0, CC-BY-SA-4.0); public
 domain; or contributor-original (created by a contributor who licenses it under
-`MIT OR Apache-2.0`).
+``).
 
 One narrow exception: the White Office name, wordmark and logos in `docs/brand/` are trademarks of the
 White Office Team (not open source, terms in `docs/brand/LICENSE-brand.txt`), used only unmodified to

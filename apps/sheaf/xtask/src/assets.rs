@@ -217,7 +217,7 @@ pub fn is_asset_path(path: &str) -> bool {
     Path::new(path).extension().and_then(std::ffi::OsStr::to_str).is_some_and(|e| ASSET_EXTENSIONS.contains(&e.to_ascii_lowercase().as_str()))
 }
 
-/// Every licence id in an SPDX expression (`MIT OR Apache-2.0`, `MIT AND Bitstream-Vera`).
+/// Every licence id in an SPDX expression (``, `MIT AND Bitstream-Vera`).
 fn licence_ids(expr: &str) -> impl Iterator<Item = &str> {
     expr.split(|c: char| c.is_whitespace() || c == '(' || c == ')').filter(|t| !t.is_empty() && *t != "OR" && *t != "AND" && *t != "WITH")
 }
@@ -621,6 +621,6 @@ mod tests {
 
     #[test]
     fn spdx_expressions_split() {
-        assert_eq!(licence_ids("(MIT OR Apache-2.0) AND OFL-1.1").collect::<Vec<_>>(), ["MIT", "Apache-2.0", "OFL-1.1"]);
+        assert_eq!(licence_ids("() AND OFL-1.1").collect::<Vec<_>>(), ["MIT", "Apache-2.0", "OFL-1.1"]);
     }
 }

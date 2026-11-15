@@ -53,7 +53,7 @@ minimum:
   - Ubuntu Light (Ubuntu Font Licence 1.0); Hack, Noto Emoji and the egui icon font
     (MIT, Bitstream Vera, OFL-1.1); emoji-icon-font by John Slegers (MIT).
   - symphonia, used unmodified under the Mozilla Public License 2.0.
-  - Krilla, used through craft-pdf under MIT OR Apache-2.0, with its bundled Compact ICC
+  - Krilla, used through craft-pdf under , with its bundled Compact ICC
     Profiles (CC0-1.0).
   - ammo.js (zlib), normalize.css (MIT), three-dots (MIT), Font Awesome Free icons
     (CC BY 4.0), Carter One (OFL-1.1), Inter/Archivo/Geist Mono (OFL-1.1), where those

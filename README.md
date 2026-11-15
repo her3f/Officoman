@@ -57,6 +57,21 @@ The project site lives in [`docs/`](docs) and is published from that folder with
 To point GitHub Pages at it: **Settings → Pages → Source: Deploy from a branch →
 `main` / `/docs`**.
 
+The site is available in English and [Arabic](docs/ar/index.html). The language
+switch opens the equivalent page, and navigation stays in the selected language.
+Arabic pages use right-to-left layout, with Latin names and file identifiers isolated
+for readability. Both languages work without JavaScript.
+
+```sh
+python -X utf8 tools/build_docs.py --site-only
+python -X utf8 -m unittest discover -s tools -p test_site_localization.py -v
+```
+
+`--site-only` leaves application READMEs unchanged. Edit English content in
+`tools/build_docs.py` and Arabic translations in `tools/site/ar.json`; the generator
+updates both sets of pages and the sitemap. Missing translations fail the build
+instead of silently showing English prose on an Arabic page.
+
 ## Repository layout
 
 ```
@@ -124,7 +139,7 @@ Run them in that order to regenerate the tree from `_vendor/`.
 ## Where this comes from
 
 White Office is a **fork and rebrand** of the four open-source *Crafting Apps* published by the
-[ArtCraft](https://getartcraft.com/) team. Those projects are dual-licensed **MIT or Apache-2.0**,
+[ArtCraft](https://getartcraft.com/) team. Those projects are dual-licensed ****,
 which permits exactly this: copying, modifying, renaming and redistributing, including
 commercially.
 

@@ -16,7 +16,7 @@ fn main() {
         .set("ProductName", "White Office Launcher")
         .set("FileDescription", "White Office Launcher")
         .set("CompanyName", "White Office")
-        .set("LegalCopyright", "Copyright (c) the White Office Launcher authors. MIT OR Apache-2.0.")
+        .set("LegalCopyright", "Copyright (c) the White Office Launcher authors. .")
         .set("OriginalFilename", "whiteoffice-launcher.exe")
         .set("InternalName", "whiteoffice-launcher");
     if let Err(e) = res.compile() {
