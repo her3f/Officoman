@@ -24,6 +24,9 @@ TECHNICAL = re.compile(r"(?<!\w)\.?[A-Za-z][A-Za-z0-9_./*+-]*(?:[ \t]+[A-Za-z][A
 VOID = {"area", "base", "br", "col", "embed", "hr", "img", "input", "link", "meta", "param", "source", "track", "wbr"}
 
 
+MISSING: set[str] = set()
+
+
 def translate(text: str) -> str:
     key = " ".join(text.split())
     if not key:
@@ -42,7 +45,8 @@ def translate(text: str) -> str:
     match = re.fullmatch(r"is derived from (WordCraft|GridCraft|DeckCraft|PdfCraft)\. The source is imported in this repository under", key)
     if match:
         return f"مشتق من {match[1]}. توجد الشيفرة المصدرية في هذا المستودع ضمن"
-    raise ValueError(f"Missing Arabic translation: {key}")
+    MISSING.add(key)
+    return text
 
 
 def isolate(text: str) -> str:
@@ -144,5 +148,13 @@ def build_locales(site: Path) -> None:
     for path, content in rendered:
         path.parent.mkdir(parents=True, exist_ok=True)
         path.write_text(content, encoding='utf-8')
+    if MISSING:
+        (Path(__file__).parent / "site" / "missing-ar.txt").write_text(
+            "\n".join(sorted(MISSING)) + "\n", encoding="utf-8")
+        print(f"warning: {len(MISSING)} string(s) left untranslated — see tools/site/missing-ar.txt")
     urls = ''.join(f'<url><loc>{SITE_URL}/{path.relative_to(site).as_posix()}</loc></url>' for path, _ in rendered)
     (site / 'sitemap.xml').write_text('<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">' + urls + '</urlset>\n', encoding='utf-8')
+
+
+if __name__ == "__main__":
+    build_locales(Path(__file__).resolve().parent.parent / "docs")

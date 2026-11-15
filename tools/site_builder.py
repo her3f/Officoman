@@ -26,7 +26,6 @@ def page(title: str, body: str, path: str, description: str) -> str:
     nav = "".join(f'<a href="{root}{href}"'
                   f'{current if active == key else ""}>{label}</a>'
                   for key, href, label in (("apps", "apps/index.html", "The apps"),
-                                          ("about", "about.html", "Our story"),
                                           ("download", "download.html", "Download ↗")))
     return f'''<!doctype html>
 <html lang="en"><head>
@@ -47,7 +46,7 @@ def page(title: str, body: str, path: str, description: str) -> str:
 </div></header>
 <main id="main">{body}</main>
 <footer class="site"><div class="wrap footer-main"><div><a class="brand" href="{root}index.html"><img src="{root}assets/whiteoffice-mark.svg" width="28" height="28" alt="">White Office</a><p>A little more room for your work.</p></div>
-<div class="footer-links"><a href="{root}apps/index.html">Explore the apps</a><a href="{REPO}">Source on GitHub ↗</a><a href="{root}about.html">About &amp; licensing</a></div></div>
+<div class="footer-links"><a href="{root}apps/index.html">Explore the apps</a><a href="{REPO}">Source on GitHub ↗</a></div></div>
 <div class="wrap footer-bottom"><span>© 2026 White Office contributors</span><span>Built in Rust. Made for your desktop.</span></div></footer>
 </body></html>'''
 
@@ -80,7 +79,7 @@ def home(apps: list[dict]) -> str:
 <div class="workspace-preview"><div class="window-bar"><span class="window-dots" aria-hidden="true">● ● ●</span><span>Your next great idea</span><span aria-hidden="true">↗</span></div><div class="app-tabs" role="tablist" aria-label="Explore an illustrative app preview">{tabs}</div>{panels}<div class="preview-caption"><span class="status-dot"></span> A little preview of what you can make <span>Illustration</span></div></div></div>
 <div class="trust-strip"><div class="wrap"><span>LOCAL FILES. REAL POSSIBILITIES.</span><b>Works offline</b><b>Familiar file formats</b><b>Open source</b><b>Native performance</b></div></div>
 <section class="wrap section" id="apps"><div class="section-heading"><div><p class="eyebrow">MEET YOUR NEW DESK</p><h2>Four apps. A whole lot possible.</h2></div><p>Start with what you need.<br>There’s room for the rest.</p></div><div class="app-grid">{''.join(card(a) for a in apps)}</div></section>
-<section class="wrap section philosophy"><div><p class="eyebrow">LESS FRICTION, MORE FOCUS</p><h2>Tools that fit<br>the way you work.</h2><p class="lede">Your files belong on your desk. Your attention belongs on your ideas.</p><a class="text-link" href="about.html">The story behind White Office →</a></div><div class="principles"><article><span>01</span><div><h3>At home on your computer</h3><p>Native Rust applications for everyday desktop work. Open an app and get straight to it.</p></div></article><article><span>02</span><div><h3>Your work stays with you</h3><p>Create and edit local files without an account. Keep working when the connection doesn’t.</p></div></article><article><span>03</span><div><h3>Files you already know</h3><p>Work with DOCX, XLSX, PPTX and PDF. Bring your existing files and export work you can share.</p></div></article></div></section>
+<section class="wrap section philosophy"><div><p class="eyebrow">LESS FRICTION, MORE FOCUS</p><h2>Tools that fit<br>the way you work.</h2><p class="lede">Your files belong on your desk. Your attention belongs on your ideas.</p></div><div class="principles"><article><span>01</span><div><h3>At home on your computer</h3><p>Native Rust applications for everyday desktop work. Open an app and get straight to it.</p></div></article><article><span>02</span><div><h3>Your work stays with you</h3><p>Create and edit local files without an account. Keep working when the connection doesn’t.</p></div></article><article><span>03</span><div><h3>Files you already know</h3><p>Work with DOCX, XLSX, PPTX and PDF. Bring your existing files and export work you can share.</p></div></article></div></section>
 <section class="wrap"><div class="download-banner"><div><p class="eyebrow">MAKE YOURSELF AT HOME</p><h2>Your next project starts here.</h2><p>Choose your apps. Find your flow.</p></div><a class="btn light" href="download.html">Find your download ↗</a></div></section>'''
 
 
@@ -141,8 +140,7 @@ def build(apps: list[dict], site: Path, catalog: dict) -> None:
         shutil.copyfile(ROOT / "apps" / a['slug'] / "assets" / "app-icon" / "hicolor" / "256x256" / "apps" / f"io.github.her3f.{a['slug']}.png", site / "assets" / "icons" / f"{a['slug']}.png")
     pages = [("index.html", "White Office — A little more room for your work", home(apps), "Four independent apps for documents, spreadsheets, presentations and PDF. Explore White Office and download builds for Windows, macOS and Linux."),
              ("apps/index.html", "The apps — White Office", '<div class="wrap hero"><p class="eyebrow">A PLACE FOR EVERY IDEA</p><h1>Find your tool.<br><em>Make it yours.</em></h1><p class="lede">Write something worth reading. Make sense of the numbers. Tell a better story. Bring every page together.</p></div><section class="wrap section"><div class="app-grid">' + ''.join(card(a, '../') for a in apps) + '</div></section>', "Meet Nib, Tally, Podium and Sheaf: the four independent White Office applications."),
-             ("download.html", "Download — White Office", downloads(apps, catalog), "Choose White Office packages for Windows, macOS and Linux, with installers and portable downloads."),
-             ("about.html", "Our story — White Office", about(apps), "Learn about White Office, its upstream projects, independent identity and source licensing.")]
+             ("download.html", "Download — White Office", downloads(apps, catalog), "Choose White Office packages for Windows, macOS and Linux, with installers and portable downloads.")]
     pages += [(f'apps/{a["slug"]}.html', f'{a["name"]} — White Office', app_page(a, apps), a['tagline']) for a in apps]
     for path, title, body, description in pages:
         (site / path).write_text(page(title, body, path, description), encoding="utf-8")

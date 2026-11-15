@@ -1,0 +1,162 @@
+01 / 12
+=SUM(B2:B5)
+A PLACE FOR EVERY IDEA
+A clearer view of the details.
+A few things before you start.
+A little more room for your work.
+A little preview of what you can make
+A new perspective starts here.
+A thoughtful home for your documents, spreadsheets, presentations and PDFs. Four independent apps, built to work beautifully together.
+A work in progress, ready to explore.
+All platforms
+Apple silicon + Intel
+Application
+Application downloads
+At home on your computer
+Available packages are listed per release. A missing platform means a package for that version is not available yet.
+BUILDS FOR EVERY DESK
+Big ideas.
+Big possibilities.
+Budget
+Build from source ↗
+Built in Rust. Made for your desktop.
+Check before opening
+Choose White Office packages for Windows, macOS and Linux, with installers and portable downloads.
+Choose your apps. Find your flow.
+Complete
+Create and edit local files without an account. Keep working when the connection doesn’t.
+Design
+Development
+Download Launcher 0.19.2 linux Linux archive
+Download Launcher 0.19.2 macos Universal archive
+Download Launcher 0.19.2 windows Installer
+Download Launcher 0.19.2 windows Portable ZIP
+Download Nib 0.18.1 linux Linux archive
+Download Nib 0.18.1 macos Universal archive
+Download Nib 0.18.1 windows Installer
+Download Nib 0.18.1 windows Portable ZIP
+Download Podium 0.18.1 linux Linux archive
+Download Podium 0.18.1 macos Universal archive
+Download Podium 0.18.1 windows Installer
+Download Podium 0.18.1 windows Portable ZIP
+Download Sheaf 0.21.1 linux Linux archive
+Download Sheaf 0.21.1 macos Universal archive
+Download Sheaf 0.21.1 windows Installer
+Download Sheaf 0.21.1 windows Portable ZIP
+Download Tally 0.19.1 linux Linux archive
+Download Tally 0.19.1 macos Universal archive
+Download Tally 0.19.1 windows Installer
+Download Tally 0.19.1 windows Portable ZIP
+Download ↗
+Each app has its own Rust workspace, with desktop and command-line packages. Platform requirements and build instructions live in the repository.
+Every page.
+Explore an illustrative app preview
+Explore the apps
+FAMILIAR FILES
+FIELD NOTES / 001
+Familiar file formats
+Files you already know
+Filter downloads by operating system
+Find your download ↗
+Find your tool.
+Four apps. A whole lot possible.
+Four independent apps for documents, spreadsheets, presentations and PDF. Explore White Office and download builds for Windows, macOS and Linux.
+Get Nib ↗
+Get Podium ↗
+Get Sheaf ↗
+Get Tally ↗
+Get White Office
+Get the launcher to install and update your apps, or choose an individual app. No account. Just your next project.
+Good work starts with a blank page.
+Illustration
+Illustrative budget chart
+In its place.
+In progress
+Install & update the suite
+Installer
+Keep your files close
+LESS FRICTION, MORE FOCUS
+LOCAL FILES. REAL POSSIBILITIES.
+Launch
+Less busywork.
+Less getting in the way.
+Linux archive
+MAKE ROOM FOR GOOD WORK
+MAKE YOURSELF AT HOME
+MEET YOUR NEW DESK
+Made for your everyday work.
+Main navigation
+Make it yours.
+Make this one yours.
+Meet Nib
+Meet Nib, Tally, Podium and Sheaf: the four independent White Office applications.
+Meet Podium
+Meet Sheaf
+Meet Tally
+Menu
+More getting it down.
+Native Rust applications for everyday desktop work. Open an app and get straight to it.
+Native performance
+Nib is an independent fork of WordCraft. Desktop packages are listed on the download page when available. Compatibility and features continue to evolve; keep a copy of important files when trying a new build.
+No account needed
+On Windows, use the MSI installer for shortcuts and file associations, or extract the portable ZIP. macOS and Linux downloads are archives.
+One office.
+Open source
+PROJECT BRIEF
+Packages are unsigned. Your operating system may show a security prompt. Verify the download source and file checksum before running it.
+Pick your package
+Planned
+Podium is an independent fork of DeckCraft. Desktop packages are listed on the download page when available. Compatibility and features continue to evolve; keep a copy of important files when trying a new build.
+Portable ZIP
+Prefer to build your own?
+Project
+Project budget · example data
+REVIEW COPY · 01
+Research
+Sheaf is an independent fork of PdfCraft. Desktop packages are listed on the download page when available. Compatibility and features continue to evolve; keep a copy of important files when trying a new build.
+Skip to content
+Small ideas.
+Source on GitHub ↗
+Space for
+Start with what you need.
+THE NEXT CHAPTER
+Tally is an independent fork of GridCraft. Desktop packages are listed on the download page when available. Compatibility and features continue to evolve; keep a copy of important files when trying a new build.
+The apps
+The apps — White Office
+The rest of your desk.
+There’s room for the rest.
+Tools that fit
+Total
+Universal archive
+View SHA-256 checksums ↗
+View source →
+WHITE OFFICE
+White Office / Nib
+White Office / Podium
+White Office / Sheaf
+White Office / Tally
+White Office packages by application and platform
+White Office — A little more room for your work
+Windows, macOS & Linux
+Work with DOCX, XLSX, PPTX and PDF. Bring your existing files and export work you can share.
+Work with local documents. These are early builds, so keep backups of important files while trying them out.
+Write something worth reading. Make sense of the numbers. Tell a better story. Bring every page together.
+YOUR WORK. YOUR SPACE.
+Your desk.
+Your download.
+Your files belong on your desk. Your attention belongs on your ideas.
+Your next great idea
+Your next project starts here.
+Your work stays with you
+the way you work.
+x64
+x86_64
+your next idea.
+© 2026 White Office contributors
+ƒx
+← All apps
+→
+↓
+↗
+● ● ●
+☰
