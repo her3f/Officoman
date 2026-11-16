@@ -494,7 +494,7 @@ mod tests {
         // Never fetched, more than a day old, or not listed: ask GitHub.
         assert_eq!(feed.answer(app("filmcraft"), NOW), FeedAnswer::AskGitHub);
         assert_eq!(feed.answer(app("vectorcraft"), NOW), FeedAnswer::AskGitHub);
-        assert_eq!(feed.answer(app("wordcraft"), NOW), FeedAnswer::AskGitHub);
+        assert_eq!(feed.answer(app("nib"), NOW), FeedAnswer::AskGitHub);
         assert_eq!(feed.answer(&LAUNCHER, NOW), FeedAnswer::AskGitHub);
         // An app the launcher doesn't know is simply carried along.
         assert!(feed.apps.contains_key("brandnewcraft"));
@@ -510,7 +510,7 @@ mod tests {
         }
         // Every field the wrong type: nothing panics, nothing is trusted.
         let weird = r#"{"release_info": {"apps": {"photocraft": {"repo": 7, "latest_release": "yes",
-        "app_last_fetched": ["no"]}, "pdfcraft": 5}, "last_fetched": {}},
+        "app_last_fetched": ["no"]}, "sheaf": 5}, "last_fetched": {}},
         "app_renames": "none", "repo_renames": [1, {"old_name": "a/b"}],
         "important_notices": {"announcements": [null, {"title": 3}], "alerts": "x"}}"#;
         let feed = Feed::parse(weird).unwrap();
@@ -627,7 +627,7 @@ mod tests {
             .replace(
                 "\"alerts\": []",
                 r#""alerts": [
-            {"title": "Security update", "body": "Update PdfCraft now.", "maybe_web_link": "https://officoman.whitebearom.com/security", "created_at": null},
+            {"title": "Security update", "body": "Update Sheaf now.", "maybe_web_link": "https://officoman.whitebearom.com/security", "created_at": null},
             {"title": "Bad link", "body": "x", "maybe_web_link": "javascript:alert(1)"},
             {"title": "Shell link", "body": "x", "maybe_web_link": "https://officoman.whitebearom.com/a|calc.exe"},
             {"title": "Plain http", "body": "x", "maybe_web_link": "http://officoman.whitebearom.com/security"},
@@ -636,7 +636,7 @@ mod tests {
             )
             .replace(
                 "\"app_renames\": []",
-                r#""app_renames": [{"old_name": "PdfCraft", "old_name_lower": "pdfcraft", "new_name": "DocuCraft",
+                r#""app_renames": [{"old_name": "Sheaf", "old_name_lower": "sheaf", "new_name": "DocuCraft",
             "new_name_lower": "docucraft", "description": "Same app, new name.", "renamed_at": "2026-10-09T08:00:00Z"}]"#,
             );
         let feed = Feed::parse(&with_notices).unwrap();
@@ -648,7 +648,7 @@ mod tests {
         assert_eq!(feed.alerts[4].link, None, "a link with user-info is dropped");
         assert_eq!(feed.alerts[5].link, None, "a file link is dropped");
         let titles: Vec<&str> = feed.announcements.iter().map(|n| n.title.as_str()).collect();
-        assert_eq!(titles, ["New: CADCraft 1.0", "PdfCraft is now DocuCraft"]);
+        assert_eq!(titles, ["New: CADCraft 1.0", "Sheaf is now DocuCraft"]);
         // Ids are stable across parses, so dismissals stick.
         assert_eq!(Feed::parse(&with_notices).unwrap().alerts[0].id, feed.alerts[0].id);
     }
@@ -657,7 +657,7 @@ mod tests {
     fn rename_notices_count_toward_the_cap() {
         let rename = |i: usize| {
             format!(
-                r#"{{"old_name": "PdfCraft{i}", "old_name_lower": "pdfcraft{i}", "new_name": "DocuCraft{i}", "new_name_lower": "docucraft{i}",
+                r#"{{"old_name": "Sheaf{i}", "old_name_lower": "sheaf{i}", "new_name": "DocuCraft{i}", "new_name_lower": "docucraft{i}",
             "description": "Same app, new name.", "renamed_at": "2026-10-09T08:00:00Z"}}"#
             )
         };
@@ -669,7 +669,7 @@ mod tests {
                 .replace("\"app_renames\": []", &format!("\"app_renames\": [{}]", moved.join(",")));
             let notices = Feed::parse(&full).unwrap().announcements;
             assert_eq!(notices.len(), MAX_NOTICES, "{news} announcements, {renames} renames");
-            assert!(notices.iter().any(|n| n.title == "PdfCraft0 is now DocuCraft0"), "{news} announcements: the rename was cut");
+            assert!(notices.iter().any(|n| n.title == "Sheaf0 is now DocuCraft0"), "{news} announcements: the rename was cut");
         }
     }
 

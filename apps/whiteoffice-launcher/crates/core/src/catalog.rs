@@ -30,9 +30,9 @@ pub struct CraftApp {
     pub ink_dark: [u8; 3],
     /// GitHub `owner/repo`.
     pub repo: &'static str,
-    /// Older names its release assets may carry (PdfCraft shipped as PrintCraft until 0.2.1).
+    /// Older names its release assets may carry (Sheaf shipped as PrintCraft until 0.2.1).
     pub former_ids: &'static [&'static str],
-    /// Older display names its installers registered (PdfCraft's MSI said PrintCraft until 0.2.1).
+    /// Older display names its installers registered (Sheaf's MSI said PrintCraft until 0.2.1).
     pub former_names: &'static [&'static str],
     /// The `.app` bundle stem on macOS when it differs from `name` (`White Office` for `White Office Studio`).
     pub mac_bundle_name: Option<&'static str>,
@@ -235,12 +235,12 @@ mod tests {
         assert_eq!(sc.repo, "tangency-labs/solidcraft");
         assert_eq!(sc.bundle_id(), "io.tangencylabs.solidcraft");
         assert_eq!(sc.bundle_ids().collect::<Vec<_>>(), ["io.tangencylabs.solidcraft", "io.github.her3f.solidcraft", "io.github.her3f.solvecraft"]);
-        assert_eq!(CraftApp::by_id("gridcraft").unwrap().bundle_id(), "io.github.her3f.gridcraft");
-        assert_eq!(CraftApp::by_id("gridcraft").unwrap().kind, AppKind::Official);
+        assert_eq!(CraftApp::by_id("tally").unwrap().bundle_id(), "io.github.her3f.tally");
+        assert_eq!(CraftApp::by_id("tally").unwrap().kind, AppKind::Official);
         assert_eq!(sc.website(), "https://solidcraft.io");
         assert!(sc.installs(crate::PackageKind::Dmg) && sc.installs(crate::PackageKind::Msi) && sc.installs(crate::PackageKind::Flatpak));
         assert_eq!(sc.mac_team, Some("G5QA5U5X2S"));
-        assert_eq!(CraftApp::by_id("gridcraft").unwrap().mac_team, Some(WHITEOFFICE_TEAM_ID));
+        assert_eq!(CraftApp::by_id("tally").unwrap().mac_team, Some(WHITEOFFICE_TEAM_ID));
     }
 
     #[test]
@@ -295,12 +295,12 @@ mod tests {
     }
 
     #[test]
-    fn pdfcraft_also_answers_to_printcraft() {
-        let pdf = CraftApp::by_id("pdfcraft").unwrap();
-        assert_eq!(pdf.stems().collect::<Vec<_>>(), ["pdfcraft", "printcraft"]);
-        assert_eq!(pdf.names().collect::<Vec<_>>(), ["PdfCraft", "PrintCraft"]);
-        assert_eq!(pdf.website(), "https://officoman.whitebearom.com/apps/pdfcraft");
-        assert_eq!(CraftApp::by_id("wordcraft").unwrap().website(), "https://officoman.whitebearom.com/apps/wordcraft");
+    fn sheaf_also_answers_to_printcraft() {
+        let pdf = CraftApp::by_id("sheaf").unwrap();
+        assert_eq!(pdf.stems().collect::<Vec<_>>(), ["sheaf", "printcraft"]);
+        assert_eq!(pdf.names().collect::<Vec<_>>(), ["Sheaf", "PrintCraft"]);
+        assert_eq!(pdf.website(), "https://officoman.whitebearom.com/apps/sheaf");
+        assert_eq!(CraftApp::by_id("nib").unwrap().website(), "https://officoman.whitebearom.com/apps/nib");
     }
 
     /// Apps can specify custom macOS bundle names and platform support.

@@ -136,7 +136,7 @@ fn install_dir_keys(app: &CraftApp) -> Vec<String> {
 }
 
 /// Version from `<app> --version` output. Binaries print the machine id (`photocraft 0.7.0`),
-/// the display name (`SoundCraft 0.5.0`), or a former id (`printcraft 0.2.1` for PdfCraft).
+/// the display name (`SoundCraft 0.5.0`), or a former id (`printcraft 0.2.1` for Sheaf).
 #[cfg_attr(not(any(target_os = "linux", target_os = "freebsd")), allow(dead_code))]
 fn parse_cli_version(line: &str, app: &CraftApp) -> Option<version::Version> {
     let line = line.trim();
@@ -812,8 +812,8 @@ mod linux_tests {
         };
         let sound = write("soundcraft", "#!/bin/sh\necho 'SoundCraft 0.5.0'\n");
         assert_eq!(binary_version_of_new_script(&sound, CraftApp::by_id("soundcraft").unwrap()).unwrap().to_string(), "0.5.0");
-        let pdf = write("pdfcraft", "#!/bin/sh\necho 'printcraft 0.2.1'\n");
-        assert_eq!(binary_version_of_new_script(&pdf, CraftApp::by_id("pdfcraft").unwrap()).unwrap().to_string(), "0.2.1");
+        let pdf = write("sheaf", "#!/bin/sh\necho 'printcraft 0.2.1'\n");
+        assert_eq!(binary_version_of_new_script(&pdf, CraftApp::by_id("sheaf").unwrap()).unwrap().to_string(), "0.2.1");
     }
 }
 
@@ -964,22 +964,22 @@ mod tests {
 
     #[test]
     fn recognises_appimage_names_conservatively() {
-        let pdf = ["pdfcraft", "printcraft"];
+        let pdf = ["sheaf", "printcraft"];
         let v = |n: &str| appimage_version(n, &pdf);
-        assert_eq!(v("pdfcraft-0.3.0-linux-x86_64.AppImage"), Some(Some("0.3.0".into())));
+        assert_eq!(v("sheaf-0.3.0-linux-x86_64.AppImage"), Some(Some("0.3.0".into())));
         assert_eq!(v("printcraft-0.2.1-linux-aarch64.appimage"), Some(Some("0.2.1".into())));
-        assert_eq!(v("pdfcraft-0.3.0-rc.1-linux-x86_64.AppImage"), Some(Some("0.3.0-rc.1".into())));
+        assert_eq!(v("sheaf-0.3.0-rc.1-linux-x86_64.AppImage"), Some(Some("0.3.0-rc.1".into())));
         // Gear Lever's rename, and a plain rename by hand.
-        assert_eq!(v("pdfcraft.appimage"), Some(None));
-        assert_eq!(v("PdfCraft.AppImage"), Some(None));
+        assert_eq!(v("sheaf.appimage"), Some(None));
+        assert_eq!(v("Sheaf.AppImage"), Some(None));
         for other in [
-            "pdfcraft-0.3.0-linux-x86_64.AppImage.zsync",
-            "pdfcraft-0.3.0-linux-x86_64.deb",
-            "pdfcraft-0.3.0-windows-x64.AppImage",
-            "pdfcraft-cli-0.3.0-linux-x86_64.AppImage",
+            "sheaf-0.3.0-linux-x86_64.AppImage.zsync",
+            "sheaf-0.3.0-linux-x86_64.deb",
+            "sheaf-0.3.0-windows-x64.AppImage",
+            "sheaf-cli-0.3.0-linux-x86_64.AppImage",
             "photocraft-0.6.0-linux-x86_64.AppImage",
-            "mypdfcraft.AppImage",
-            "pdfcraft-latest.AppImage",
+            "mysheaf.AppImage",
+            "sheaf-latest.AppImage",
             ".appimage",
             "x",
         ] {
@@ -991,11 +991,11 @@ mod tests {
     fn parse_cli_version_accepts_id_display_name_and_former_id() {
         let photo = CraftApp::by_id("photocraft").unwrap();
         let sound = CraftApp::by_id("soundcraft").unwrap();
-        let pdf = CraftApp::by_id("pdfcraft").unwrap();
+        let pdf = CraftApp::by_id("sheaf").unwrap();
         assert_eq!(parse_cli_version("photocraft 0.7.0 (dev build)", photo).unwrap().to_string(), "0.7.0");
         assert_eq!(parse_cli_version("SoundCraft 0.5.0", sound).unwrap().to_string(), "0.5.0");
         assert_eq!(parse_cli_version("printcraft 0.2.1", pdf).unwrap().to_string(), "0.2.1");
-        assert_eq!(parse_cli_version("PdfCraft 0.6.0", pdf).unwrap().to_string(), "0.6.0");
+        assert_eq!(parse_cli_version("Sheaf 0.6.0", pdf).unwrap().to_string(), "0.6.0");
         assert!(strip_cli_prefix("photocraft-cli 1.0.0", "photocraft").is_none());
     }
 
@@ -1009,7 +1009,7 @@ mod tests {
             std::fs::create_dir_all(d).unwrap();
         }
         std::fs::write(apps.join("photocraft-0.5.0-linux-x86_64.AppImage"), b"").unwrap();
-        std::fs::write(apps.join("wordcraft-0.3.0-linux-x86_64.AppImage"), b"").unwrap();
+        std::fs::write(apps.join("nib-0.3.0-linux-x86_64.AppImage"), b"").unwrap();
         std::fs::write(gear.join("photocraft.appimage"), b"").unwrap();
         std::fs::write(bin.join("photocraft-0.6.0-linux-x86_64.AppImage"), b"").unwrap();
         std::fs::create_dir(bin.join("photocraft.AppImage")).unwrap();
@@ -1032,23 +1032,23 @@ mod tests {
     }
 
     #[test]
-    fn pdfcraft_matches_its_former_printcraft_installer_name() {
-        let pdf = CraftApp::by_id("pdfcraft").unwrap();
-        assert!(is_installer_entry(pdf, "PrintCraft", LEARNING_MACHINES), "a PrintCraft entry from {LEARNING_MACHINES} should be PdfCraft's");
+    fn sheaf_matches_its_former_printcraft_installer_name() {
+        let pdf = CraftApp::by_id("sheaf").unwrap();
+        assert!(is_installer_entry(pdf, "PrintCraft", LEARNING_MACHINES), "a PrintCraft entry from {LEARNING_MACHINES} should be Sheaf's");
     }
 
     #[test]
-    fn pdfcraft_still_matches_its_own_installer_name() {
-        let pdf = CraftApp::by_id("pdfcraft").unwrap();
-        assert!(is_installer_entry(pdf, "PdfCraft", LEARNING_MACHINES));
+    fn sheaf_still_matches_its_own_installer_name() {
+        let pdf = CraftApp::by_id("sheaf").unwrap();
+        assert!(is_installer_entry(pdf, "Sheaf", LEARNING_MACHINES));
     }
 
     #[test]
     fn printcraft_entries_match_nothing_else() {
-        let pdf = CraftApp::by_id("pdfcraft").unwrap();
+        let pdf = CraftApp::by_id("sheaf").unwrap();
         assert!(!is_installer_entry(pdf, "PrintCraft", "Some Other Publisher"));
         assert!(!is_installer_entry(pdf, "PhotoCraft", LEARNING_MACHINES));
-        for a in SUITE.iter().filter(|a| a.id != "pdfcraft") {
+        for a in SUITE.iter().filter(|a| a.id != "sheaf") {
             assert!(!is_installer_entry(a, "PrintCraft", LEARNING_MACHINES), "PrintCraft matched {}", a.name);
         }
     }
@@ -1062,14 +1062,14 @@ mod tests {
     }
 
     #[test]
-    fn pdfcraft_exe_is_sought_under_every_name_it_has_shipped_as() {
-        let pdf = CraftApp::by_id("pdfcraft").unwrap();
+    fn sheaf_exe_is_sought_under_every_name_it_has_shipped_as() {
+        let pdf = CraftApp::by_id("sheaf").unwrap();
         let location = PathBuf::from(r"D:\Apps\PrintCraft");
         let roots = roots();
-        let mut want = vec![location.join("pdfcraft.exe"), location.join("printcraft.exe")];
+        let mut want = vec![location.join("sheaf.exe"), location.join("printcraft.exe")];
         for root in &roots {
-            for dir in ["PdfCraft", "PrintCraft"] {
-                want.push(root.join(dir).join("pdfcraft.exe"));
+            for dir in ["Sheaf", "PrintCraft"] {
+                want.push(root.join(dir).join("sheaf.exe"));
                 want.push(root.join(dir).join("printcraft.exe"));
             }
         }
@@ -1099,11 +1099,11 @@ mod tests {
     #[test]
     fn an_exe_in_the_suite_folder_of_any_root_is_found() {
         let dir = tempfile::tempdir().unwrap();
-        let deck = CraftApp::by_id("deckcraft").unwrap();
-        let folder = dir.path().join("White Office").join("DeckCraft");
+        let deck = CraftApp::by_id("podium").unwrap();
+        let folder = dir.path().join("White Office").join("Podium");
         std::fs::create_dir_all(&folder).unwrap();
-        std::fs::write(folder.join("deckcraft.exe"), "x").unwrap();
-        assert_eq!(windows::exe_in_roots(deck, vec![dir.path().to_path_buf()]), Some(folder.join("deckcraft.exe")));
+        std::fs::write(folder.join("podium.exe"), "x").unwrap();
+        assert_eq!(windows::exe_in_roots(deck, vec![dir.path().to_path_buf()]), Some(folder.join("podium.exe")));
         assert_eq!(windows::exe_in_roots(deck, vec![dir.path().join("elsewhere")]), None);
     }
 
@@ -1113,12 +1113,12 @@ mod tests {
     #[test]
     fn an_exe_in_a_custom_recorded_folder_is_found() {
         let dir = tempfile::tempdir().unwrap();
-        let deck = CraftApp::by_id("deckcraft").unwrap();
+        let deck = CraftApp::by_id("podium").unwrap();
         let custom = dir.path().join("My Slides");
         std::fs::create_dir_all(&custom).unwrap();
         assert_eq!(windows::exe_in_folder(deck, &custom), None);
-        std::fs::write(custom.join("deckcraft.exe"), "x").unwrap();
-        assert_eq!(windows::exe_in_folder(deck, &custom), Some(custom.join("deckcraft.exe")));
+        std::fs::write(custom.join("podium.exe"), "x").unwrap();
+        assert_eq!(windows::exe_in_folder(deck, &custom), Some(custom.join("podium.exe")));
     }
 
     /// With two copies in different scopes, the one that is the record's version is chosen, wherever it
@@ -1127,8 +1127,8 @@ mod tests {
     #[test]
     fn the_copy_with_the_records_version_is_the_one_opened() {
         let v = |s: &str| version::parse(s);
-        let old = PathBuf::from(r"D:\Old\deckcraft.exe");
-        let new = PathBuf::from(r"C:\Users\a\AppData\Local\Programs\White Office\DeckCraft\deckcraft.exe");
+        let old = PathBuf::from(r"D:\Old\podium.exe");
+        let new = PathBuf::from(r"C:\Users\a\AppData\Local\Programs\White Office\Podium\podium.exe");
         let version_of = |p: &std::path::Path| if p == old { v("0.11.1") } else { v("0.12.0") };
         let both = vec![old.clone(), new.clone()];
         assert_eq!(windows::pick_candidate(both.clone(), v("0.12.0").as_ref(), version_of), Some(new.clone()));
@@ -1144,9 +1144,9 @@ mod tests {
     #[test]
     fn every_root_is_searched_for_a_version_match() {
         let dir = tempfile::tempdir().unwrap();
-        let deck = CraftApp::by_id("deckcraft").unwrap();
+        let deck = CraftApp::by_id("podium").unwrap();
         let (a, b) = (dir.path().join("a"), dir.path().join("b"));
-        let exes: Vec<PathBuf> = [&a, &b].iter().map(|r| r.join("White Office").join("DeckCraft").join("deckcraft.exe")).collect();
+        let exes: Vec<PathBuf> = [&a, &b].iter().map(|r| r.join("White Office").join("Podium").join("podium.exe")).collect();
         for exe in &exes {
             std::fs::create_dir_all(exe.parent().unwrap()).unwrap();
             std::fs::write(exe, "x").unwrap();

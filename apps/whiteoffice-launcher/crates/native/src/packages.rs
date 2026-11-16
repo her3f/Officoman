@@ -167,16 +167,16 @@ mod tests {
     #[test]
     fn reads_each_package_managers_listing() {
         assert_eq!(
-            parse_dpkg("photocraft|installed|0.5.0-1\nphotocraft:amd64|installed|0.6.0-1\nwordcraft|config-files|0.3.0-1\n"),
+            parse_dpkg("photocraft|installed|0.5.0-1\nphotocraft:amd64|installed|0.6.0-1\nnib|config-files|0.3.0-1\n"),
             [("photocraft".into(), "0.5.0-1".into()), ("photocraft".into(), "0.6.0-1".into())]
         );
-        assert_eq!(parse_rpm("gridcraft|0.3.0\n"), [("gridcraft".into(), "0.3.0".into())]);
+        assert_eq!(parse_rpm("tally|0.3.0\n"), [("tally".into(), "0.3.0".into())]);
         assert_eq!(parse_pacman("photocraft-bin 0.5.0-1\nlinux 6.11.1.arch1-1\n").len(), 2);
         assert_eq!(
-            parse_flatpak_list("io.github.her3f.wordcraft\t\nio.github.her3f.cadcraft\t0.3.0\n"),
-            [("io.github.her3f.wordcraft".into(), String::new()), ("io.github.her3f.cadcraft".into(), "0.3.0".into())]
+            parse_flatpak_list("io.github.her3f.nib\t\nio.github.her3f.cadcraft\t0.3.0\n"),
+            [("io.github.her3f.nib".into(), String::new()), ("io.github.her3f.cadcraft".into(), "0.3.0".into())]
         );
-        let info = "\nWordCraft - Word processor\n\n          ID: io.github.her3f.wordcraft\n     Version: 0.3.0\n      Branch: master\n";
+        let info = "\nNib - Word processor\n\n          ID: io.github.her3f.nib\n     Version: 0.3.0\n      Branch: master\n";
         assert_eq!(parse_flatpak_info(info).as_deref(), Some("0.3.0"));
         assert_eq!(parse_flatpak_info("Version: \n"), None);
     }
@@ -258,15 +258,15 @@ mod tests {
     #[test]
     fn finds_aur_packages_in_every_flavour() {
         let photo = CraftApp::by_id("photocraft").unwrap();
-        let pdf = CraftApp::by_id("pdfcraft").unwrap();
+        let pdf = CraftApp::by_id("sheaf").unwrap();
         let installed =
             pkgs(InstallSource::Pacman, parse_pacman("linux 6.11.1.arch1-1\nphotocraft-git 0.3.0.r47.g47f9306-1\nprintcraft-bin 0.2.1-1\n"));
         let hit = find(photo, &installed, &[InstallSource::Pacman]).unwrap();
         assert_eq!(hit.name, "photocraft-git");
         assert_eq!(version_of(hit).unwrap().to_string(), "0.3.0");
-        // PdfCraft under its old name.
+        // Sheaf under its old name.
         assert_eq!(find(pdf, &installed, &[InstallSource::Pacman]).unwrap().name, "printcraft-bin");
-        assert!(find(CraftApp::by_id("wordcraft").unwrap(), &installed, &[InstallSource::Pacman]).is_none());
+        assert!(find(CraftApp::by_id("nib").unwrap(), &installed, &[InstallSource::Pacman]).is_none());
     }
 
     #[test]
@@ -283,14 +283,14 @@ mod tests {
 
     #[test]
     fn parses_flatpak_list_with_origin_and_spots_flatpark() {
-        let text = "io.github.her3f.photocraft\t0.19.0\tflatpark\tuser\nio.github.her3f.cadcraft\t0.16.0\tcadcraft-origin\tsystem\nio.github.her3f.wordcraft\t0.14.0\t\t\nio.github.her3f.filmcraft\t0.3.0\tflatpark\tsystem (extra)\n";
+        let text = "io.github.her3f.photocraft\t0.19.0\tflatpark\tuser\nio.github.her3f.cadcraft\t0.16.0\tcadcraft-origin\tsystem\nio.github.her3f.nib\t0.14.0\t\t\nio.github.her3f.filmcraft\t0.3.0\tflatpark\tsystem (extra)\n";
         let list = parse_flatpak_list_with_origin(text);
         assert_eq!(
             list,
             [
                 ("io.github.her3f.photocraft".into(), "0.19.0".into(), Some("flatpark".into()), Some("user".into())),
                 ("io.github.her3f.cadcraft".into(), "0.16.0".into(), Some("cadcraft-origin".into()), Some("system".into())),
-                ("io.github.her3f.wordcraft".into(), "0.14.0".into(), None, None),
+                ("io.github.her3f.nib".into(), "0.14.0".into(), None, None),
                 ("io.github.her3f.filmcraft".into(), "0.3.0".into(), Some("flatpark".into()), Some("extra".into())),
             ]
         );

@@ -10,12 +10,12 @@ This work is a modified derivative of the White Office Crafting Apps
 White Office is based on the following upstream projects, each dual-licensed under the MIT
 License or the Apache License, Version 2.0, at your option:
 
-  DeckCraft   https://github.com/storytold/deckcraft
-  GridCraft   https://github.com/storytold/gridcraft
-  PdfCraft    https://github.com/storytold/pdfcraft
-  WordCraft   https://github.com/storytold/wordcraft
+  Podium   https://github.com/her3f/officoman
+  Tally   https://github.com/her3f/officoman
+  Sheaf    https://github.com/her3f/officoman
+  Nib   https://github.com/her3f/officoman
 
-  Copyright (c) 2026 White Office Team and the DeckCraft, GridCraft, PdfCraft and WordCraft
+  Copyright (c) 2026 White Office Team and the Podium, Tally, Sheaf and Nib
   contributors.
 
 Modifications: renamed, rebranded, restructured and modified by her3f and the White Office
@@ -26,7 +26,7 @@ headers and in the repository history, as required by  section 4(b).
 Trademarks
 ==========
 
-"White Office", "DeckCraft", "GridCraft", "PdfCraft", "WordCraft", the "-Craft" application
+"White Office", "Podium", "Tally", "Sheaf", "Nib", the "-Craft" application
 family naming, and the White Office name, wordmark and logo are trademarks of the White Office Team.
 They are not covered by the licenses above and are not used by this project. The upstream
 projects require forks and modified versions to remove the White Office brand assets

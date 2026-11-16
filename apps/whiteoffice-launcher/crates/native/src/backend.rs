@@ -1966,7 +1966,7 @@ mod tests {
     #[test]
     fn a_local_mirror_answers_for_every_app_on_its_own() {
         let photo = CraftApp::by_id("photocraft").unwrap();
-        let word = CraftApp::by_id("wordcraft").unwrap();
+        let word = CraftApp::by_id("nib").unwrap();
         let feed = feed().with_mirror("http://127.0.0.1:8787/");
         // Listed: found, even long after the sync.
         let (latest, _, _) = mirror_latest(photo, Some(&feed), NOW + 30 * 86_400);
@@ -1987,7 +1987,7 @@ mod tests {
         let github = CountingGitHub::default();
         let shared = shared();
         let photo = CraftApp::by_id("photocraft").unwrap();
-        let word = CraftApp::by_id("wordcraft").unwrap();
+        let word = CraftApp::by_id("nib").unwrap();
         let feed = feed();
 
         // The feed vouches for PhotoCraft: GitHub isn't asked.
@@ -1996,7 +1996,7 @@ mod tests {
         assert_eq!(used, Some(Source::Feed));
         assert_eq!(github.0.load(Ordering::SeqCst), 0);
 
-        // The feed doesn't list WordCraft: GitHub is asked once…
+        // The feed doesn't list Nib: GitHub is asked once…
         let (_, _, used) = latest_for(word, Some(&feed), LOADED, &github, &shared, false, false, NOW);
         assert_eq!(used, Some(Source::GitHubApi));
         assert_eq!(github.0.load(Ordering::SeqCst), 1);
@@ -2780,13 +2780,13 @@ mod tests {
         let dir = tempfile::tempdir().unwrap();
         let mut backend = backend(dir.path(), platform, None);
         let mut options = BackendOptions::default();
-        options.versions.insert("pdfcraft".into(), VersionTrack::Pinned("v0.13.0".into()));
+        options.versions.insert("sheaf".into(), VersionTrack::Pinned("v0.13.0".into()));
         backend.send(Command::Configure(options));
         let pins = craft_update::pins::Pins::load(&dir.path().join("versions.json"));
-        assert_eq!(pins.track("pdfcraft"), Some(craft_update::pins::VersionTrack::Pinned("v0.13.0".into())));
+        assert_eq!(pins.track("sheaf"), Some(craft_update::pins::VersionTrack::Pinned("v0.13.0".into())));
         backend.send(Command::Configure(BackendOptions::default()));
         let pins = craft_update::pins::Pins::load(&dir.path().join("versions.json"));
-        assert_eq!(pins.choice("pdfcraft"), craft_update::pins::Choice::Stable);
+        assert_eq!(pins.choice("sheaf"), craft_update::pins::Choice::Stable);
     }
 
     #[test]
@@ -2880,7 +2880,7 @@ mod tests {
         let error = claim_restart(&jobs, &restarting, &Stop::default(), Duration::from_millis(300), &mut || {}).unwrap_err();
         assert!(error.contains("PhotoCraft was still installing") && error.contains("cancel it"), "{error}");
         assert!(!restarting.load(Ordering::SeqCst));
-        assert!(restart_blocked(vec!["WordCraft", "FilmCraft"]).contains("FilmCraft, WordCraft were still installing"));
+        assert!(restart_blocked(vec!["Nib", "FilmCraft"]).contains("FilmCraft, Nib were still installing"));
     }
 
     #[test]

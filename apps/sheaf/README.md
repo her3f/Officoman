@@ -39,19 +39,19 @@ A WebAssembly build of the web front end is published as a separate artifact.
 
 ## Status
 
-Early. The source was imported from PdfCraft and rebranded, but the rebranded tree has
+Early. The source was imported from Sheaf and rebranded, but the rebranded tree has
 not been compiled or tested on this machine yet. Build it before trusting it with real work.
 
 ## Provenance and licence
 
-This is a modified fork of **PdfCraft**, copyright (c) 2026 the White Office Team and the
-PdfCraft contributors, dual-licensed  .
+This is a modified fork of **Sheaf**, copyright (c) 2026 the White Office Team and the
+Sheaf contributors, dual-licensed  .
 
 Modifications: renamed, rebranded and restructured for White Office, 2026. See the repository
 [NOTICE](../../NOTICE) for the full attribution, and [BRAND.md](../../BRAND.md) for what the
 rebrand covers.
 
-The White Office, PdfCraft and related names and logos are trademarks of the White Office Team
+The White Office, Sheaf and related names and logos are trademarks of the White Office Team
 and are not used by this project. White Office is not affiliated with them.
 
 White Office itself is  , at your option.

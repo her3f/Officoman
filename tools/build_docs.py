@@ -19,7 +19,7 @@ APPS = [
             "A full word processor with styles, references, review tools and mail merge — "
             "written from scratch in Rust, native on macOS, Windows, Linux and BSD, and in the browser."
         ),
-        "upstream": "WordCraft",
+        "upstream": "Nib",
         "features": [
             ("Writing", "IME input, smart quotes, AutoCorrect, list autoformat, regex find and replace."),
             ("Formatting", "Fonts, styles, character and paragraph spacing, tabs with leaders, borders."),
@@ -40,7 +40,7 @@ APPS = [
             "A spreadsheet built for real data work: styled tables, totals rows, conditional "
             "formatting, sparklines and live charts, in pure Rust."
         ),
-        "upstream": "GridCraft",
+        "upstream": "Tally",
         "features": [
             ("Tables", "Styled tables with banded rows, totals rows, filter buttons and data bars."),
             ("Formatting", "Conditional formatting, arrow icon sets, sparklines inside cells."),
@@ -61,7 +61,7 @@ APPS = [
             "Slide masters, layouts, shapes, charts, transitions and animations — with a "
             "full-screen presenter view and PDF export."
         ),
-        "upstream": "DeckCraft",
+        "upstream": "Podium",
         "features": [
             ("Slides", "Masters, eleven layouts, themes, sections, speaker notes and comments."),
             ("Drawing", "150+ preset shapes, glued connectors, freeform, merge shapes, gradient fills."),
@@ -82,7 +82,7 @@ APPS = [
             "A PDF workbench: read, search, reorganize, combine, split and protect documents "
             "without handing them to a server."
         ),
-        "upstream": "PdfCraft",
+        "upstream": "Sheaf",
         "features": [
             ("Read", "Fast rendering, text selection, search, bookmarks and threaded comments."),
             ("Find", "Search across a document, select and copy text exactly as it is drawn."),

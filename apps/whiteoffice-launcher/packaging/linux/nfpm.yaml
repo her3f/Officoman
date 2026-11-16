@@ -19,7 +19,7 @@ license:
 description: |-
   Install, update and launch the Craft App Suite.
   White Office Launcher lists PhotoCraft, LightCraft, FilmCraft, DesignCraft,
-  VectorCraft, PdfCraft, EffectCraft, WordCraft, DeckCraft, GridCraft, CADCraft,
+  VectorCraft, Sheaf, EffectCraft, Nib, Podium, Tally, CADCraft,
   SoundCraft and FigCraft, installs the right build for this computer and keeps
   them up to date from GitHub releases. It can live in the system tray.
 

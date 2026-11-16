@@ -421,7 +421,7 @@ mod tests {
     fn reads_asset_names() {
         let n = parse_asset_name("photocraft-0.2.0-rc.1-windows-arm64-portable.zip", &["photocraft"]).unwrap();
         assert_eq!((n.version.as_str(), n.token.as_str(), n.kind), ("0.2.0-rc.1", "windows-arm64", PackageKind::PortableZip));
-        let n = parse_asset_name("printcraft-0.2.1-linux-x86_64.tar.gz", &["pdfcraft", "printcraft"]).unwrap();
+        let n = parse_asset_name("printcraft-0.2.1-linux-x86_64.tar.gz", &["sheaf", "printcraft"]).unwrap();
         assert_eq!((n.stem.as_str(), n.kind), ("printcraft", PackageKind::TarGz));
         for other in
             ["photocraft-cli-0.5.0-macos-universal.zip", "photocraft-web-0.5.0.zip", "SHA256SUMS.txt", "photocraft-0.5.0-linux-x86_64.AppImage.zsync"]

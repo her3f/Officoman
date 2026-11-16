@@ -181,12 +181,12 @@ fn events() -> Vec<Event> {
         ("vectorcraft", "0.7.0"),
         ("filmcraft", "0.4.0"),
         ("lightcraft", "0.4.0"),
-        ("pdfcraft", "0.4.0"),
+        ("sheaf", "0.4.0"),
         ("effectcraft", "0.6.0"),
         ("designcraft", "0.4.0"),
-        ("wordcraft", "0.3.0"),
-        ("deckcraft", "0.3.0"),
-        ("gridcraft", "0.3.0"),
+        ("nib", "0.3.0"),
+        ("podium", "0.3.0"),
+        ("tally", "0.3.0"),
         ("cadcraft", "0.3.0"),
     ];
     for (i, (id, v)) in versions.iter().enumerate() {
@@ -197,7 +197,7 @@ fn events() -> Vec<Event> {
         });
     }
     ev.push(Event::Latest { app: "soundcraft".into(), latest: LatestRelease::None, from: Origin::WhiteOfficeApi });
-    let installed = [("photocraft", "0.4.1"), ("lightcraft", "0.4.0"), ("wordcraft", "0.3.0"), ("effectcraft", "0.5.0")];
+    let installed = [("photocraft", "0.4.1"), ("lightcraft", "0.4.0"), ("nib", "0.3.0"), ("effectcraft", "0.5.0")];
     for app in &SUITE {
         let inst = installed.iter().find(|(id, _)| *id == app.id).map(|(_, v)| Installed {
             version: version::parse(v),
@@ -211,8 +211,8 @@ fn events() -> Vec<Event> {
         ev.push(Event::Detected { app: app.id.into(), installed: inst });
     }
     ev.push(Event::Progress { app: "filmcraft".into(), phase: JobPhase::Downloading { done: 48 << 20, total: 131 << 20 } });
-    ev.push(Event::Paused { app: "deckcraft".into(), download: Some(PausedDownload { done: 30 << 20, total: 120 << 20 }) });
-    ev.push(Event::Progress { app: "gridcraft".into(), phase: JobPhase::Reconnecting { done: 10 << 20, total: 90 << 20 } });
+    ev.push(Event::Paused { app: "podium".into(), download: Some(PausedDownload { done: 30 << 20, total: 120 << 20 }) });
+    ev.push(Event::Progress { app: "tally".into(), phase: JobPhase::Reconnecting { done: 10 << 20, total: 90 << 20 } });
     ev.push(Event::ReadyToInstall { app: "cadcraft".into(), ready: true });
     ev.push(Event::CheckFinished { at: NOW - 180, source: Source::GitHubApi, rate_limited_until: None });
     ev
@@ -1415,7 +1415,7 @@ fn only_a_waiting_update_splits_the_main_button() {
     let splits: Vec<String> = h.query_all_by_label_contains("without updating").filter_map(|n| n.accesskit_node().label()).collect();
     assert_eq!(splits.len(), 2, "PhotoCraft and EffectCraft wait for updates: {splits:?}");
     assert!(splits.iter().any(|l| l == "Open 0.5.0 without updating. 0.6.0 stays available."), "{splits:?}");
-    // LightCraft and WordCraft are up to date: each still has one plain Open.
+    // LightCraft and Nib are up to date: each still has one plain Open.
     assert!(h.query_all_by_label("Open").count() >= 2);
     h.get_by_label("Retry install");
 
@@ -1783,10 +1783,10 @@ fn downloads_can_be_paused_resumed_and_discarded() {
     h.run_steps(3);
     h.get_all_by_role_and_label(egui::accesskit::Role::Button, "Install").last().unwrap().click();
     h.run_steps(2);
-    assert!(sent.borrow().contains(&Command::Install { app: "deckcraft".into() }));
+    assert!(sent.borrow().contains(&Command::Install { app: "podium".into() }));
     h.get_by_label("Discard download").click();
     h.run_steps(2);
-    assert!(sent.borrow().contains(&Command::Cancel { app: "deckcraft".into() }));
+    assert!(sent.borrow().contains(&Command::Cancel { app: "podium".into() }));
     h.get_all_by_label("Pause download").next().unwrap().click();
     h.run_steps(2);
     assert!(sent.borrow().iter().any(|c| matches!(c, Command::Pause { .. })));
@@ -1834,11 +1834,11 @@ fn a_kept_download_offers_retry_install_and_download_again() {
 #[test]
 fn a_dismissed_install_prompt_is_not_called_a_cancelled_download() {
     let finished = |app: &str, why: &str| Event::JobFinished { app: app.into(), result: Err(why.into()) };
-    // The password prompt was dismissed with the download kept (cadcraft) and without (pdfcraft);
+    // The password prompt was dismissed with the download kept (cadcraft) and without (sheaf);
     // a download was cancelled (vectorcraft).
     let mut ev = events();
     ev.push(finished("cadcraft", INSTALL_CANCELLED));
-    ev.push(finished("pdfcraft", INSTALL_CANCELLED));
+    ev.push(finished("sheaf", INSTALL_CANCELLED));
     ev.push(finished("vectorcraft", CANCELLED));
     let (mut h, _) = harness_with(ev, ViewMode::Grid, egui::Theme::Dark, true, 1.0);
     h.run_steps(6);
@@ -1854,7 +1854,7 @@ fn a_dismissed_install_prompt_is_not_called_a_cancelled_download() {
 /// Download again.
 fn a_kept_update_installs_on_retry_and_an_up_to_date_app_is_not_downloaded_again() {
     let mut ev = events();
-    for app in ["effectcraft", "wordcraft"] {
+    for app in ["effectcraft", "nib"] {
         ev.push(Event::ReadyToInstall { app: app.into(), ready: true });
     }
     let (mut h, sent) = harness_with(ev, ViewMode::Table, egui::Theme::Dark, true, 1.0);
@@ -1865,8 +1865,8 @@ fn a_kept_update_installs_on_retry_and_an_up_to_date_app_is_not_downloaded_again
     h.get_by_label("Retry update to 0.6.0").click();
     h.run_steps(2);
     assert_eq!(*sent.borrow(), [Command::Install { app: "effectcraft".into() }]);
-    // WordCraft is up to date: its menu offers Reinstall, which uses the kept file.
-    let row = h.get_by_role_and_label(egui::accesskit::Role::Label, "WordCraft").rect().center().y;
+    // Nib is up to date: its menu offers Reinstall, which uses the kept file.
+    let row = h.get_by_role_and_label(egui::accesskit::Role::Label, "Nib").rect().center().y;
     h.get_all_by_label_contains("More actions").find(|n| (n.rect().center().y - row).abs() < 25.0).unwrap().click();
     h.run_steps(3);
     h.get_by_label("Reinstall");
@@ -2048,17 +2048,17 @@ fn escape_cancels_pin_drag_and_restores_order() {
         let ui = h.state_mut().as_mut().unwrap();
         ui.settings.pin_app("photocraft");
         ui.settings.pin_app("filmcraft");
-        ui.settings.pin_app("wordcraft");
-        assert_eq!(ui.settings.pinned, ["photocraft", "filmcraft", "wordcraft"]);
+        ui.settings.pin_app("nib");
+        assert_eq!(ui.settings.pinned, ["photocraft", "filmcraft", "nib"]);
         ui.begin_pin_drag_for_test("photocraft");
         // Mid-drag: pointer has already reordered via drop targets.
-        ui.settings.pinned = vec!["filmcraft".into(), "photocraft".into(), "wordcraft".into()];
+        ui.settings.pinned = vec!["filmcraft".into(), "photocraft".into(), "nib".into()];
     }
     h.key_press(egui::Key::Escape);
     h.run_steps(2);
     let ui = h.state().as_ref().unwrap();
     assert!(!ui.pin_dragging_for_test());
-    assert_eq!(ui.settings.pinned, ["photocraft", "filmcraft", "wordcraft"]);
+    assert_eq!(ui.settings.pinned, ["photocraft", "filmcraft", "nib"]);
 }
 
 #[test]
@@ -2103,7 +2103,7 @@ fn grid_shows_pinned_section_header() {
 fn a_pinned_table_row_keeps_its_buttons_in_line() {
     let (mut h, _) = harness(ViewMode::Table, egui::Theme::Dark, true);
     h.run_steps(6);
-    // LightCraft and WordCraft are both installed and up to date: each row offers Open.
+    // LightCraft and Nib are both installed and up to date: each row offers Open.
     h.state_mut().as_mut().unwrap().settings.pin_app("lightcraft");
     h.run_steps(4);
     let grip = h.get_all_by_label_contains("Reorder LightCraft").next().expect("pinned row has a grip").rect();
@@ -2111,7 +2111,7 @@ fn a_pinned_table_row_keeps_its_buttons_in_line() {
         let row = menu.y_range();
         h.query_all_by_label("Open").map(|n| n.rect()).find(|r| row.contains(r.center().y)).expect("an Open button in the row")
     };
-    let (pinned_menu, other_menu) = (h.get_by_label("More actions for LightCraft").rect(), h.get_by_label("More actions for WordCraft").rect());
+    let (pinned_menu, other_menu) = (h.get_by_label("More actions for LightCraft").rect(), h.get_by_label("More actions for Nib").rect());
     let (pinned_open, other_open) = (open_in_row(pinned_menu), open_in_row(other_menu));
     assert!(grip.right() <= pinned_open.left(), "grip {grip:?} leads the row's Open {pinned_open:?}");
     assert!((pinned_open.width() - other_open.width()).abs() < 0.5, "pinned {pinned_open:?} vs unpinned {other_open:?}");
@@ -2124,14 +2124,14 @@ fn pin_drag_ignores_targets_clipped_by_the_scroll_viewport() {
     for view in [ViewMode::Grid, ViewMode::Table] {
         let (mut h, _) = harness(view, egui::Theme::Dark, true);
         h.run_steps(6);
-        let pins = vec!["photocraft".to_string(), "lightcraft".to_string(), "wordcraft".to_string()];
+        let pins = vec!["photocraft".to_string(), "lightcraft".to_string(), "nib".to_string()];
         h.state_mut().as_mut().unwrap().settings.pinned = pins.clone();
         h.run_steps(4);
         let grip = h.get_by_label("Reorder PhotoCraft").rect().center();
-        let target = h.get_by_label("WordCraft details").rect();
+        let target = h.get_by_label("Nib details").rect();
         let at = match view {
             ViewMode::Grid => egui::pos2(target.right() - 10.0, target.bottom() - 20.0),
-            ViewMode::Table => egui::pos2(h.get_by_label("Reorder WordCraft").rect().center().x, target.bottom() - 10.0),
+            ViewMode::Table => egui::pos2(h.get_by_label("Reorder Nib").rect().center().x, target.bottom() - 10.0),
         };
         h.hover_at(grip);
         h.run_steps(2);
@@ -2156,10 +2156,10 @@ fn pin_drag_ignores_targets_clipped_by_the_scroll_viewport() {
 fn pin_drag_accepts_the_table_grip_column() {
     let (mut h, _) = harness(ViewMode::Table, egui::Theme::Dark, true);
     h.run_steps(6);
-    h.state_mut().as_mut().unwrap().settings.pinned = vec!["photocraft".into(), "lightcraft".into(), "wordcraft".into()];
+    h.state_mut().as_mut().unwrap().settings.pinned = vec!["photocraft".into(), "lightcraft".into(), "nib".into()];
     h.run_steps(4);
     let from = h.get_by_label("Reorder PhotoCraft").rect().center();
-    let target = h.get_by_label("Reorder WordCraft").rect();
+    let target = h.get_by_label("Reorder Nib").rect();
     h.hover_at(from);
     h.run_steps(2);
     h.drag_at(from);
@@ -2170,7 +2170,7 @@ fn pin_drag_accepts_the_table_grip_column() {
     // Release directly in the last column, outside the first app cell's clip rectangle.
     h.drop_at(egui::pos2(target.center().x, target.bottom() - 2.0));
     h.run_steps(2);
-    assert_eq!(h.state().as_ref().unwrap().settings.pinned, ["lightcraft", "wordcraft", "photocraft"]);
+    assert_eq!(h.state().as_ref().unwrap().settings.pinned, ["lightcraft", "nib", "photocraft"]);
     assert!(!h.state().as_ref().unwrap().pin_dragging_for_test());
 }
 
@@ -2190,7 +2190,7 @@ fn hiding_an_app_removes_it_until_it_is_unhidden() {
     h.get_by_label("Hidden Apps 1").click();
     h.run_steps(4);
     h.get_by_role_and_label(egui::accesskit::Role::Label, "PhotoCraft");
-    assert!(h.query_by_role_and_label(egui::accesskit::Role::Label, "WordCraft").is_none());
+    assert!(h.query_by_role_and_label(egui::accesskit::Role::Label, "Nib").is_none());
     let row = h.get_by_role_and_label(egui::accesskit::Role::Label, "PhotoCraft").rect().center().y;
     h.get_all_by_label_contains("More actions").find(|n| (n.rect().center().y - row).abs() < 25.0).unwrap().click();
     h.run_steps(3);
@@ -2208,7 +2208,7 @@ fn launch_options_are_saved_per_app_and_passed_when_it_opens() {
     let (mut h, sent) = harness(ViewMode::Table, egui::Theme::Dark, true);
     h.run_steps(6);
     let menu = |h: &mut Harness<'static, Option<LauncherUi>>| {
-        h.get_by_label("More actions for WordCraft").click();
+        h.get_by_label("More actions for Nib").click();
         h.run_steps(3);
     };
     menu(&mut h);
@@ -2220,13 +2220,13 @@ fn launch_options_are_saved_per_app_and_passed_when_it_opens() {
     h.run_steps(3);
     h.get_by_label("Save").click();
     h.run_steps(3);
-    assert_eq!(h.state().as_ref().unwrap().settings.launch_flags.get("wordcraft").map(String::as_str), Some(r#"--dir "My Docs" --open"#));
+    assert_eq!(h.state().as_ref().unwrap().settings.launch_flags.get("nib").map(String::as_str), Some(r#"--dir "My Docs" --open"#));
 
     menu(&mut h);
     h.get_all_by_label("Open").last().unwrap().click(); // the menu's
     h.run_steps(3);
     let args: Vec<String> = ["--dir", "My Docs", "--open"].map(String::from).into();
-    assert!(sent.borrow().contains(&Command::Launch { app: "wordcraft".into(), args }));
+    assert!(sent.borrow().contains(&Command::Launch { app: "nib".into(), args }));
     // The other apps open with nothing added.
     assert!(!h.state().as_ref().unwrap().settings.launch_flags.contains_key("lightcraft"));
 }
@@ -2236,7 +2236,7 @@ fn launch_options_with_an_unclosed_quote_are_not_saved_or_launched() {
     use egui::accesskit::Role;
     let (mut h, sent) = harness(ViewMode::Table, egui::Theme::Dark, true);
     h.run_steps(6);
-    h.get_by_label("More actions for WordCraft").click();
+    h.get_by_label("More actions for Nib").click();
     h.run_steps(3);
     h.get_by_label("Launch options…").click();
     h.run_steps(3);
@@ -2252,9 +2252,9 @@ fn launch_options_with_an_unclosed_quote_are_not_saved_or_launched() {
     h.run_steps(3);
 
     // Flags edited by hand in the settings file: the app isn't opened with half of them.
-    h.state_mut().as_mut().unwrap().settings.launch_flags.insert("wordcraft".into(), "'oops".into());
+    h.state_mut().as_mut().unwrap().settings.launch_flags.insert("nib".into(), "'oops".into());
     sent.borrow_mut().clear();
-    h.get_by_label("More actions for WordCraft").click();
+    h.get_by_label("More actions for Nib").click();
     h.run_steps(3);
     h.get_all_by_label("Open").last().unwrap().click(); // the menu's
     h.run_steps(3);
@@ -2271,7 +2271,7 @@ fn switching_views() {
     h.run_steps(4);
     assert_eq!(h.state().as_ref().unwrap().settings.view, ViewMode::Table);
     h.get_by_role_and_label(egui::accesskit::Role::Label, "PhotoCraft");
-    h.get_by_role_and_label(egui::accesskit::Role::Label, "WordCraft");
+    h.get_by_role_and_label(egui::accesskit::Role::Label, "Nib");
     // The row icon is decorative; the wordmark carries the name exactly once.
     assert_eq!(h.query_all_by_role_and_label(egui::accesskit::Role::Image, "PhotoCraft").count(), 0, "the table icon must not repeat the wordmark");
     assert_eq!(
@@ -2336,13 +2336,13 @@ fn every_table_column_sorts_both_ways() {
     h.get_by_label("Status").click();
     h.run_steps(3);
     let o = order(&h);
-    assert_eq!(&o[..4], ["PhotoCraft", "EffectCraft", "LightCraft", "WordCraft"], "{o:?}");
+    assert_eq!(&o[..4], ["PhotoCraft", "EffectCraft", "LightCraft", "Nib"], "{o:?}");
     // Reversed: the apps not installed first, then up to date, then the updates last. The table
     // keeps its column's order; only the grid puts installed apps above the rest.
     h.get_by_label("Status").click();
     h.run_steps(3);
     let o = order(&h);
-    assert_eq!(&o[o.len().saturating_sub(4)..], ["LightCraft", "WordCraft", "PhotoCraft", "EffectCraft"], "{o:?}");
+    assert_eq!(&o[o.len().saturating_sub(4)..], ["LightCraft", "Nib", "PhotoCraft", "EffectCraft"], "{o:?}");
     // The old Installed and Latest columns are gone; Version shows the number, and from and to for an update.
     assert!(h.query_by_label("Latest").is_none());
     h.get_by_label("Version");
@@ -2356,7 +2356,7 @@ fn every_table_column_sorts_both_ways() {
     h.get_by_label("App").click();
     h.run_steps(3);
     let o = order(&h);
-    assert_eq!(o.first().map(String::as_str), Some("WordCraft"), "{o:?}");
+    assert_eq!(o.first().map(String::as_str), Some("Nib"), "{o:?}");
 }
 
 /// The first close to the tray is explained once, by a system notification (#45, #215).
@@ -2484,10 +2484,10 @@ fn links_to_the_website_github_and_each_apps_pages() {
     // The table's … menu has the app's website and GitHub repo.
     let (mut h, _) = harness(ViewMode::Table, egui::Theme::Dark, true);
     h.run_steps(6);
-    h.get_all_by_label_contains("More actions").nth(8).unwrap().click(); // WordCraft
+    h.get_all_by_label_contains("More actions").nth(8).unwrap().click(); // Nib
     h.run_steps(3);
     h.get_by_label("GitHub repository");
-    // The footer's Website link and WordCraft's now-live one in the menu.
+    // The footer's Website link and Nib's now-live one in the menu.
     assert!(h.query_all_by_label_contains("Website").count() >= 2);
 }
 
@@ -3051,7 +3051,7 @@ fn the_footer_names_the_services_behind_what_is_on_screen() {
     };
     assert_eq!(footer(Vec::new()), "Checked 3 min ago · using White Office API");
     let from_github =
-        vec![Event::Latest { app: "wordcraft".into(), latest: LatestRelease::Found(release("wordcraft", "0.3.1", NOW)), from: Origin::GitHub }];
+        vec![Event::Latest { app: "nib".into(), latest: LatestRelease::Found(release("nib", "0.3.1", NOW)), from: Origin::GitHub }];
     assert_eq!(footer(from_github), "Checked 3 min ago · using White Office API and GitHub");
 }
 
@@ -3262,7 +3262,7 @@ fn clicking_a_card_opens_its_details_drawer() {
     h.run_steps(8);
     // Every app has a page: a card of each generation opens one.
     h.get_by_label("VectorCraft details");
-    h.get_by_label("WordCraft details");
+    h.get_by_label("Nib details");
     h.get_by_label("PhotoCraft details").click();
     h.run_steps(10);
     h.check_accessibility();
@@ -3337,11 +3337,11 @@ fn opening_a_page_asks_for_its_pictures_once_and_only_while_it_lacks_some() {
     assert_eq!(fetches(&sent, "vectorcraft"), 1);
     h.key_press(egui::Key::Escape);
     h.run_steps(10);
-    h.get_by_label("PdfCraft details").scroll_to_me();
+    h.get_by_label("Sheaf details").scroll_to_me();
     h.run_steps(3);
-    h.get_by_label("PdfCraft details").click();
+    h.get_by_label("Sheaf details").click();
     h.run_steps(10);
-    assert_eq!(fetches(&sent, "pdfcraft"), 0);
+    assert_eq!(fetches(&sent, "sheaf"), 0);
 }
 
 #[test]
@@ -3414,10 +3414,10 @@ fn the_enlarged_view_shows_a_frame_for_a_picture_still_missing() {
 fn a_page_without_pictures_has_no_gallery() {
     let (mut h, _sent) = harness(ViewMode::Grid, egui::Theme::Dark, true);
     h.run_steps(8);
-    // PdfCraft's screenshots still show its old name (PrintCraft), so its page has none for now.
-    h.get_by_label("PdfCraft details").scroll_to_me();
+    // Sheaf's screenshots still show its old name (PrintCraft), so its page has none for now.
+    h.get_by_label("Sheaf details").scroll_to_me();
     h.run_steps(3);
-    h.get_by_label("PdfCraft details").click();
+    h.get_by_label("Sheaf details").click();
     h.run_steps(10);
     snapshot(&mut h, "details-no-pictures-dark");
     h.get_all_by_label_contains("The  PDF workbench.").last().unwrap();
@@ -3456,7 +3456,7 @@ fn the_lead_picture_can_be_enlarged() {
     assert_eq!(h.query_all_by_label_contains("The image editor you already know").count(), 1);
 }
 
-/// Every page, whatever it holds: no pictures (PdfCraft), one (DesignCraft) or several. The arrow keys are
+/// Every page, whatever it holds: no pictures (Sheaf), one (DesignCraft) or several. The arrow keys are
 /// pressed more often than there are pictures, both ways, to wrap around the list and to do nothing on a
 /// page that has one or none; the enlarged view is opened wherever there is a picture to enlarge.
 #[test]
@@ -4271,12 +4271,12 @@ fn opening_an_app_counts_and_frequently_used_puts_the_most_opened_first() {
     // Installed apps in name order: Effect (updates), Light (Open), Photo (updates), Word (Open).
     let opens: Vec<_> = h.get_all_by_label("Open").collect();
     assert_eq!(opens.len(), 2);
-    opens[1].click(); // WordCraft
+    opens[1].click(); // Nib
     h.run_steps(3);
-    assert!(sent.borrow().contains(&Command::Launch { app: "wordcraft".into(), args: vec![] }));
-    assert_eq!(h.state().as_ref().unwrap().settings.launches.get("wordcraft"), Some(&1));
+    assert!(sent.borrow().contains(&Command::Launch { app: "nib".into(), args: vec![] }));
+    assert_eq!(h.state().as_ref().unwrap().settings.launches.get("nib"), Some(&1));
     h.run_steps(4);
-    let word = h.get_by_label("WordCraft details").rect();
+    let word = h.get_by_label("Nib details").rect();
     let light = h.get_by_label("LightCraft details").rect();
     assert!(word.min.y < light.min.y || (word.min.y == light.min.y && word.min.x < light.min.x), "{word:?} {light:?}");
 }
@@ -4297,7 +4297,7 @@ fn an_apps_page_is_a_card_in_the_middle_with_next_and_previous_arrows_and_closes
     // Next goes to the following app in the grid's order (Word after Photo), and back again.
     h.get_by_label("Next app").click();
     h.run_steps(12);
-    assert!(showing(&h, "wordcraft"));
+    assert!(showing(&h, "nib"));
     h.get_by_label("Previous app").click();
     h.run_steps(12);
     assert!(showing(&h, "photocraft"));

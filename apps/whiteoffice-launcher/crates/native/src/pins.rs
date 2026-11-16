@@ -78,12 +78,12 @@ mod tests {
     fn the_file_follows_the_launchers_choices() {
         let dir = tempfile::tempdir().unwrap();
         let path = dir.path().join("versions.json");
-        let chosen = versions(&[("pdfcraft", VersionTrack::Pinned("v0.13.0".into())), ("filmcraft", VersionTrack::Nightly)]);
+        let chosen = versions(&[("sheaf", VersionTrack::Pinned("v0.13.0".into())), ("filmcraft", VersionTrack::Nightly)]);
         assert_eq!(sync(&path, &chosen), Ok(true));
         let pins = Pins::load(&path);
-        assert_eq!(pins.choice("pdfcraft"), Choice::Managed(SharedTrack::Pinned("v0.13.0".into())));
+        assert_eq!(pins.choice("sheaf"), Choice::Managed(SharedTrack::Pinned("v0.13.0".into())));
         assert_eq!(pins.choice("filmcraft"), Choice::Managed(SharedTrack::Nightly));
-        assert_eq!(pins.choice("wordcraft"), Choice::Stable);
+        assert_eq!(pins.choice("nib"), Choice::Stable);
         assert_eq!(sync(&path, &chosen), Ok(false), "nothing changed, nothing written");
     }
 
@@ -91,13 +91,13 @@ mod tests {
     fn going_back_to_stable_removes_the_entry() {
         let dir = tempfile::tempdir().unwrap();
         let path = dir.path().join("versions.json");
-        sync(&path, &versions(&[("pdfcraft", VersionTrack::Pinned("v0.13.0".into()))])).unwrap();
+        sync(&path, &versions(&[("sheaf", VersionTrack::Pinned("v0.13.0".into()))])).unwrap();
         // The UI may drop the entry or keep it as Stable; both mean stable.
-        assert_eq!(sync(&path, &versions(&[("pdfcraft", VersionTrack::Stable)])), Ok(true));
-        assert_eq!(Pins::load(&path).choice("pdfcraft"), Choice::Stable);
-        sync(&path, &versions(&[("pdfcraft", VersionTrack::Nightly)])).unwrap();
+        assert_eq!(sync(&path, &versions(&[("sheaf", VersionTrack::Stable)])), Ok(true));
+        assert_eq!(Pins::load(&path).choice("sheaf"), Choice::Stable);
+        sync(&path, &versions(&[("sheaf", VersionTrack::Nightly)])).unwrap();
         assert_eq!(sync(&path, &BTreeMap::new()), Ok(true));
-        assert_eq!(Pins::load(&path).choice("pdfcraft"), Choice::Stable);
+        assert_eq!(Pins::load(&path).choice("sheaf"), Choice::Stable);
     }
 
     #[test]
@@ -105,10 +105,10 @@ mod tests {
         let dir = tempfile::tempdir().unwrap();
         let path = dir.path().join("versions.json");
         std::fs::write(&path, r#"{"apps":{"soundcraft":{"Beta":1}}}"#).unwrap();
-        sync(&path, &versions(&[("pdfcraft", VersionTrack::Nightly)])).unwrap();
+        sync(&path, &versions(&[("sheaf", VersionTrack::Nightly)])).unwrap();
         let pins = Pins::load(&path);
         assert_eq!(pins.choice("soundcraft"), Choice::Unknown);
-        assert_eq!(pins.choice("pdfcraft"), Choice::Managed(SharedTrack::Nightly));
+        assert_eq!(pins.choice("sheaf"), Choice::Managed(SharedTrack::Nightly));
     }
 
     #[test]
@@ -116,7 +116,7 @@ mod tests {
         let dir = tempfile::tempdir().unwrap();
         let path = dir.path().join("versions.json");
         std::fs::write(&path, "{ not json").unwrap();
-        assert_eq!(sync(&path, &versions(&[("pdfcraft", VersionTrack::Nightly)])), Ok(true));
-        assert_eq!(Pins::load(&path).choice("pdfcraft"), Choice::Managed(SharedTrack::Nightly));
+        assert_eq!(sync(&path, &versions(&[("sheaf", VersionTrack::Nightly)])), Ok(true));
+        assert_eq!(Pins::load(&path).choice("sheaf"), Choice::Managed(SharedTrack::Nightly));
     }
 }

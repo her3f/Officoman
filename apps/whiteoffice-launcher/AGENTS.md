@@ -54,7 +54,7 @@ Dependencies and assets use SPDX identifiers. An expression is allowed when ever
 # AGENTS.md: guide for AI agents and contributors
 
 White Office Launcher installs, updates and launches the **Craft App Suite** (PhotoCraft, LightCraft,
-FilmCraft, DesignCraft, VectorCraft, PdfCraft, EffectCraft, WordCraft, DeckCraft, GridCraft,
+FilmCraft, DesignCraft, VectorCraft, Sheaf, EffectCraft, Nib, Podium, Tally,
 CADCraft, SoundCraft, FigCraft, Craft Anything, TextureCraft, MaterialCraft), plus approved **community apps** made outside White Office and labelled
 as such (today SolidCraft, by Tangency Labs, and MailCraft, by UCS Care Group). It is written in **Rust only** (no JavaScript or TypeScript): the desktop
 app is native egui/eframe, and the web build is the same Rust compiled to WebAssembly (trunk +
@@ -122,7 +122,7 @@ settings file must produce an error the user can act on, never a panic.
   SolidCraft); an app with none (`mac_team = None`, today MailCraft) is not installed there, only
   opened if present.
 - The details drawer's pictures are the one other download: JPEGs only, from a pinned tag of
-  `https://raw.githubusercontent.com/storytold/craft-launcher-assets/` (`core::details`),
+  `https://raw.githubusercontent.com/her3f/officoman-assets/` (`core::details`),
   capped at 2 MB each, cached, and never run. Pictures are not bundled in this repo.
 - Never run an installer with elevated rights silently; tell the user what is about to happen.
 - Never delete a user's files outside what the launcher itself installed.

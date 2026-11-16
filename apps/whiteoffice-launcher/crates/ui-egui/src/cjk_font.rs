@@ -296,7 +296,7 @@ const NOTO_TC_FILES: [(&str, &str); 10] = [
 ];
 
 /// Where each system keeps a Traditional Chinese font: an installed Noto CJK TC first (the face
-/// GridCraft prefers for Taiwan), then the system's own faces.
+/// Tally prefers for Taiwan), then the system's own faces.
 fn traditional_chinese_candidates() -> Vec<Candidate> {
     let mut out = Vec::new();
     let mut add = |path: PathBuf, family: &'static str| out.push(Candidate { path, family });
@@ -585,7 +585,7 @@ mod tests {
     }
 
     /// Traditional Chinese prefers an installed Noto CJK TC over the system's own face, matching
-    /// GridCraft's Taiwan font order.
+    /// Tally's Taiwan font order.
     #[test]
     fn traditional_chinese_prefers_noto_cjk_tc() {
         let found = traditional_chinese_candidates();

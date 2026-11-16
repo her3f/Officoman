@@ -73,12 +73,12 @@ fn events() -> Vec<Event> {
         ("vectorcraft", "0.7.0"),
         ("filmcraft", "0.4.0"),
         ("lightcraft", "0.4.0"),
-        ("pdfcraft", "0.4.0"),
+        ("sheaf", "0.4.0"),
         ("effectcraft", "0.6.0"),
         ("designcraft", "0.4.0"),
-        ("wordcraft", "0.3.0"),
-        ("deckcraft", "0.3.0"),
-        ("gridcraft", "0.3.0"),
+        ("nib", "0.3.0"),
+        ("podium", "0.3.0"),
+        ("tally", "0.3.0"),
         ("cadcraft", "0.3.0"),
     ];
     for (i, (id, v)) in versions.iter().enumerate() {
@@ -89,7 +89,7 @@ fn events() -> Vec<Event> {
         });
     }
     ev.push(Event::Latest { app: "soundcraft".into(), latest: LatestRelease::None, from: Origin::WhiteOfficeApi });
-    let installed = [("photocraft", "0.4.1"), ("lightcraft", "0.4.0"), ("wordcraft", "0.3.0"), ("effectcraft", "0.5.0")];
+    let installed = [("photocraft", "0.4.1"), ("lightcraft", "0.4.0"), ("nib", "0.3.0"), ("effectcraft", "0.5.0")];
     for app in &SUITE {
         let inst = installed.iter().find(|(id, _)| *id == app.id).map(|(_, v)| Installed {
             version: version::parse(v),
@@ -103,8 +103,8 @@ fn events() -> Vec<Event> {
         ev.push(Event::Detected { app: app.id.into(), installed: inst });
     }
     ev.push(Event::Progress { app: "filmcraft".into(), phase: JobPhase::Downloading { done: 48 << 20, total: 131 << 20 } });
-    ev.push(Event::Paused { app: "deckcraft".into(), download: Some(PausedDownload { done: 30 << 20, total: 120 << 20 }) });
-    ev.push(Event::Progress { app: "gridcraft".into(), phase: JobPhase::Reconnecting { done: 10 << 20, total: 90 << 20 } });
+    ev.push(Event::Paused { app: "podium".into(), download: Some(PausedDownload { done: 30 << 20, total: 120 << 20 }) });
+    ev.push(Event::Progress { app: "tally".into(), phase: JobPhase::Reconnecting { done: 10 << 20, total: 90 << 20 } });
     ev.push(Event::CheckFinished { at: NOW - 180, source: Source::GitHubApi, rate_limited_until: None });
     ev
 }

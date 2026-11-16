@@ -15,7 +15,7 @@
 # Coverage: the whole interface — every menu string and tl! literal (complete_menus = true).
 # Left in English on purpose: product name "White Office Launcher" (and its "Launcher" tag), suite
 # name "Craft App Suite", app names (PhotoCraft, LightCraft, FilmCraft, DesignCraft, VectorCraft,
-# PdfCraft, EffectCraft, WordCraft, DeckCraft, GridCraft, CADCraft, SoundCraft, FigCraft), "GitHub",
+# Sheaf, EffectCraft, Nib, Podium, Tally, CADCraft, SoundCraft, FigCraft), "GitHub",
 # "Discord". Georgian case endings attach to them with a hyphen (GitHub-ზე, White Office-ის).
 # Shortcut keys keep their key-cap names (Shift, Alt, Ctrl, Cmd, Esc).
 # Trailing "…" (U+2026) must be preserved. Placeholders {name}, {n}, {version}, {count}, {v},
@@ -192,12 +192,12 @@ photocraft	Image editing	გამოსახულებების რედ
 vectorcraft	Vector illustration	ვექტორული ილუსტრაცია
 filmcraft	Video editing, color and sound	ვიდეოს მონტაჟი, ფერი და ხმა
 lightcraft	Photo library and raw development	ფოტოთეკა და RAW-ის დამუშავება
-pdfcraft	Reading, organizing and protecting PDFs	PDF-ების კითხვა, ორგანიზება და დაცვა
+sheaf	Reading, organizing and protecting PDFs	PDF-ების კითხვა, ორგანიზება და დაცვა
 effectcraft	Motion graphics and visual effects	მოძრავი გრაფიკა და ეფექტები
 designcraft	Page layout and publishing	გვერდების მაკეტირება და გამოცემა
-wordcraft	Writing and document design	წერა და დოკუმენტების დიზაინი
-deckcraft	Presentations and slide shows	პრეზენტაციები და სლაიდშოუები
-gridcraft	Spreadsheets and data	ელცხრილები და მონაცემები
+nib	Writing and document design	წერა და დოკუმენტების დიზაინი
+podium	Presentations and slide shows	პრეზენტაციები და სლაიდშოუები
+tally	Spreadsheets and data	ელცხრილები და მონაცემები
 craft-anything	Find out how any software works, then craft your own	გაიგეთ, როგორ მუშაობს ნებისმიერი პროგრამა, და შექმენით საკუთარი
 cadcraft	Computer-aided design and drafting	დაპროექტება და ნახაზები
 soundcraft	Recording, editing and mixing audio	აუდიოს ჩაწერა, რედაქტირება და მიქსირება

@@ -112,8 +112,8 @@ function New-InstallerArt([string] $BannerOut, [string] $DialogOut) {
   $muted = [System.Drawing.Color]::FromArgb(153, 242, 241, 238)
   $line = [System.Drawing.Color]::FromArgb(38, 242, 241, 238)
   # The Craft App Suite, in the launcher's order (crates/core/src/catalog.rs).
-  $apps = 'photocraft', 'vectorcraft', 'filmcraft', 'lightcraft', 'pdfcraft', 'effectcraft',
-    'anicraft', 'designcraft', 'figcraft', 'wordcraft', 'soundcraft', 'deckcraft', 'cadcraft', 'gridcraft', 'craft-anything', 'texturecraft', 'materialcraft'
+  $apps = 'photocraft', 'vectorcraft', 'filmcraft', 'lightcraft', 'sheaf', 'effectcraft',
+    'anicraft', 'designcraft', 'figcraft', 'nib', 'soundcraft', 'podium', 'cadcraft', 'tally', 'craft-anything', 'texturecraft', 'materialcraft'
   $mark = [System.Drawing.Image]::FromFile((Join-Path $Root 'assets\app-icon\hicolor\256x256\apps\io.github.her3f.whiteoffice-launcher.png'))
   $wordmark = [System.Drawing.Image]::FromFile((Join-Path $Root 'docs\brand\whiteoffice-logo-white.png'))
   $icons = $apps | ForEach-Object { [System.Drawing.Image]::FromFile((Join-Path $Root "assets\app-icons\$_.png")) }

@@ -2423,7 +2423,7 @@ mod tests {
     #[cfg(windows)]
     #[test]
     fn an_update_takes_the_folder_only_from_the_records_own_scope() {
-        let folder = Some(PathBuf::from(r"C:\Users\a\AppData\Local\Programs\White Office\DeckCraft"));
+        let folder = Some(PathBuf::from(r"C:\Users\a\AppData\Local\Programs\White Office\Podium"));
         assert_eq!(keep_if_in_scope(folder.clone(), true), folder);
         assert_eq!(keep_if_in_scope(folder, false), None);
         assert_eq!(keep_if_in_scope(None, true), None);
@@ -2919,9 +2919,9 @@ mod tests {
     #[test]
     fn a_downgrade_that_keeps_the_old_copy_goes_ahead_without_a_package_to_put_back() {
         use crate::http::tests::{Reply, body, serve};
-        let app = CraftApp::by_id("wordcraft").unwrap();
+        let app = CraftApp::by_id("nib").unwrap();
         let dir = tempfile::tempdir().unwrap();
-        let old_appimage = dir.path().join("wordcraft-0.4.0-linux-x86_64.AppImage");
+        let old_appimage = dir.path().join("nib-0.4.0-linux-x86_64.AppImage");
         let record = Record {
             version: "0.4.0".into(),
             kind: PackageKind::AppImage,
@@ -2933,15 +2933,15 @@ mod tests {
         let cases = [
             (
                 PackageKind::Dmg,
-                "wordcraft-0.3.0-macos-universal.dmg",
+                "nib-0.3.0-macos-universal.dmg",
                 InstallSource::MacApp,
-                dir.path().join("WordCraft.app"),
+                dir.path().join("Nib.app"),
                 None,
                 cfg!(target_os = "macos"),
             ),
             (
                 PackageKind::AppImage,
-                "wordcraft-0.3.0-linux-x86_64.AppImage",
+                "nib-0.3.0-linux-x86_64.AppImage",
                 InstallSource::Launcher,
                 old_appimage,
                 Some(&record),
@@ -2996,10 +2996,10 @@ mod tests {
     #[test]
     fn a_failed_install_keeps_the_download_for_the_next_try() {
         use crate::http::tests::{Reply, body, serve};
-        let app = CraftApp::by_id("wordcraft").unwrap();
+        let app = CraftApp::by_id("nib").unwrap();
         let (body, sha) = body();
         let (url, requests) = serve(body.clone(), vec![Reply::Full, Reply::Full]);
-        let asset = Asset { name: "wordcraft-0.3.0-test.pkg".into(), size: body.len() as u64, url, sha256: Some(sha) };
+        let asset = Asset { name: "nib-0.3.0-test.pkg".into(), size: body.len() as u64, url, sha256: Some(sha) };
         let release = Release { assets: vec![asset.clone()], ..Release::default() };
         let dir = tempfile::tempdir().unwrap();
         let paths = Paths::under(dir.path());
@@ -3031,10 +3031,10 @@ mod tests {
     #[test]
     fn an_unavailable_custom_folder_is_rejected_before_downloading() {
         use crate::http::tests::{Reply, body, serve};
-        let app = CraftApp::by_id("wordcraft").unwrap();
+        let app = CraftApp::by_id("nib").unwrap();
         let (body, sha) = body();
         let (url, requests) = serve(body.clone(), vec![Reply::Full]);
-        let asset = Asset { name: "wordcraft-0.3.0-linux-x86_64.AppImage".into(), size: body.len() as u64, url, sha256: Some(sha) };
+        let asset = Asset { name: "nib-0.3.0-linux-x86_64.AppImage".into(), size: body.len() as u64, url, sha256: Some(sha) };
         let release = Release { assets: vec![asset.clone()], ..Release::default() };
         let dir = tempfile::tempdir().unwrap();
         let missing = dir.path().join("unavailable/Apps");
@@ -3064,11 +3064,11 @@ mod tests {
     #[test]
     fn a_release_without_a_checksum_is_refused_before_anything_is_fetched() {
         use crate::http::tests::{Reply, body, serve};
-        let app = CraftApp::by_id("wordcraft").unwrap();
+        let app = CraftApp::by_id("nib").unwrap();
         let (body, _) = body();
         let (url, requests) = serve(body.clone(), vec![Reply::Full]);
         // Neither a per-file digest nor a SHA256SUMS.txt in the release.
-        let asset = Asset { name: "wordcraft-0.3.1-test.pkg".into(), size: body.len() as u64, url, sha256: None };
+        let asset = Asset { name: "nib-0.3.1-test.pkg".into(), size: body.len() as u64, url, sha256: None };
         let release = Release { assets: vec![asset.clone()], ..Release::default() };
         let dir = tempfile::tempdir().unwrap();
         let paths = Paths::under(dir.path());
@@ -3111,29 +3111,29 @@ mod tests {
     #[cfg(unix)]
     #[test]
     fn lays_out_both_freebsd_tarball_styles_like_usr_local() {
-        let app = CraftApp::by_id("wordcraft").unwrap();
+        let app = CraftApp::by_id("nib").unwrap();
         let dir = tempfile::tempdir().unwrap();
         let tree_style = dir.path().join("tree.tar.gz");
         tarball(
             &tree_style,
-            &["wordcraft-0.3.0-freebsd-x86_64/bin/wordcraft", "wordcraft-0.3.0-freebsd-x86_64/share/applications/io.github.her3f.wordcraft.desktop"],
+            &["nib-0.3.0-freebsd-x86_64/bin/nib", "nib-0.3.0-freebsd-x86_64/share/applications/io.github.her3f.nib.desktop"],
         );
         let flat_style = dir.path().join("flat.tar.gz");
         tarball(
             &flat_style,
             &[
-                "wordcraft-0.3.0-freebsd-x86_64/wordcraft",
-                "wordcraft-0.3.0-freebsd-x86_64/wordcraft-cli",
-                "wordcraft-0.3.0-freebsd-x86_64/README.md",
-                "wordcraft-0.3.0-freebsd-x86_64/io.github.her3f.wordcraft.desktop",
-                "wordcraft-0.3.0-freebsd-x86_64/io.github.her3f.wordcraft.png",
+                "nib-0.3.0-freebsd-x86_64/nib",
+                "nib-0.3.0-freebsd-x86_64/nib-cli",
+                "nib-0.3.0-freebsd-x86_64/README.md",
+                "nib-0.3.0-freebsd-x86_64/io.github.her3f.nib.desktop",
+                "nib-0.3.0-freebsd-x86_64/io.github.her3f.nib.png",
             ],
         );
         for file in [tree_style, flat_style] {
             let root = tree::unpack(app, &file, &dir.path().join("staging")).unwrap();
             let files = tree::files(&root).unwrap();
-            assert!(files.contains(&PathBuf::from("bin/wordcraft")), "{files:?}");
-            assert!(files.contains(&PathBuf::from("share/applications/io.github.her3f.wordcraft.desktop")), "{files:?}");
+            assert!(files.contains(&PathBuf::from("bin/nib")), "{files:?}");
+            assert!(files.contains(&PathBuf::from("share/applications/io.github.her3f.nib.desktop")), "{files:?}");
             assert!(!files.iter().any(|f| f.ends_with("README.md")), "{files:?}");
         }
         let bad = dir.path().join("bad.tar.gz");
@@ -3185,37 +3185,37 @@ mod tests {
     #[cfg(target_os = "linux")]
     #[test]
     fn a_tarball_install_lives_in_the_launchers_folder_and_keeps_the_apps_home() {
-        let app = CraftApp::by_id("wordcraft").unwrap();
+        let app = CraftApp::by_id("nib").unwrap();
         let dir = tempfile::tempdir().unwrap();
         let paths = Paths::under(dir.path());
-        let file = dir.path().join("wordcraft-0.3.0-linux-x86_64.tar.gz");
+        let file = dir.path().join("nib-0.3.0-linux-x86_64.tar.gz");
         tarball(
             &file,
             &[
-                "wordcraft-0.3.0-linux-x86_64/bin/wordcraft",
-                "wordcraft-0.3.0-linux-x86_64/bin/wordcraft-cli",
-                "wordcraft-0.3.0-linux-x86_64/share/applications/io.github.her3f.wordcraft.desktop",
+                "nib-0.3.0-linux-x86_64/bin/nib",
+                "nib-0.3.0-linux-x86_64/bin/nib-cli",
+                "nib-0.3.0-linux-x86_64/share/applications/io.github.her3f.nib.desktop",
             ],
         );
 
         let bin = linux::install_tree(app, &file, &paths).unwrap();
-        let root = paths.apps().join("wordcraft");
-        assert_eq!(bin, root.join("bin").join("wordcraft"));
+        let root = paths.apps().join("nib");
+        assert_eq!(bin, root.join("bin").join("nib"));
         assert!(bin.is_file(), "the app's binary wasn't unpacked");
-        assert!(root.join("share/applications/io.github.her3f.wordcraft.desktop").is_file(), "share/ wasn't unpacked");
-        assert!(!paths.cache.join("wordcraft.new").exists(), "the staging folder was left behind");
+        assert!(root.join("share/applications/io.github.her3f.nib.desktop").is_file(), "share/ wasn't unpacked");
+        assert!(!paths.cache.join("nib.new").exists(), "the staging folder was left behind");
 
         // The app's own home sits beside the tree, and an update keeps it.
         let home = paths.app_home(app.id);
-        std::fs::create_dir_all(home.join(".config/wordcraft")).unwrap();
-        std::fs::write(home.join(".config/wordcraft/settings.toml"), "keep me").unwrap();
+        std::fs::create_dir_all(home.join(".config/nib")).unwrap();
+        std::fs::write(home.join(".config/nib/settings.toml"), "keep me").unwrap();
         linux::install_tree(app, &file, &paths).unwrap();
-        assert_eq!(std::fs::read_to_string(home.join(".config/wordcraft/settings.toml")).unwrap(), "keep me");
+        assert_eq!(std::fs::read_to_string(home.join(".config/nib/settings.toml")).unwrap(), "keep me");
 
         // Removing the install takes the tree and nothing else.
         linux::remove_tree(app, &paths).unwrap();
         assert!(!bin.exists() && !root.join("share").exists());
-        assert!(home.join(".config/wordcraft/settings.toml").is_file(), "the app's settings were removed with it");
+        assert!(home.join(".config/nib/settings.toml").is_file(), "the app's settings were removed with it");
         assert!(linux::remove_tree(app, &paths).is_err(), "a second removal says there is nothing there");
     }
 
@@ -3224,13 +3224,13 @@ mod tests {
     fn a_tarball_binary_that_is_a_symlink_out_of_the_tree_is_refused() {
         use std::io::Write;
         use std::os::unix::fs::PermissionsExt;
-        let app = CraftApp::by_id("wordcraft").unwrap();
+        let app = CraftApp::by_id("nib").unwrap();
         let dir = tempfile::tempdir().unwrap();
         let paths = Paths::under(dir.path());
 
         // A working install the rejected update must leave untouched.
-        let good = dir.path().join("wordcraft-0.3.0-linux-x86_64.tar.gz");
-        tarball(&good, &["wordcraft-0.3.0-linux-x86_64/bin/wordcraft"]);
+        let good = dir.path().join("nib-0.3.0-linux-x86_64.tar.gz");
+        tarball(&good, &["nib-0.3.0-linux-x86_64/bin/nib"]);
         let bin = linux::install_tree(app, &good, &paths).unwrap();
         assert_eq!(std::fs::read_to_string(&bin).unwrap(), "hi");
 
@@ -3239,7 +3239,7 @@ mod tests {
         std::fs::write(&outside, b"secret").unwrap();
         std::fs::set_permissions(&outside, std::fs::Permissions::from_mode(0o600)).unwrap();
 
-        // A tarball whose bin/wordcraft is a symlink to that external file.
+        // A tarball whose bin/nib is a symlink to that external file.
         let file = dir.path().join("evil.tar.gz");
         let f = std::fs::File::create(&file).unwrap();
         let mut b = tar::Builder::new(flate2::write::GzEncoder::new(f, flate2::Compression::fast()));
@@ -3248,13 +3248,13 @@ mod tests {
         link.set_size(0);
         link.set_mode(0o777);
         link.set_cksum();
-        b.append_link(&mut link, "wordcraft-0.3.0-linux-x86_64/bin/wordcraft", &outside).unwrap();
+        b.append_link(&mut link, "nib-0.3.0-linux-x86_64/bin/nib", &outside).unwrap();
         // A second real file so the top folder is detected.
         let mut reg = tar::Header::new_gnu();
         reg.set_size(2);
         reg.set_mode(0o644);
         reg.set_cksum();
-        b.append_data(&mut reg, "wordcraft-0.3.0-linux-x86_64/share/applications/io.github.her3f.wordcraft.desktop", &b"hi"[..]).unwrap();
+        b.append_data(&mut reg, "nib-0.3.0-linux-x86_64/share/applications/io.github.her3f.nib.desktop", &b"hi"[..]).unwrap();
         b.into_inner().unwrap().finish().unwrap();
         drop(std::io::stdout().flush());
 
@@ -3301,7 +3301,7 @@ mod tests {
         };
 
         // The first directory that has the program wins, and the arguments follow unchanged.
-        assert_eq!(run(&["rpm", "-e", "wordcraft"]), Ok(vec![usr_bin.join("rpm"), "-e".into(), "wordcraft".into()]));
+        assert_eq!(run(&["rpm", "-e", "nib"]), Ok(vec![usr_bin.join("rpm"), "-e".into(), "nib".into()]));
         assert_eq!(run(&["zypper"]), Ok(vec![sbin.join("zypper")]));
         // A program that isn't in those directories isn't looked for anywhere else.
         assert_eq!(run(&["dnf", "remove"]), Err("dnf isn't installed".into()));
@@ -3470,13 +3470,13 @@ mod tests {
     #[cfg(target_os = "linux")]
     #[test]
     fn adds_and_removes_only_its_own_menu_entry_and_icon() {
-        let app = CraftApp::by_id("wordcraft").unwrap();
+        let app = CraftApp::by_id("nib").unwrap();
         let root = tempfile::tempdir().unwrap();
         let data = root.path().join("share");
-        let desktop = data.join("applications/io.github.her3f.wordcraft.desktop");
-        let icon = data.join("icons/hicolor/128x128/apps/io.github.her3f.wordcraft.png");
-        let old = root.path().join("My Apps/wordcraft-0.2.0-linux-x86_64.AppImage");
-        let new = root.path().join("My Apps/wordcraft-0.3.0-linux-x86_64.AppImage");
+        let desktop = data.join("applications/io.github.her3f.nib.desktop");
+        let icon = data.join("icons/hicolor/128x128/apps/io.github.her3f.nib.png");
+        let old = root.path().join("My Apps/nib-0.2.0-linux-x86_64.AppImage");
+        let new = root.path().join("My Apps/nib-0.3.0-linux-x86_64.AppImage");
         std::fs::create_dir_all(new.parent().unwrap()).unwrap();
         std::fs::write(&new, b"").unwrap();
 
@@ -3484,8 +3484,8 @@ mod tests {
         let files = linux::integrate_into(&data, app, &new, &[], None);
         assert_eq!(files, [icon.clone(), desktop.clone()]);
         let text = std::fs::read_to_string(&desktop).unwrap();
-        assert!(text.contains("Exec=\"") && text.contains("My Apps/wordcraft-0.3.0-linux-x86_64.AppImage\" %F\n"), "{text}");
-        assert!(text.contains("Icon=io.github.her3f.wordcraft\n"));
+        assert!(text.contains("Exec=\"") && text.contains("My Apps/nib-0.3.0-linux-x86_64.AppImage\" %F\n"), "{text}");
+        assert!(text.contains("Icon=io.github.her3f.nib\n"));
         assert!(std::fs::read(&icon).unwrap().starts_with(b"\x89PNG"));
         let rec = record("0.3.0", PackageKind::AppImage, new.clone(), files, false);
 
@@ -3493,7 +3493,7 @@ mod tests {
         assert_eq!(linux::integrate_into(&data, app, &new, &[], Some(&rec)).len(), 2);
 
         // Someone else's entry and icon are left alone (and not recorded).
-        std::fs::write(&desktop, "[Desktop Entry]\nExec=/usr/bin/wordcraft\n").unwrap();
+        std::fs::write(&desktop, "[Desktop Entry]\nExec=/usr/bin/nib\n").unwrap();
         std::fs::write(&icon, b"theirs").unwrap();
         assert!(linux::integrate_into(&data, app, &new, &[], None).is_empty());
         assert_eq!(std::fs::read(&icon).unwrap(), b"theirs");
@@ -3516,7 +3516,7 @@ mod tests {
         linux::unintegrate_from(&data, app, &new, Some(&rec));
         assert!(!desktop.exists() && !icon.exists());
         // Someone else's entry survives an uninstall.
-        std::fs::write(&desktop, "[Desktop Entry]\nExec=/usr/bin/wordcraft\n").unwrap();
+        std::fs::write(&desktop, "[Desktop Entry]\nExec=/usr/bin/nib\n").unwrap();
         linux::unintegrate_from(&data, app, &new, Some(&rec));
         assert!(desktop.exists());
     }
@@ -3574,28 +3574,28 @@ mod tests {
             origin: None,
             installation: None,
         };
-        let app = whiteoffice_launcher_core::CraftApp::by_id("wordcraft").unwrap();
-        assert!(is_release_arch_package(app, &pacman("io.github.her3f.wordcraft")));
-        for aur in ["wordcraft", "wordcraft-bin", "wordcraft-git"] {
+        let app = whiteoffice_launcher_core::CraftApp::by_id("nib").unwrap();
+        assert!(is_release_arch_package(app, &pacman("io.github.her3f.nib")));
+        for aur in ["nib", "nib-bin", "nib-git"] {
             assert!(!is_release_arch_package(app, &pacman(aur)), "{aur}");
         }
-        assert_eq!(managed_elsewhere_with(app, &pacman("io.github.her3f.wordcraft"), false, |_| None), None);
-        assert_eq!(managed_elsewhere_with(app, &pacman("wordcraft-bin"), true, |_| None), None);
+        assert_eq!(managed_elsewhere_with(app, &pacman("io.github.her3f.nib"), false, |_| None), None);
+        assert_eq!(managed_elsewhere_with(app, &pacman("nib-bin"), true, |_| None), None);
     }
 
     #[test]
     fn arch_packages_from_a_repository_are_updated_with_the_system() {
-        let app = whiteoffice_launcher_core::CraftApp::by_id("wordcraft").unwrap();
-        let hint = pacman_update_hint(app, "wordcraft-bin", Some("omarchy"));
-        assert!(hint.starts_with("WordCraft was installed from the omarchy repository or the AUR (wordcraft-bin)."));
+        let app = whiteoffice_launcher_core::CraftApp::by_id("nib").unwrap();
+        let hint = pacman_update_hint(app, "nib-bin", Some("omarchy"));
+        assert!(hint.starts_with("Nib was installed from the omarchy repository or the AUR (nib-bin)."));
         assert!(hint.ends_with("or sudo pacman -Syu"));
 
-        let aur_hint = pacman_update_hint(app, "wordcraft-bin", None);
-        assert!(aur_hint.starts_with("WordCraft was installed from the AUR (wordcraft-bin)."));
+        let aur_hint = pacman_update_hint(app, "nib-bin", None);
+        assert!(aur_hint.starts_with("Nib was installed from the AUR (nib-bin)."));
 
-        let si = "Repository      : omarchy\nName            : wordcraft-bin\nVersion         : 0.6.1-1\n";
+        let si = "Repository      : omarchy\nName            : nib-bin\nVersion         : 0.6.1-1\n";
         assert_eq!(parse_pacman_repo(si).as_deref(), Some("omarchy"));
-        assert_eq!(parse_pacman_repo("Name : wordcraft-bin\n"), None);
+        assert_eq!(parse_pacman_repo("Name : nib-bin\n"), None);
         assert_eq!(parse_pacman_repo("Repository :\n"), None);
     }
 

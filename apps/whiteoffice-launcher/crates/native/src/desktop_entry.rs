@@ -24,16 +24,16 @@ pub fn meta(app: &CraftApp) -> (&'static str, Option<&'static str>) {
     match app.id {
         "whiteoffice" => ("Graphics;AudioVideo;2DGraphics;", Some("whiteoffice")),
         "photocraft" => ("Graphics;2DGraphics;RasterGraphics;Photography;", Some("photocraft")),
-        "pdfcraft" => ("Office;Viewer;", Some("pdfcraft")),
+        "sheaf" => ("Office;Viewer;", Some("sheaf")),
         "lightcraft" => ("Graphics;2DGraphics;RasterGraphics;Photography;", None),
         "filmcraft" => ("AudioVideo;Video;AudioVideoEditing;", None),
         "designcraft" => ("Graphics;Publishing;", None),
         "vectorcraft" => ("Graphics;2DGraphics;VectorGraphics;", None),
         "effectcraft" => ("AudioVideo;Video;Graphics;2DGraphics;", None),
         "anicraft" => ("Graphics;2DGraphics;VectorGraphics;AudioVideo;", Some("anicraft")),
-        "wordcraft" => ("Office;WordProcessor;", None),
-        "deckcraft" => ("Office;Presentation;", None),
-        "gridcraft" => ("Office;Spreadsheet;", None),
+        "nib" => ("Office;WordProcessor;", None),
+        "podium" => ("Office;Presentation;", None),
+        "tally" => ("Office;Spreadsheet;", None),
         "cadcraft" => ("Graphics;Engineering;VectorGraphics;", None),
         "soundcraft" => ("AudioVideo;Audio;Midi;Mixer;Sequencer;Recorder;", None),
         "figcraft" => ("Graphics;2DGraphics;VectorGraphics;X-Design;", Some("figcraft")),
@@ -161,9 +161,9 @@ mod tests {
         );
         assert_eq!(text, expected);
         assert!(is_ours(&text));
-        let no_icon = render(app("wordcraft"), Path::new("/x/w.AppImage"), false).unwrap();
+        let no_icon = render(app("nib"), Path::new("/x/w.AppImage"), false).unwrap();
         assert!(!no_icon.contains("Icon="));
-        assert!(no_icon.contains("StartupWMClass=io.github.her3f.wordcraft\n"));
+        assert!(no_icon.contains("StartupWMClass=io.github.her3f.nib\n"));
         assert!(no_icon.contains("Categories=Office;WordProcessor;\n"));
     }
 
@@ -181,7 +181,7 @@ mod tests {
     #[test]
     fn reads_back_the_program_it_wrote_and_the_apps_own_entries() {
         for p in ["/home/ana/My Apps/p.AppImage", "/a/\"q\" $HOME `x`.AppImage", r"/a\b/100%.AppImage", "/plain.AppImage"] {
-            let text = render(app("gridcraft"), Path::new(p), false).unwrap();
+            let text = render(app("tally"), Path::new(p), false).unwrap();
             assert_eq!(exec_program(&text).map(PathBuf::from), Some(PathBuf::from(p)), "{p}");
         }
         // PhotoCraft's AppRun writes its own entry, unmarked.

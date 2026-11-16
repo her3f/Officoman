@@ -76,7 +76,7 @@ An Arabic set exists if the suite is ever aimed at an Arabic-first audience:
 
 ## House rules
 
-1. Never use *White Office*, *Crafting Apps*, *DeckCraft*, *GridCraft*, *PdfCraft* or *WordCraft*
+1. Never use *White Office*, *Crafting Apps*, *Podium*, *Tally*, *Sheaf* or *Nib*
    in any product-facing string, icon, package name or store listing.
 2. Naming upstream in `NOTICE`, `README` provenance and the site's About page is fine and
    required — that is nominative use, describing where the code came from. It is not branding.
@@ -109,7 +109,7 @@ The four upstream repositories were imported by `tools/rebrand.py` and the resul
 | `storytold/craft-libs`, `storytold/egui`, `storytold/craft-fonts`, `storytold/craft-i18n`, `storytold/winprint.rs` | Third-party git dependencies pinned by revision. Renaming them breaks dependency resolution. They are libraries, not product branding. |
 | `craft-*` crate names inside the tree | Internal code identifiers of those dependencies. |
 | Historical dev notes in `docs/` that mention sibling Crafting Apps | Records of how the upstream code evolved; they name other projects, they do not brand this one. |
-| Test fixture fonts whose internal name table says `DeckCraft Legacy` | Binary `.ttf` fixtures; rewriting a font's name table safely needs a font tool, and they are test-only. |
+| Test fixture fonts whose internal name table says `Podium Legacy` | Binary `.ttf` fixtures; rewriting a font's name table safely needs a font tool, and they are test-only. |
 | `docs/brand/` under `apps/sheaf` | Recreated with **our** mark, because Sheaf's About dialog `include_bytes!`s it. The files are White Office's own artwork, not upstream's. |
 
 ## Regenerating

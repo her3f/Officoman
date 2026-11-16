@@ -39,19 +39,19 @@ A WebAssembly build of the web front end is published as a separate artifact.
 
 ## Status
 
-Early. The source was imported from DeckCraft and rebranded, but the rebranded tree has
+Early. The source was imported from Podium and rebranded, but the rebranded tree has
 not been compiled or tested on this machine yet. Build it before trusting it with real work.
 
 ## Provenance and licence
 
-This is a modified fork of **DeckCraft**, copyright (c) 2026 the White Office Team and the
-DeckCraft contributors, dual-licensed  .
+This is a modified fork of **Podium**, copyright (c) 2026 the White Office Team and the
+Podium contributors, dual-licensed  .
 
 Modifications: renamed, rebranded and restructured for White Office, 2026. See the repository
 [NOTICE](../../NOTICE) for the full attribution, and [BRAND.md](../../BRAND.md) for what the
 rebrand covers.
 
-The White Office, DeckCraft and related names and logos are trademarks of the White Office Team
+The White Office, Podium and related names and logos are trademarks of the White Office Team
 and are not used by this project. White Office is not affiliated with them.
 
 White Office itself is  , at your option.

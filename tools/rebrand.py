@@ -10,7 +10,7 @@ each other by name. Rules run in this order, and the order matters:
   1. bundle identifiers          ai.storyteller.*      -> io.github.her3f.*
   2. links to the White Office site  getWhite Office.com/...   -> the White Office site
   3. self references             storytold/<app>       -> her3f/officoman
-  4. product names (4 apps)      DeckCraft / deckcraft / DECKCRAFT / Deckcraft
+  4. product names (4 apps)      Podium / podium / DECKCRAFT / Deckcraft
   5. parent brand                White Office              -> White Office
 
 External dependencies that live under the storytold organisation
@@ -33,18 +33,18 @@ MONO = "https://github.com/her3f/officoman"
 
 # upstream dir -> (slug, TitleCase)
 REPOS = {
-    "deckcraft": ("podium", "Podium"),
-    "gridcraft": ("tally", "Tally"),
-    "pdfcraft": ("sheaf", "Sheaf"),
-    "wordcraft": ("nib", "Nib"),
+    "podium": ("podium", "Podium"),
+    "tally": ("tally", "Tally"),
+    "sheaf": ("sheaf", "Sheaf"),
+    "nib": ("nib", "Nib"),
 }
 
 # how each upstream product spells itself
 OLD_TITLE = {
-    "deckcraft": "DeckCraft",
-    "gridcraft": "GridCraft",
-    "pdfcraft": "PdfCraft",
-    "wordcraft": "WordCraft",
+    "podium": "Podium",
+    "tally": "Tally",
+    "sheaf": "Sheaf",
+    "nib": "Nib",
 }
 
 SKIP_DIRS = {".git"}
@@ -59,12 +59,12 @@ SKIP_SUFFIX = {
 def case_forms(old: str, title: str) -> set[str]:
     """Every spelling of an app name that actually occurs in the tree."""
     forms = {
-        old,                      # deckcraft
+        old,                      # podium
         old.capitalize(),         # Deckcraft   (WiX identifiers)
         old.upper(),              # DECKCRAFT
-        title,                    # DeckCraft
+        title,                    # Podium
         title.upper(),            # DECKCRAFT
-        title.lower(),            # deckcraft
+        title.lower(),            # podium
     }
     if old.startswith("pdf"):
         forms.add("PDFCraft")     # PDFCraft

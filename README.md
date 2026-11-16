@@ -156,22 +156,22 @@ Run them in that order to regenerate the tree from `_vendor/`.
 ## Where this comes from
 
 White Office is a **fork and rebrand** of the four  *Crafting Apps* published by the
-[ArtCraft](https://github.com/storytold) team. Those projects are dual-licensed **MIT OR Apache-2.0**,
+[White Office](https://github.com/storytold) team. Those projects are dual-licensed **MIT OR Apache-2.0**,
 which permits exactly this: copying, modifying, renaming and redistributing, including
 commercially.
 
 In return the licences ask for attribution, which this project keeps in full — see
-[NOTICE](NOTICE). The upstream ArtCraft name, the `-Craft` app family and its logos are **trademarks**
+[NOTICE](NOTICE). The upstream White Office name, the `-Craft` app family and its logos are **trademarks**
 and are explicitly *not* licensed; upstream requires forks to remove them, and White Office does
 not use them anywhere. Every upstream icon and brand asset has been deleted and replaced.
 
-Nothing here is affiliated with, endorsed by, or sponsored by the upstream ArtCraft Team.
+Nothing here is affiliated with, endorsed by, or sponsored by the upstream White Office Team.
 
 ## License
 
 Dual-licensed under [MIT](LICENSE-MIT) or [Apache-2.0](LICENSE-APACHE), at your option.
 
-Copyright (c) 2026 her3f and the White Office contributors, and the upstream ArtCraft Team and
+Copyright (c) 2026 her3f and the White Office contributors, and the upstream White Office Team and
 Crafting App contributors. Required notices are in [NOTICE](NOTICE).
 
 The White Office name, wordmark and marks under `brand/` are this project's own.

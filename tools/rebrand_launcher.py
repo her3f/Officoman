@@ -60,9 +60,9 @@ def is_text(path: Path) -> bool:
 
 
 def transform(text: str) -> str:
-    # `storytold/craft-launcher` is this project's own repo; `storytold/craft-launcher-assets`
+    # `her3f/officoman` is this project's own repo; `her3f/officoman-assets`
     # is a different, upstream repository, so the trailing lookahead keeps them apart.
-    text = re.sub(r"storytold/craft-launcher(?!-)", "@SELF@", text)
+    text = re.sub(r"her3f/officoman(?!-)", "@SELF@", text)
     for old, new in RULES:
         if old in text:
             text = text.replace(old, new)

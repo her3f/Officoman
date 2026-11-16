@@ -499,7 +499,7 @@ mod tests {
             (String::from("photocraft"), 0),
             (String::from("lightcraft"), 1603),
             (String::from("filmcraft"), 3010),
-            (String::from("wordcraft"), -1),
+            (String::from("nib"), -1),
         ];
         write_results(&results, token, &codes).unwrap();
         assert_eq!(parse_results(&std::fs::read_to_string(&results).unwrap(), token), codes);

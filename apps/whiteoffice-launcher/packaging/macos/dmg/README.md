@@ -43,5 +43,5 @@ outline it (`usvg --skip-system-fonts --use-font-file assets/fonts/Inter-Variabl
 --use-font-file assets/fonts/GeistMono-Variable.ttf` converts text to paths). The window is
 660 × 432 with Finder's 32 pt title bar; the content area is 660 × 400.
 
-This follows the other Craft apps' `packaging/macos/dmg/` (storytold/wordcraft#21,
+This follows the other Craft apps' `packaging/macos/dmg/` (her3f/officoman#21,
 storytold/photocraft#1201, first in storytold/vectorcraft#493).

@@ -18,9 +18,9 @@ TRANSLATIONS = {
     for filename in ('ar.json', 'ar-ui.json')
     for key, value in json.loads((Path(__file__).parent / "site" / filename).read_text(encoding="utf-8")).items()
 }
-NAMES = {"Nib", "Tally", "Podium", "Sheaf", "WordCraft", "GridCraft", "DeckCraft", "PdfCraft",
+NAMES = {"Nib", "Tally", "Podium", "Sheaf", "Nib", "Tally", "Podium", "Sheaf",
          "Windows", "Windows x64", "macOS", "Linux", "Linux x86_64",
-         "ArtCraft, DeckCraft, GridCraft, PdfCraft, WordCraft", ".msi", ".zip", ".tar.gz",
+         "White Office, Podium, Tally, Sheaf, Nib", ".msi", ".zip", ".tar.gz",
          "x64", "x86_64", "ƒx", "=SUM(B2:B5)"}
 TECHNICAL = re.compile(r"(?<!\w)\.?[A-Za-z][A-Za-z0-9_./*+-]*(?:[ \t]+[A-Za-z][A-Za-z0-9_./*+-]*)*")
 VOID = {"area", "base", "br", "col", "embed", "hr", "img", "input", "link", "meta", "param", "source", "track", "wbr"}
@@ -47,7 +47,7 @@ def translate(text: str) -> str:
             return f"{name} — وايت أوفيس"
         if key.startswith(f"{name}: "):
             return name + ": " + translate(key[len(name) + 2:])
-    match = re.fullmatch(r"is derived from (WordCraft|GridCraft|DeckCraft|PdfCraft)\. The source is imported in this repository under", key)
+    match = re.fullmatch(r"is derived from (Nib|Tally|Podium|Sheaf)\. The source is imported in this repository under", key)
     if match:
         return f"مشتق من {match[1]}. توجد الشيفرة المصدرية في هذا المستودع ضمن"
     match = re.fullmatch(r"Download (Launcher|Nib|Tally|Podium|Sheaf) ([\d.]+) (windows|macos|linux) (Installer|Portable ZIP|Universal archive|Linux archive)", key)
@@ -55,7 +55,7 @@ def translate(text: str) -> str:
         name = 'مشغّل الحزمة' if match[1] == 'Launcher' else match[1]
         os = {'windows': 'Windows', 'macos': 'macOS', 'linux': 'Linux'}[match[3]]
         return f"تنزيل {name} {match[2]} لنظام {os} — {translate(match[4])}"
-    match = re.fullmatch(r"(Nib|Tally|Podium|Sheaf) is an independent fork of (WordCraft|GridCraft|DeckCraft|PdfCraft)\. Desktop packages are listed on the download page when available\. Compatibility and features continue to evolve; keep a copy of important files when trying a new build\.", key)
+    match = re.fullmatch(r"(Nib|Tally|Podium|Sheaf) is an independent fork of (Nib|Tally|Podium|Sheaf)\. Desktop packages are listed on the download page when available\. Compatibility and features continue to evolve; keep a copy of important files when trying a new build\.", key)
     if match:
         return f"{match[1]} مشروع مستقل مشتق من {match[2]}. تجد حزم سطح المكتب في صفحة التنزيل عند توفرها. يجري تطوير التوافق والمزايا باستمرار؛ احتفظ بنسخة من ملفاتك المهمة عند تجربة إصدار جديد."
     raise ValueError(f"Missing Arabic translation: {key}")

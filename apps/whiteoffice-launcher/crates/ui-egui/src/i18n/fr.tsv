@@ -12,7 +12,7 @@
 # Coverage: the whole interface: every menu string and tl! literal (complete_menus = true).
 # Left in English on purpose: product name "White Office Launcher" (and its "Launcher" tag), suite
 # name "Craft App Suite", app names (PhotoCraft, LightCraft, FilmCraft, DesignCraft, VectorCraft,
-# PdfCraft, EffectCraft, WordCraft, DeckCraft, GridCraft, CADCraft, SoundCraft, FigCraft), "GitHub",
+# Sheaf, EffectCraft, Nib, Podium, Tally, CADCraft, SoundCraft, FigCraft), "GitHub",
 # "Discord".
 # Trailing "…" (U+2026) must be preserved. Placeholders {name}, {n}, {version}, {count}, {v},
 # {what}, {unit}, {real}, {e} must appear in translation.
@@ -186,12 +186,12 @@ photocraft	Image editing	Retouche d'images
 vectorcraft	Vector illustration	Illustration vectorielle
 filmcraft	Video editing, color and sound	Montage vidéo, étalonnage et son
 lightcraft	Photo library and raw development	Photothèque et développement RAW
-pdfcraft	Reading, organizing and protecting PDFs	Lecture, organisation et protection de PDF
+sheaf	Reading, organizing and protecting PDFs	Lecture, organisation et protection de PDF
 effectcraft	Motion graphics and visual effects	Motion design et effets visuels
 designcraft	Page layout and publishing	Mise en page et édition
-wordcraft	Writing and document design	Rédaction et mise en forme de documents
-deckcraft	Presentations and slide shows	Présentations et diaporamas
-gridcraft	Spreadsheets and data	Tableurs et données
+nib	Writing and document design	Rédaction et mise en forme de documents
+podium	Presentations and slide shows	Présentations et diaporamas
+tally	Spreadsheets and data	Tableurs et données
 craft-anything	Find out how any software works, then craft your own	Découvrez comment fonctionne n'importe quel logiciel, puis créez le vôtre
 solidcraft	Parametric 3D CAD	CAO paramétrique 3D
 mailcraft	Mail, calendar and contacts	Courrier, calendrier et contacts

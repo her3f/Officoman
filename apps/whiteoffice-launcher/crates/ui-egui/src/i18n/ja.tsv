@@ -13,8 +13,8 @@
 # Coverage: the whole interface — every menu string and tl! literal (complete_menus = true).
 # Left in English on purpose: product name "White Office Launcher" (and its "Launcher" tag), suite
 # name "Craft App Suite",
-# app names (PhotoCraft, LightCraft, FilmCraft, DesignCraft, VectorCraft, PdfCraft, EffectCraft,
-# WordCraft, DeckCraft, GridCraft, CADCraft, SoundCraft, FigCraft), "GitHub", "Discord".
+# app names (PhotoCraft, LightCraft, FilmCraft, DesignCraft, VectorCraft, Sheaf, EffectCraft,
+# Nib, Podium, Tally, CADCraft, SoundCraft, FigCraft), "GitHub", "Discord".
 # Shortcut keys keep their key-cap names (Shift, Alt, Ctrl, Cmd, Esc).
 # Trailing "…" (U+2026) must be preserved. Placeholders {name}, {n}, {version}, {count}, {v},
 # {what}, {unit}, {real}, {e} must appear in translation.
@@ -190,12 +190,12 @@ photocraft	Image editing	画像編集
 vectorcraft	Vector illustration	ベクターイラスト
 filmcraft	Video editing, color and sound	動画編集、カラー、サウンド
 lightcraft	Photo library and raw development	フォトライブラリと RAW 現像
-pdfcraft	Reading, organizing and protecting PDFs	PDF の閲覧、整理、保護
+sheaf	Reading, organizing and protecting PDFs	PDF の閲覧、整理、保護
 effectcraft	Motion graphics and visual effects	モーショングラフィックスと視覚効果
 designcraft	Page layout and publishing	ページレイアウトと出版
-wordcraft	Writing and document design	文書作成とデザイン
-deckcraft	Presentations and slide shows	プレゼンテーションとスライドショー
-gridcraft	Spreadsheets and data	表計算とデータ
+nib	Writing and document design	文書作成とデザイン
+podium	Presentations and slide shows	プレゼンテーションとスライドショー
+tally	Spreadsheets and data	表計算とデータ
 craft-anything	Find out how any software works, then craft your own	あらゆるソフトウェアの仕組みを知り、自分だけのものを作る
 solidcraft	Parametric 3D CAD	パラメトリック3D CAD
 mailcraft	Mail, calendar and contacts	メール、カレンダー、連絡先

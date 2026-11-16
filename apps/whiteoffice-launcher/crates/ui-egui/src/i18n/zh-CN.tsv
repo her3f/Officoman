@@ -257,12 +257,12 @@ photocraft	Image editing	图像编辑
 vectorcraft	Vector illustration	矢量插画
 filmcraft	Video editing, color and sound	视频剪辑、调色和声音处理
 lightcraft	Photo library and raw development	照片管理与 RAW 处理
-pdfcraft	Reading, organizing and protecting PDFs	PDF 阅读、整理和保护
+sheaf	Reading, organizing and protecting PDFs	PDF 阅读、整理和保护
 effectcraft	Motion graphics and visual effects	动态图形与视觉特效
 designcraft	Page layout and publishing	页面排版与出版
-wordcraft	Writing and document design	写作与文档设计
-deckcraft	Presentations and slide shows	演示文稿与幻灯片
-gridcraft	Spreadsheets and data	电子表格与数据处理
+nib	Writing and document design	写作与文档设计
+podium	Presentations and slide shows	演示文稿与幻灯片
+tally	Spreadsheets and data	电子表格与数据处理
 craft-anything	Find out how any software works, then craft your own	了解任何软件的工作原理，然后打造你自己的版本
 solidcraft	Parametric 3D CAD	参数化三维 CAD
 mailcraft	Mail, calendar and contacts	邮件、日历和联系人
