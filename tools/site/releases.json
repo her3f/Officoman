@@ -25,7 +25,7 @@
       },
       "windows-x64-portable.zip": {
         "name": "nib-0.18.1-windows-x64-portable.zip",
-        "size": 57689384
+        "size": 57691257
       }
     }
   },
@@ -42,7 +42,7 @@
       },
       "windows-x64-portable.zip": {
         "name": "tally-0.19.1-windows-x64-portable.zip",
-        "size": 29508295
+        "size": 29507710
       }
     }
   },
@@ -59,7 +59,7 @@
       },
       "windows-x64-portable.zip": {
         "name": "podium-0.18.1-windows-x64-portable.zip",
-        "size": 40120460
+        "size": 40120413
       }
     }
   },
@@ -76,7 +76,7 @@
       },
       "windows-x64-portable.zip": {
         "name": "sheaf-0.21.1-windows-x64-portable.zip",
-        "size": 55111489
+        "size": 55111380
       }
     }
   }
