@@ -59,6 +59,10 @@ jobs:
           WHITEOFFICE_LAUNCHER_MIRROR: https://officoman.whitebearom.com/dl/
         run: cargo build --release -p whiteoffice-launcher
 
+      - name: Ad-hoc sign (macOS)
+        if: runner.os == 'macOS'
+        run: codesign --force --sign - target/release/whiteoffice-launcher
+
       - name: Package
         working-directory: .
         run: |
@@ -113,6 +117,10 @@ jobs:
 
       - name: Build
         run: cargo build --release -p ${{ matrix.app }} -p ${{ matrix.app }}-cli
+
+      - name: Ad-hoc sign (macOS)
+        if: runner.os == 'macOS'
+        run: codesign --force --sign - target/release/${{ matrix.app }} target/release/${{ matrix.app }}-cli
 
       - name: Package
         working-directory: .
