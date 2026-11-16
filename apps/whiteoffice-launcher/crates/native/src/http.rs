@@ -202,7 +202,7 @@ impl Http {
 
     /// Catalog resources remain on the pinned HTTPS website; redirect responses are refused.
     pub fn get_catalog_bytes(&self, url: &str, max: usize) -> Result<Option<Vec<u8>>, String> {
-        if !url.starts_with("https://officoman.whitebearom.com/") {
+        if !url.starts_with("https://whiteoffile.whitebearom.com/") {
             return Err("catalog resources must use the pinned HTTPS website".into());
         }
         Self::get_bytes_with(&self.no_redirect, url, max)

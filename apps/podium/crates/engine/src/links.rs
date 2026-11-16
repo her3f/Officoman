@@ -1,8 +1,8 @@
 //! Community and project links (shown in Help, About, the CLI and MCP).
 
 pub const DISCORD: &str = "https://github.com/her3f/officoman/discussions";
-pub const WEBSITE: &str = "https://officoman.whitebearom.com/";
-pub const APPS: &str = "https://officoman.whitebearom.com/apps";
-pub const APP_PAGE: &str = "https://officoman.whitebearom.com/apps/podium.html";
+pub const WEBSITE: &str = "https://whiteoffile.whitebearom.com/";
+pub const APPS: &str = "https://whiteoffile.whitebearom.com/apps";
+pub const APP_PAGE: &str = "https://whiteoffile.whitebearom.com/apps/podium.html";
 pub const GITHUB: &str = "https://github.com/her3f/officoman";
 pub const ISSUES: &str = "https://github.com/her3f/officoman/issues";

@@ -184,7 +184,7 @@ fn tree() -> Vec<(&'static str, Vec<Entry>)> {
                 ("Check for Updates…", "app.checkForUpdates", None),
                 ("Agent Control (MCP)…", "dialog:agents", None),
                 ("Contributors…", "dialog:about:Contributors", None),
-                ("Tally on officoman.whitebearom.com", "url:https://officoman.whitebearom.com/apps/tally.html", None),
+                ("Tally on whiteoffile.whitebearom.com", "url:https://whiteoffile.whitebearom.com/apps/tally.html", None),
                 ("Join the White Office Discord…", "url:https://github.com/her3f/officoman/discussions", None),
             ],
         ),

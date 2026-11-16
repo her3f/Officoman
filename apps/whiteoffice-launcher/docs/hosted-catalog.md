@@ -9,8 +9,8 @@ and offline operation independent of the website.
 
 On the first release check of each process, desktop and web fetch:
 
-- `https://officoman.whitebearom.com/launcher-catalog.toml`
-- `https://officoman.whitebearom.com/launcher-catalog.toml.sig`
+- `https://whiteoffile.whitebearom.com/launcher-catalog.toml`
+- `https://whiteoffile.whitebearom.com/launcher-catalog.toml.sig`
 
 The signature is base64 encoding of a 64-byte Ed25519 signature over the exact
 TOML bytes, with optional surrounding whitespace. Verification uses the SPKI

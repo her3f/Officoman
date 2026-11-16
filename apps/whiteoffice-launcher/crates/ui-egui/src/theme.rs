@@ -1,4 +1,4 @@
-//! Colours, type and shapes, matching officoman.whitebearom.com: hard edges, hairline rules, Archivo
+//! Colours, type and shapes, matching whiteoffile.whitebearom.com: hard edges, hairline rules, Archivo
 //! display type, Inter body text and Geist Mono labels. Widgets read [`Tokens::get`]; nothing
 //! hard-codes a colour.
 

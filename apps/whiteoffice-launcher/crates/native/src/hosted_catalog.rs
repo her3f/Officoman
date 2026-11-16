@@ -108,7 +108,7 @@ mod tests {
     use super::*;
 
     #[test]
-    #[ignore = "requires the live signed catalog at officoman.whitebearom.com"]
+    #[ignore = "requires the live signed catalog at whiteoffile.whitebearom.com"]
     fn live_catalog_is_verified_cached_and_activated() {
         let dir = tempfile::tempdir().unwrap();
         let paths = Paths::under(dir.path());

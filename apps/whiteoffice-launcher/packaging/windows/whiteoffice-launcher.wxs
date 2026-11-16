@@ -49,7 +49,7 @@
          (build.rs embeds it), at a path every update keeps. -->
     <Icon Id="WhiteOfficeLauncherIcon.exe" SourceFile="$(var.IconPath)" />
     <Property Id="ARPPRODUCTICON" Value="WhiteOfficeLauncherIcon.exe" />
-    <Property Id="ARPURLINFOABOUT" Value="https://officoman.whitebearom.com/apps" />
+    <Property Id="ARPURLINFOABOUT" Value="https://whiteoffile.whitebearom.com/apps" />
     <Property Id="ARPURLUPDATEINFO" Value="https://github.com/her3f/officoman/releases" />
     <Property Id="ARPHELPLINK" Value="https://github.com/her3f/officoman/discussions" />
 

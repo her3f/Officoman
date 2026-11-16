@@ -52,7 +52,7 @@ class LocalizationTests(unittest.TestCase):
                 self.assertEqual((current.parent / switches[0]['href']).resolve(), other.resolve())
                 alternatives = page.matching('link', rel='alternate')
                 self.assertEqual({a['hreflang'] for a in alternatives}, {'en', 'ar', 'x-default'})
-                expected = 'https://officoman.whitebearom.com/' + current.relative_to(self.site).as_posix()
+                expected = 'https://whiteoffile.whitebearom.com/' + current.relative_to(self.site).as_posix()
                 self.assertEqual(len(page.matching('link', rel='canonical')), 1)
                 self.assertEqual(page.matching('link', rel='canonical')[0]['href'], expected)
                 self.assertEqual(page.matching('meta', property='og:url')[0]['content'], expected)

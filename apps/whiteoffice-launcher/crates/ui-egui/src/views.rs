@@ -1,5 +1,5 @@
 //! The header, toolbar, footer, the grid of cards and the table, laid out like the apps page on
-//! officoman.whitebearom.com: hairline cells, mono labels and square controls.
+//! whiteoffile.whitebearom.com: hairline cells, mono labels and square controls.
 
 use whiteoffice_launcher_core::catalog::AppKind;
 use whiteoffice_launcher_core::details::AppDetails;

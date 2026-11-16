@@ -376,7 +376,7 @@ filter	Installed	Telepítve
 # Tray (menu bar) menu and tooltip
 	Show White Office Launcher	White Office Launcher megjelenítése
 	Check for Updates	Frissítések keresése
-	Visit officoman.whitebearom.com	officoman.whitebearom.com megnyitása
+	Visit whiteoffile.whitebearom.com	whiteoffile.whitebearom.com megnyitása
 	White Office on GitHub	White Office a GitHubon
 	Join the White Office Discord	Csatlakozás az White Office Discord-közösségéhez
 @plural	White Office Launcher · {n} update available|White Office Launcher · {n} updates available	White Office Launcher · {n} frissítés elérhető|White Office Launcher · {n} frissítés elérhető

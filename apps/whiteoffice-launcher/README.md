@@ -1,5 +1,5 @@
 <p align="center">
-  <a href="https://officoman.whitebearom.com/">
+  <a href="https://whiteoffile.whitebearom.com/">
     <picture>
       <source media="(prefers-color-scheme: dark)" srcset="docs/brand/whiteoffice-logo-white.svg">
       <img alt="White Office" src="docs/brand/whiteoffice-logo.svg" width="200">
@@ -35,8 +35,8 @@
 
 <p align="center">
   <a href="https://github.com/her3f/officoman/releases/latest"><b>Download White Office Launcher</b></a> ·
-  <a href="https://officoman.whitebearom.com/">White Office</a> ·
-  <a href="https://officoman.whitebearom.com/apps">The Craft App Suite</a>
+  <a href="https://whiteoffile.whitebearom.com/">White Office</a> ·
+  <a href="https://whiteoffile.whitebearom.com/apps">The Craft App Suite</a>
 </p>
 
 > [!NOTE]
@@ -261,28 +261,28 @@ New contributors and AI agents: start with [`AGENTS.md`](AGENTS.md). Release pac
 ## The Craft App Suite
 
 White Office Launcher installs the **Craft App Suite**: free,  creative tools from the
-[White Office](https://officoman.whitebearom.com/) team, each written from scratch in Rust and each able to
+[White Office](https://whiteoffile.whitebearom.com/) team, each written from scratch in Rust and each able to
 stand on its own.
 
 |                                                                                                                                                                                            | App                 | What it's for                                         | Code                                                  | Learn more                                                 |
 |:------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------:|:--------------------|:------------------------------------------------------|:------------------------------------------------------|:-----------------------------------------------------------|
-| <img src="https://raw.githubusercontent.com/storytold/photocraft/main/assets/app-icon/hicolor/64x64/apps/io.github.her3f.photocraft.png" alt="" width="32" height="32">                     | **PhotoCraft**      | Image editing: layers, masks, type and real PSD files | [GitHub](https://github.com/storytold/photocraft)     | [Website](https://officoman.whitebearom.com/apps/photocraft)         |
-| <img src="https://raw.githubusercontent.com/storytold/vectorcraft/main/assets/app-icon/hicolor/64x64/apps/io.github.her3f.vectorcraft.png" alt="" width="32" height="32">                   | **VectorCraft**     | Vector illustration                                   | [GitHub](https://github.com/storytold/vectorcraft)    | [Website](https://officoman.whitebearom.com/apps/vectorcraft)        |
-| <img src="https://raw.githubusercontent.com/storytold/filmcraft/main/assets/app-icon/hicolor/64x64/apps/io.github.her3f.filmcraft.png" alt="" width="32" height="32">                       | **FilmCraft**       | Video editing, color and sound                        | [GitHub](https://github.com/storytold/filmcraft)      | [Website](https://officoman.whitebearom.com/apps/filmcraft)          |
-| <img src="https://raw.githubusercontent.com/storytold/lightcraft/main/assets/app-icon/hicolor/64x64/apps/io.github.her3f.lightcraft.png" alt="" width="32" height="32">                     | **LightCraft**      | Photo library and raw development                     | [GitHub](https://github.com/storytold/lightcraft)     | [Website](https://officoman.whitebearom.com/apps/lightcraft)         |
-| <img src="https://raw.githubusercontent.com/her3f/officoman/main/assets/app-icon/hicolor/64x64/apps/io.github.her3f.sheaf.png" alt="" width="32" height="32">                         | **Sheaf**        | Reading, organizing and protecting PDFs               | [GitHub](https://github.com/her3f/officoman)       | [Website](https://officoman.whitebearom.com/apps/sheaf)           |
-| <img src="https://raw.githubusercontent.com/storytold/effectcraft/main/assets/app-icon/hicolor/64x64/apps/io.github.her3f.effectcraft.png" alt="" width="32" height="32">                   | **EffectCraft**     | Motion graphics and visual effects                    | [GitHub](https://github.com/storytold/effectcraft)    | [Website](https://officoman.whitebearom.com/apps/effectcraft)        |
+| <img src="https://raw.githubusercontent.com/storytold/photocraft/main/assets/app-icon/hicolor/64x64/apps/io.github.her3f.photocraft.png" alt="" width="32" height="32">                     | **PhotoCraft**      | Image editing: layers, masks, type and real PSD files | [GitHub](https://github.com/storytold/photocraft)     | [Website](https://whiteoffile.whitebearom.com/apps/photocraft)         |
+| <img src="https://raw.githubusercontent.com/storytold/vectorcraft/main/assets/app-icon/hicolor/64x64/apps/io.github.her3f.vectorcraft.png" alt="" width="32" height="32">                   | **VectorCraft**     | Vector illustration                                   | [GitHub](https://github.com/storytold/vectorcraft)    | [Website](https://whiteoffile.whitebearom.com/apps/vectorcraft)        |
+| <img src="https://raw.githubusercontent.com/storytold/filmcraft/main/assets/app-icon/hicolor/64x64/apps/io.github.her3f.filmcraft.png" alt="" width="32" height="32">                       | **FilmCraft**       | Video editing, color and sound                        | [GitHub](https://github.com/storytold/filmcraft)      | [Website](https://whiteoffile.whitebearom.com/apps/filmcraft)          |
+| <img src="https://raw.githubusercontent.com/storytold/lightcraft/main/assets/app-icon/hicolor/64x64/apps/io.github.her3f.lightcraft.png" alt="" width="32" height="32">                     | **LightCraft**      | Photo library and raw development                     | [GitHub](https://github.com/storytold/lightcraft)     | [Website](https://whiteoffile.whitebearom.com/apps/lightcraft)         |
+| <img src="https://raw.githubusercontent.com/her3f/officoman/main/assets/app-icon/hicolor/64x64/apps/io.github.her3f.sheaf.png" alt="" width="32" height="32">                         | **Sheaf**        | Reading, organizing and protecting PDFs               | [GitHub](https://github.com/her3f/officoman)       | [Website](https://whiteoffile.whitebearom.com/apps/sheaf)           |
+| <img src="https://raw.githubusercontent.com/storytold/effectcraft/main/assets/app-icon/hicolor/64x64/apps/io.github.her3f.effectcraft.png" alt="" width="32" height="32">                   | **EffectCraft**     | Motion graphics and visual effects                    | [GitHub](https://github.com/storytold/effectcraft)    | [Website](https://whiteoffile.whitebearom.com/apps/effectcraft)        |
 | <img src="https://raw.githubusercontent.com/storytold/AniCraft/main/assets/app-icon/hicolor/64x64/apps/io.github.her3f.anicraft.png" alt="" width="32" height="32">                         | **AniCraft**        | 2D vector animation                                   | [GitHub](https://github.com/storytold/AniCraft)       | [Project page](https://github.com/storytold/anicraft)     |
-| <img src="https://raw.githubusercontent.com/storytold/designcraft/main/assets/app-icon/hicolor/64x64/apps/io.github.her3f.designcraft.png" alt="" width="32" height="32">                   | **DesignCraft**     | Page layout and publishing                            | [GitHub](https://github.com/storytold/designcraft)    | [Website](https://officoman.whitebearom.com/apps/designcraft)        |
-| <img src="https://raw.githubusercontent.com/storytold/figcraft/main/assets/app-icon/hicolor/64x64/apps/io.github.her3f.figcraft.png" alt="" width="32" height="32">                         | **FigCraft**        | Interface design and prototyping                      | [GitHub](https://github.com/storytold/figcraft)       | [Website](https://officoman.whitebearom.com/apps/figcraft)           |
-| <img src="https://raw.githubusercontent.com/her3f/officoman/main/assets/app-icon/hicolor/64x64/apps/io.github.her3f.nib.png" alt="" width="32" height="32">                       | **Nib**       | Word processing and documents                         | [GitHub](https://github.com/her3f/officoman)      | [Website](https://officoman.whitebearom.com/apps/nib)          |
-| <img src="https://raw.githubusercontent.com/storytold/soundcraft/main/assets/app-icon/hicolor/64x64/apps/io.github.her3f.soundcraft.png" alt="" width="32" height="32">                     | **SoundCraft**      | Audio recording and editing                           | [GitHub](https://github.com/storytold/soundcraft)     | [Website](https://officoman.whitebearom.com/apps/soundcraft)         |
-| <img src="https://raw.githubusercontent.com/her3f/officoman/main/assets/app-icon/hicolor/64x64/apps/io.github.her3f.podium.png" alt="" width="32" height="32">                       | **Podium**       | Presentations and slide decks                         | [GitHub](https://github.com/her3f/officoman)      | [Website](https://officoman.whitebearom.com/apps/podium)          |
-| <img src="https://raw.githubusercontent.com/storytold/cadcraft/main/assets/app-icon/hicolor/64x64/apps/io.github.her3f.cadcraft.png" alt="" width="32" height="32">                         | **CADCraft**        | Computer-aided design                                 | [GitHub](https://github.com/storytold/cadcraft)       | [Website](https://officoman.whitebearom.com/apps/cadcraft)           |
-| <img src="https://raw.githubusercontent.com/her3f/officoman/main/assets/app-icon/hicolor/64x64/apps/io.github.her3f.tally.png" alt="" width="32" height="32">                       | **Tally**       | Spreadsheets and data                                 | [GitHub](https://github.com/her3f/officoman)      | [Website](https://officoman.whitebearom.com/apps/tally)          |
-| <img src="https://raw.githubusercontent.com/storytold/texturecraft/main/assets/app-icon/hicolor/64x64/apps/io.github.her3f.texturecraft.png" alt="" width="32" height="32">                 | **TextureCraft**    | 3D texture painting                                   | [GitHub](https://github.com/storytold/texturecraft)   | [Website](https://officoman.whitebearom.com/apps/texturecraft)       |
+| <img src="https://raw.githubusercontent.com/storytold/designcraft/main/assets/app-icon/hicolor/64x64/apps/io.github.her3f.designcraft.png" alt="" width="32" height="32">                   | **DesignCraft**     | Page layout and publishing                            | [GitHub](https://github.com/storytold/designcraft)    | [Website](https://whiteoffile.whitebearom.com/apps/designcraft)        |
+| <img src="https://raw.githubusercontent.com/storytold/figcraft/main/assets/app-icon/hicolor/64x64/apps/io.github.her3f.figcraft.png" alt="" width="32" height="32">                         | **FigCraft**        | Interface design and prototyping                      | [GitHub](https://github.com/storytold/figcraft)       | [Website](https://whiteoffile.whitebearom.com/apps/figcraft)           |
+| <img src="https://raw.githubusercontent.com/her3f/officoman/main/assets/app-icon/hicolor/64x64/apps/io.github.her3f.nib.png" alt="" width="32" height="32">                       | **Nib**       | Word processing and documents                         | [GitHub](https://github.com/her3f/officoman)      | [Website](https://whiteoffile.whitebearom.com/apps/nib)          |
+| <img src="https://raw.githubusercontent.com/storytold/soundcraft/main/assets/app-icon/hicolor/64x64/apps/io.github.her3f.soundcraft.png" alt="" width="32" height="32">                     | **SoundCraft**      | Audio recording and editing                           | [GitHub](https://github.com/storytold/soundcraft)     | [Website](https://whiteoffile.whitebearom.com/apps/soundcraft)         |
+| <img src="https://raw.githubusercontent.com/her3f/officoman/main/assets/app-icon/hicolor/64x64/apps/io.github.her3f.podium.png" alt="" width="32" height="32">                       | **Podium**       | Presentations and slide decks                         | [GitHub](https://github.com/her3f/officoman)      | [Website](https://whiteoffile.whitebearom.com/apps/podium)          |
+| <img src="https://raw.githubusercontent.com/storytold/cadcraft/main/assets/app-icon/hicolor/64x64/apps/io.github.her3f.cadcraft.png" alt="" width="32" height="32">                         | **CADCraft**        | Computer-aided design                                 | [GitHub](https://github.com/storytold/cadcraft)       | [Website](https://whiteoffile.whitebearom.com/apps/cadcraft)           |
+| <img src="https://raw.githubusercontent.com/her3f/officoman/main/assets/app-icon/hicolor/64x64/apps/io.github.her3f.tally.png" alt="" width="32" height="32">                       | **Tally**       | Spreadsheets and data                                 | [GitHub](https://github.com/her3f/officoman)      | [Website](https://whiteoffile.whitebearom.com/apps/tally)          |
+| <img src="https://raw.githubusercontent.com/storytold/texturecraft/main/assets/app-icon/hicolor/64x64/apps/io.github.her3f.texturecraft.png" alt="" width="32" height="32">                 | **TextureCraft**    | 3D texture painting                                   | [GitHub](https://github.com/storytold/texturecraft)   | [Website](https://whiteoffile.whitebearom.com/apps/texturecraft)       |
 | <img src="https://raw.githubusercontent.com/storytold/materialcraft/main/assets/app-icon/hicolor/64x64/apps/io.github.her3f.materialcraft.png" alt="" width="32" height="32">               | **MaterialCraft**   | Procedural material design                            | [GitHub](https://github.com/storytold/materialcraft)  | [Project page](https://github.com/storytold/materialcraft) |
-| <img src="https://raw.githubusercontent.com/storytold/craft-anything/main/assets/app-icon/hicolor/64x64/apps/io.github.her3f.craft-anything.png" alt="" width="32" height="32">             | **Craft Anything**  | See how any software works, then build your own       | [GitHub](https://github.com/storytold/craft-anything) | [Website](https://officoman.whitebearom.com/apps/craft-anything)     |
+| <img src="https://raw.githubusercontent.com/storytold/craft-anything/main/assets/app-icon/hicolor/64x64/apps/io.github.her3f.craft-anything.png" alt="" width="32" height="32">             | **Craft Anything**  | See how any software works, then build your own       | [GitHub](https://github.com/storytold/craft-anything) | [Website](https://whiteoffile.whitebearom.com/apps/craft-anything)     |
 | <img src="https://raw.githubusercontent.com/tangency-labs/solidcraft/main/assets/icons/app/linux/exports/hicolor/64x64/apps/io.tangencylabs.solidcraft.png" alt="" width="32" height="32"> | **SolidCraft**      | Parametric 3D CAD by Tangency Labs (community app)    | [GitHub](https://github.com/tangency-labs/solidcraft) |                                                            |
 | <img src="https://raw.githubusercontent.com/UCS-Care-Group/mailcraft/main/assets/app-icon/hicolor/64x64/apps/io.github.billsecond.mailcraft.png" alt="" width="32" height="32"> | **MailCraft** | Mail, calendar and contacts by UCS Care Group (community app) | [GitHub](https://github.com/UCS-Care-Group/mailcraft) | [Website](https://mailcraft.work) |
 
@@ -303,8 +303,8 @@ stand on its own.
 
 <p align="center">
   <a href="https://github.com/her3f/officoman/discussions"><b>github.com/her3f/officoman/discussions</b></a> ·
-  <a href="https://officoman.whitebearom.com/">officoman.whitebearom.com</a> ·
-  <a href="https://officoman.whitebearom.com/apps">The Craft App Suite</a> ·
+  <a href="https://whiteoffile.whitebearom.com/">whiteoffile.whitebearom.com</a> ·
+  <a href="https://whiteoffile.whitebearom.com/apps">The Craft App Suite</a> ·
   <a href="https://github.com/her3f/officoman">White Office Launcher</a>
 </p>
 
@@ -349,6 +349,6 @@ part of this repository and White Office Launcher, under [`docs/brand/LICENSE-br
 Forks and modified versions must remove them.
 
 <p align="center">
-  <a href="https://officoman.whitebearom.com/"><img alt="White Office" src="docs/brand/whiteoffice-mark.svg" width="28"></a><br>
-  <sub>Made by the <a href="https://officoman.whitebearom.com/">White Office</a> team and community.</sub>
+  <a href="https://whiteoffile.whitebearom.com/"><img alt="White Office" src="docs/brand/whiteoffice-mark.svg" width="28"></a><br>
+  <sub>Made by the <a href="https://whiteoffile.whitebearom.com/">White Office</a> team and community.</sub>
 </p>

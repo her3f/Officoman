@@ -41,7 +41,7 @@ RULES = [
     # craft-fonts, craft-i18n) and the screenshot asset repo stay where they are: rewriting
     # them breaks dependency resolution.
     ("@SELF@", "her3f/officoman"),
-    ("getWhite Office.com", "officoman.whitebearom.com"),
+    ("getWhite Office.com", "whiteoffile.whitebearom.com"),
     ("discord.gg/White Office", "github.com/her3f/officoman/discussions"),
     ("White Office", "White Office"),
     ("White Office", "whiteoffice"),

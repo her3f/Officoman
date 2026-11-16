@@ -378,7 +378,7 @@ filter	Installed	インストール済み
 # Tray (menu bar) menu and tooltip
 	Show White Office Launcher	White Office Launcher を表示
 	Check for Updates	更新を確認
-	Visit officoman.whitebearom.com	officoman.whitebearom.com を開く
+	Visit whiteoffile.whitebearom.com	whiteoffile.whitebearom.com を開く
 	White Office on GitHub	GitHub の White Office
 	Join the White Office Discord	White Office Discord に参加
 @plural	White Office Launcher · {n} update available|White Office Launcher · {n} updates available	White Office Launcher · {n} 件の更新があります

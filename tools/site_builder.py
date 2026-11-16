@@ -11,7 +11,7 @@ from release_assets import latest_assets
 from localize_site import build_locales
 
 ROOT = Path(__file__).resolve().parent.parent
-SITE_URL = "https://officoman.whitebearom.com"
+SITE_URL = "https://whiteoffile.whitebearom.com"
 REPO = "https://github.com/her3f/officoman"
 SOURCE = Path(__file__).resolve().parent / "site"
 

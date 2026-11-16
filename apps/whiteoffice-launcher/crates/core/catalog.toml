@@ -15,7 +15,7 @@ kind = "official"
 publisher = "White Office"
 msi_publisher = "White Office"
 former_bundles = []
-site = "https://officoman.whitebearom.com/apps/nib.html"
+site = "https://whiteoffile.whitebearom.com/apps/nib.html"
 
 [[apps]]
 id = "tally"
@@ -31,7 +31,7 @@ kind = "official"
 publisher = "White Office"
 msi_publisher = "White Office"
 former_bundles = []
-site = "https://officoman.whitebearom.com/apps/tally.html"
+site = "https://whiteoffile.whitebearom.com/apps/tally.html"
 
 [[apps]]
 id = "podium"
@@ -47,7 +47,7 @@ kind = "official"
 publisher = "White Office"
 msi_publisher = "White Office"
 former_bundles = []
-site = "https://officoman.whitebearom.com/apps/podium.html"
+site = "https://whiteoffile.whitebearom.com/apps/podium.html"
 
 [[apps]]
 id = "sheaf"
@@ -63,4 +63,4 @@ kind = "official"
 publisher = "White Office"
 msi_publisher = "White Office"
 former_bundles = []
-site = "https://officoman.whitebearom.com/apps/sheaf.html"
+site = "https://whiteoffile.whitebearom.com/apps/sheaf.html"

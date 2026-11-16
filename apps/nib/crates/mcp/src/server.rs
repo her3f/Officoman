@@ -187,9 +187,9 @@ impl Server {
                 Ok(json!({
                     "protocolVersion": version,
                     "capabilities": {"tools": {}, "resources": {}},
-                    "serverInfo": {"name": "nib", "title": "Nib", "version": env!("CARGO_PKG_VERSION"), "websiteUrl": "https://officoman.whitebearom.com/apps/nib.html"},
+                    "serverInfo": {"name": "nib", "title": "Nib", "version": env!("CARGO_PKG_VERSION"), "websiteUrl": "https://whiteoffile.whitebearom.com/apps/nib.html"},
                     "instructions": format!(
-                        "{INSTRUCTIONS} Backend: {}. Community: https://github.com/her3f/officoman/discussions · https://officoman.whitebearom.com/apps/nib.html · https://github.com/her3f/officoman",
+                        "{INSTRUCTIONS} Backend: {}. Community: https://github.com/her3f/officoman/discussions · https://whiteoffile.whitebearom.com/apps/nib.html · https://github.com/her3f/officoman",
                         self.backend.describe()
                     ),
                 }))

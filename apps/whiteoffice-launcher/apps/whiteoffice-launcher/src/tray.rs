@@ -56,7 +56,7 @@ impl Tray {
         let show = MenuItem::new(i18n::t("Show White Office Launcher"), true, None);
         let check = MenuItem::new(i18n::t("Check for Updates"), true, None);
         use whiteoffice_launcher_core::catalog::{GITHUB_URL, WEBSITE_URL};
-        let website = MenuItem::new(i18n::t("Visit officoman.whitebearom.com"), true, None);
+        let website = MenuItem::new(i18n::t("Visit whiteoffile.whitebearom.com"), true, None);
         let github = MenuItem::new(i18n::t("White Office on GitHub"), true, None);
         let discord = MenuItem::new(i18n::t("Join the White Office Discord"), true, None);
         let quit = MenuItem::new(i18n::t("Quit White Office Launcher"), true, None);
@@ -109,7 +109,7 @@ impl Tray {
         let labels = vec![
             (show, "Show White Office Launcher"),
             (check, "Check for Updates"),
-            (website, "Visit officoman.whitebearom.com"),
+            (website, "Visit whiteoffile.whitebearom.com"),
             (github, "White Office on GitHub"),
             (discord, "Join the White Office Discord"),
             (quit, "Quit White Office Launcher"),
