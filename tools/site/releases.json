@@ -4,19 +4,11 @@
     "assets": {
       "linux-x86_64.tar.gz": {
         "name": "whiteoffice-launcher-0.19.2-linux-x86_64.tar.gz",
-        "size": 14538515
+        "size": 14538488
       },
       "macos-universal.tar.gz": {
         "name": "whiteoffice-launcher-0.19.2-macos-universal.tar.gz",
-        "size": 9914545
-      },
-      "windows-x64-portable.zip": {
-        "name": "whiteoffice-launcher-0.19.2-windows-x64-portable.zip",
-        "size": 11630348
-      },
-      "windows-x64.msi": {
-        "name": "whiteoffice-launcher-0.19.2-windows-x64.msi",
-        "size": 10231808
+        "size": 9797853
       }
     }
   },
@@ -25,19 +17,15 @@
     "assets": {
       "linux-x86_64.tar.gz": {
         "name": "nib-0.18.1-linux-x86_64.tar.gz",
-        "size": 56963112
+        "size": 56962920
       },
       "macos-universal.tar.gz": {
         "name": "nib-0.18.1-macos-universal.tar.gz",
-        "size": 48568035
+        "size": 47875514
       },
       "windows-x64-portable.zip": {
         "name": "nib-0.18.1-windows-x64-portable.zip",
-        "size": 57689184
-      },
-      "windows-x64.msi": {
-        "name": "nib-0.18.1-windows-x64.msi",
-        "size": 43278336
+        "size": 57689384
       }
     }
   },
@@ -46,19 +34,15 @@
     "assets": {
       "linux-x86_64.tar.gz": {
         "name": "tally-0.19.1-linux-x86_64.tar.gz",
-        "size": 30394455
+        "size": 30392136
       },
       "macos-universal.tar.gz": {
         "name": "tally-0.19.1-macos-universal.tar.gz",
-        "size": 24633712
+        "size": 24294624
       },
       "windows-x64-portable.zip": {
         "name": "tally-0.19.1-windows-x64-portable.zip",
-        "size": 29508254
-      },
-      "windows-x64.msi": {
-        "name": "tally-0.19.1-windows-x64.msi",
-        "size": 22417408
+        "size": 29508295
       }
     }
   },
@@ -67,19 +51,15 @@
     "assets": {
       "linux-x86_64.tar.gz": {
         "name": "podium-0.18.1-linux-x86_64.tar.gz",
-        "size": 39824473
+        "size": 39823842
       },
       "macos-universal.tar.gz": {
         "name": "podium-0.18.1-macos-universal.tar.gz",
-        "size": 32988864
+        "size": 32533885
       },
       "windows-x64-portable.zip": {
         "name": "podium-0.18.1-windows-x64-portable.zip",
-        "size": 40119886
-      },
-      "windows-x64.msi": {
-        "name": "podium-0.18.1-windows-x64.msi",
-        "size": 30216192
+        "size": 40120460
       }
     }
   },
@@ -88,19 +68,15 @@
     "assets": {
       "linux-x86_64.tar.gz": {
         "name": "sheaf-0.21.1-linux-x86_64.tar.gz",
-        "size": 58238922
+        "size": 58237959
       },
       "macos-universal.tar.gz": {
         "name": "sheaf-0.21.1-macos-universal.tar.gz",
-        "size": 49381949
+        "size": 48740728
       },
       "windows-x64-portable.zip": {
         "name": "sheaf-0.21.1-windows-x64-portable.zip",
-        "size": 55110271
-      },
-      "windows-x64.msi": {
-        "name": "sheaf-0.21.1-windows-x64.msi",
-        "size": 43266048
+        "size": 55111489
       }
     }
   }
