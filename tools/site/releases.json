@@ -107,6 +107,14 @@
   "courier": {
     "version": "0.13.0",
     "assets": {
+      "linux-x86_64.tar.gz": {
+        "name": "courier-0.13.0-linux-x86_64.tar.gz",
+        "size": 41078976
+      },
+      "macos-universal.tar.gz": {
+        "name": "courier-0.13.0-macos-universal.tar.gz",
+        "size": 33706117
+      },
       "windows-x64-portable.zip": {
         "name": "courier-0.13.0-windows-x64-portable.zip",
         "size": 39962200
