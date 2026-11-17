@@ -7,10 +7,8 @@ use std::path::{Path, PathBuf};
 /// The app's name in White Office URLs (`whiteoffile.whitebearom.com/apps/{APP}`, `github.com/storytold/{APP}`).
 pub const APP: &str = "sheaf";
 
-pub const DISCORD: &str = "https://github.com/her3f/officoman/discussions";
 pub const WEBSITE: &str = "https://whiteoffile.whitebearom.com";
 pub const APP_PAGE: &str = "https://whiteoffile.whitebearom.com/apps/sheaf.html";
-pub const GITHUB: &str = "https://github.com/her3f/officoman";
 
 /// A link and the registry command that opens it.
 #[derive(Clone, Copy, Debug)]
@@ -22,11 +20,9 @@ pub struct Link {
     pub icon: &'static str,
 }
 
-/// In the order they are shown. Discord comes first: it is where people get help fastest.
+/// Public product pages, in the order shown in Help and About.
 pub const LINKS: &[Link] = &[
-    Link { command: "help.discord", label: "Join the White Office Discord", url: DISCORD, icon: "messages-square" },
     Link { command: "help.app_page", label: "Sheaf web page", url: APP_PAGE, icon: "globe" },
-    Link { command: "help.github", label: "Sheaf on GitHub", url: GITHUB, icon: "code-xml" },
     Link { command: "help.website", label: "White Office website", url: WEBSITE, icon: "external-link" },
 ];
 

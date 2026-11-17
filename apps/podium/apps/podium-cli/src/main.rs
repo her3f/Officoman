@@ -88,8 +88,8 @@ fn main() -> ExitCode {
         Some("app") => report(app(rest)),
         Some("mcp") => report(mcp(rest)),
         Some("links") => {
-            use podium_engine::links::{APP_PAGE, DISCORD, GITHUB, WEBSITE};
-            outln!("Discord   {DISCORD}\nWebsite   {WEBSITE}\nApp page  {APP_PAGE}\nGitHub    {GITHUB}");
+            use podium_engine::links::{APP_PAGE, WEBSITE};
+            outln!("Website   {WEBSITE}\nApp page  {APP_PAGE}");
             ExitCode::SUCCESS
         }
         Some(other) => unknown(other),
@@ -670,8 +670,8 @@ fn app(args: &[String]) -> Result<(), String> {
             other => rest.push(other.to_string()),
         }
     }
-    let mut r = Remote::connect(&control_addr(&port))
-        .map_err(|e| format!("no Podium app on port {port} ({e}); start it with `podium --control {port}`"))?;
+    let mut r =
+        Remote::connect(&control_addr(&port)).map_err(|e| format!("no Podium app on port {port} ({e}); start it with `podium --control {port}`"))?;
     let parse = |s: Option<&String>| -> Result<Value, String> {
         s.map(|j| serde_json::from_str(j).map_err(|e| format!("bad JSON: {e}"))).transpose().map(|v| v.unwrap_or(json!({})))
     };

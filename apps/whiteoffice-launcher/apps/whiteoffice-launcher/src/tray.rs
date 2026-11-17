@@ -46,7 +46,11 @@ fn load_icon() -> Result<tray_icon::Icon, String> {
 /// Windows and macOS keep tray-icon's defaults: there the title is drawn next to the icon (macOS)
 /// or unsupported (Windows), and the id never reaches the user.
 fn identity(builder: TrayIconBuilder) -> TrayIconBuilder {
-    if cfg!(any(target_os = "macos", target_os = "windows")) { builder } else { builder.with_id("whiteoffice-launcher").with_title("White Office Launcher") }
+    if cfg!(any(target_os = "macos", target_os = "windows")) {
+        builder
+    } else {
+        builder.with_id("whiteoffice-launcher").with_title("White Office Launcher")
+    }
 }
 
 impl Tray {
@@ -55,16 +59,13 @@ impl Tray {
     pub fn new(wake: impl Fn() + Send + Sync + Clone + 'static, on_quit: impl Fn() + Send + Sync + 'static) -> Result<Self, String> {
         let show = MenuItem::new(i18n::t("Show White Office Launcher"), true, None);
         let check = MenuItem::new(i18n::t("Check for Updates"), true, None);
-        use whiteoffice_launcher_core::catalog::{GITHUB_URL, WEBSITE_URL};
+        use whiteoffice_launcher_core::catalog::WEBSITE_URL;
         let website = MenuItem::new(i18n::t("Visit whiteoffile.whitebearom.com"), true, None);
-        let github = MenuItem::new(i18n::t("White Office on GitHub"), true, None);
-        let discord = MenuItem::new(i18n::t("Join the White Office Discord"), true, None);
         let quit = MenuItem::new(i18n::t("Quit White Office Launcher"), true, None);
         let menu = Menu::new();
-        menu.append_items(&[&show, &check, &PredefinedMenuItem::separator(), &website, &github, &discord, &PredefinedMenuItem::separator(), &quit])
+        menu.append_items(&[&show, &check, &PredefinedMenuItem::separator(), &website, &PredefinedMenuItem::separator(), &quit])
             .map_err(|e| e.to_string())?;
-        let links = [(website.id().clone(), WEBSITE_URL), (github.id().clone(), GITHUB_URL)];
-        let discord_id = discord.id().clone();
+        let links = [(website.id().clone(), WEBSITE_URL)];
         let image = load_icon()?;
         let builder = identity(TrayIconBuilder::new()).with_menu(Box::new(menu));
         // macOS draws the icon as a template image (recoloured for light and dark menu bars).
@@ -72,13 +73,14 @@ impl Tray {
         let builder = builder.with_icon_templated(image);
         #[cfg(not(target_os = "macos"))]
         let builder = builder.with_icon(image);
-        let icon = builder.with_menu_on_left_click(cfg!(target_os = "macos")).with_tooltip("White Office Launcher").build().map_err(|e| e.to_string())?;
+        let icon =
+            builder.with_menu_on_left_click(cfg!(target_os = "macos")).with_tooltip("White Office Launcher").build().map_err(|e| e.to_string())?;
         let (tx, rx): (Sender<TrayAction>, Receiver<TrayAction>) = channel();
         let (show_id, check_id, quit_id) = (show.id().clone(), check.id().clone(), quit.id().clone());
         {
             let tx = tx.clone();
             let wake = wake.clone();
-            let ids = (show_id.clone(), check_id.clone(), quit_id.clone(), discord_id);
+            let ids = (show_id.clone(), check_id.clone(), quit_id.clone());
             MenuEvent::set_event_handler(Some(move |e: MenuEvent| {
                 let action = if e.id == ids.0 {
                     TrayAction::Show
@@ -86,8 +88,6 @@ impl Tray {
                     TrayAction::Check
                 } else if e.id == ids.2 {
                     TrayAction::Quit
-                } else if e.id == ids.3 {
-                    TrayAction::Open(whiteoffice_launcher_native::process::discord_url())
                 } else if let Some((_, url)) = links.iter().find(|(id, _)| *id == e.id) {
                     TrayAction::Open(url)
                 } else {
@@ -110,8 +110,6 @@ impl Tray {
             (show, "Show White Office Launcher"),
             (check, "Check for Updates"),
             (website, "Visit whiteoffile.whitebearom.com"),
-            (github, "White Office on GitHub"),
-            (discord, "Join the White Office Discord"),
             (quit, "Quit White Office Launcher"),
         ];
         Ok(Self { icon, show: show_id, check: check_id, quit: quit_id, rx, tooltip: String::new(), language: String::new(), labels })

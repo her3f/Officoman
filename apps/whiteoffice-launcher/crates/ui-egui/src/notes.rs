@@ -74,7 +74,7 @@ fn show_lines(ui: &mut Ui, notes: &str, scale: f32) {
         });
     }
     for line in &changelog {
-        if let Some(url) = full_changelog(line) {
+        if let Some(url) = full_changelog(line).filter(|url| !url.contains("github.com")) {
             ui.add_space(6.0);
             ui.hyperlink_to(tl!("Full changelog"), url);
         }
@@ -109,7 +109,7 @@ fn draw(ui: &mut Ui, line: &Line<'_>, t: &Tokens, scale: f32) {
                 ui.spacing_mut().item_spacing.x = 4.0;
                 ui.label(RichText::new("•").color(t.faint));
                 ui.label(RichText::new(text).color(t.ink));
-                if let Some(url) = link.filter(|u| whiteoffice_launcher_core::release::safe_web_link(u)) {
+                if let Some(url) = link.filter(|u| whiteoffice_launcher_core::release::safe_web_link(u) && !u.contains("github.com")) {
                     let short = url.rsplit('/').next().map_or_else(|| tl!("link").to_string(), |n| format!("#{n}"));
                     ui.hyperlink_to(RichText::new(short).size(12.0 * scale), url);
                 }

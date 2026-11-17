@@ -7,6 +7,8 @@ use std::cell::{Cell, RefCell};
 use std::rc::Rc;
 use std::sync::OnceLock;
 
+use egui_kittest::Harness;
+use egui_kittest::kittest::{NodeT, Queryable};
 use whiteoffice_launcher_core::details::AppDetails;
 use whiteoffice_launcher_core::protocol::{
     Backend, CANCELLED, Capabilities, Command, Event, INSTALL_CANCELLED, JobPhase, LatestRelease, Origin, PausedDownload, Source,
@@ -16,8 +18,6 @@ use whiteoffice_launcher_core::status::InstallSource;
 use whiteoffice_launcher_core::{Arch, Installed, Os, Platform, SUITE, version};
 use whiteoffice_launcher_ui_egui::settings::ViewMode;
 use whiteoffice_launcher_ui_egui::{Host, LauncherUi, Settings};
-use egui_kittest::Harness;
-use egui_kittest::kittest::{NodeT, Queryable};
 
 const NOW: i64 = 1_791_500_000;
 
@@ -2467,28 +2467,21 @@ fn the_uninstall_prompt_keeps_its_own_size_after_a_taller_dialog() {
 }
 
 #[test]
-/// The footer links website and GitHub, cards link only GitHub, and the table menu adds the
-/// app's website and repository.
-fn links_to_the_website_github_and_each_apps_pages() {
-    let (mut h, _) = harness(ViewMode::Grid, egui::Theme::Dark, true);
-    h.run_steps(6);
-    // Footer: website, GitHub and Discord.
-    for label in ["Website", "GitHub", "Discord"] {
-        assert!(h.query_all_by_label(label).count() >= 1, "{label}");
+/// Public navigation exposes the website, never the source repository.
+fn links_to_the_website_without_repository_promotions() {
+    for mode in [ViewMode::Grid, ViewMode::Table] {
+        let (mut h, _) = harness(mode, egui::Theme::Dark, true);
+        h.run_steps(6);
+        h.get_by_label("Website");
+        for label in ["GitHub", "Discord", "GitHub repository", "All releases"] {
+            assert!(h.query_by_label(label).is_none(), "{label}");
+        }
+        h.get_all_by_label_contains("More actions").next().unwrap().click();
+        h.run_steps(3);
+        assert!(h.query_by_label("GitHub repository").is_none());
+        assert!(h.query_by_label("All releases").is_none());
+        assert!(h.query_all_by_label_contains("Website").count() >= 2);
     }
-    // Cards: every app links to its repo and to its own page on whiteoffile.whitebearom.com (plus the footer's).
-    let shown_cards = h.query_all_by_label("GitHub").count() - 1;
-    let shown_sites = h.query_all_by_label("Website").count() - 1;
-    assert!(shown_cards >= 13, "{shown_cards}");
-    assert_eq!(shown_sites, 0, "the cards only link to GitHub; the website is the footer's icon");
-    // The table's … menu has the app's website and GitHub repo.
-    let (mut h, _) = harness(ViewMode::Table, egui::Theme::Dark, true);
-    h.run_steps(6);
-    h.get_all_by_label_contains("More actions").nth(8).unwrap().click(); // Nib
-    h.run_steps(3);
-    h.get_by_label("GitHub repository");
-    // The footer's Website link and Nib's now-live one in the menu.
-    assert!(h.query_all_by_label_contains("Website").count() >= 2);
 }
 
 /// Clicks the `n`th widget labelled `label` and returns the URL the app asked to open.
@@ -2518,31 +2511,13 @@ fn all_opened(h: &mut Harness<'_, Option<LauncherUi>>, label: &str) -> Vec<Strin
 }
 
 #[test]
-/// Footer, card and social links open their expected pages; one card menu's All releases action
-/// opens a repository releases page.
+/// The remaining navigation opens the public product website.
 fn links_open_the_right_pages() {
     let (mut h, _) = harness(ViewMode::Grid, egui::Theme::Dark, true);
     h.run_steps(6);
-    assert_eq!(click_opens(&mut h, "Discord").as_deref(), Some("https://github.com/her3f/officoman/discussions"));
-    // The footer's White Office links and each card's own pages.
-    let github = all_opened(&mut h, "GitHub");
-    assert!(github.contains(&"https://github.com/storytold".to_string()), "{github:?}");
-    assert!(github.contains(&"https://github.com/storytold/photocraft".to_string()), "{github:?}");
-    let sites = all_opened(&mut h, "Website");
-    assert!(sites.contains(&"https://whiteoffile.whitebearom.com".to_string()), "{sites:?}");
-    assert_eq!(sites, vec!["https://whiteoffile.whitebearom.com".to_string()], "{sites:?}");
-    // Social icons in the footer.
-    assert_eq!(click_opens(&mut h, "X").as_deref(), Some("https://x.com/get_whiteoffice"));
-    assert_eq!(click_opens(&mut h, "YouTube").as_deref(), Some("https://www.youtube.com/@OfficialWhite OfficeStudios"));
-    assert_eq!(click_opens(&mut h, "TikTok").as_deref(), Some("https://www.tiktok.com/@whiteoffice.studios"));
-    assert_eq!(click_opens(&mut h, "Instagram").as_deref(), Some("https://www.instagram.com/officialwhiteofficestudios"));
-    assert_eq!(click_opens(&mut h, "LinkedIn").as_deref(), Some("https://www.linkedin.com/company/whiteoffice-ai"));
-    // The … menu.
-    h.get_all_by_label_contains("More actions").next().unwrap().click();
-    h.run_steps(3);
-    // The first card is the first installed app by name.
-    let url = click_opens(&mut h, "All releases").unwrap_or_default();
-    assert!(url.starts_with("https://github.com/storytold/") && url.ends_with("/releases"), "{url}");
+    assert_eq!(all_opened(&mut h, "Website"), vec!["https://whiteoffile.whitebearom.com".to_string()]);
+    assert!(h.query_by_label("GitHub").is_none());
+    assert!(h.query_by_label("Discord").is_none());
 }
 
 /// An asset URL can come straight from GitHub's release JSON; it must not reach the opener when
@@ -3014,9 +2989,8 @@ fn automatic_updates_are_disabled_by_default() {
 }
 
 #[test]
-/// The footer names the release origins actually in use, adding GitHub only when some release
-/// came from there.
-fn the_footer_names_the_services_behind_what_is_on_screen() {
+/// The footer reports check freshness without advertising repository services.
+fn the_footer_keeps_release_origins_out_of_public_status() {
     let footer = |extra: Vec<Event>| {
         let mut evs = events();
         evs.extend(extra);
@@ -3049,10 +3023,9 @@ fn the_footer_names_the_services_behind_what_is_on_screen() {
             h.get_by_label_contains("Checked ").accesskit_node().label().or_else(|| h.get_by_label_contains("Checked ").accesskit_node().value());
         label.unwrap_or_default()
     };
-    assert_eq!(footer(Vec::new()), "Checked 3 min ago · using White Office API");
-    let from_github =
-        vec![Event::Latest { app: "nib".into(), latest: LatestRelease::Found(release("nib", "0.3.1", NOW)), from: Origin::GitHub }];
-    assert_eq!(footer(from_github), "Checked 3 min ago · using White Office API and GitHub");
+    assert_eq!(footer(Vec::new()), "Checked 3 min ago");
+    let from_github = vec![Event::Latest { app: "nib".into(), latest: LatestRelease::Found(release("nib", "0.3.1", NOW)), from: Origin::GitHub }];
+    assert_eq!(footer(from_github), "Checked 3 min ago");
 }
 
 #[test]
@@ -3281,8 +3254,8 @@ fn clicking_a_card_opens_its_details_drawer() {
     h.get_by_label_contains("Curves and type layers · 1/4");
     // The links the page offers as buttons of their own.
     h.get_by_label("Website ↗");
-    h.get_by_label("GitHub ↗");
-    h.get_by_label("Releases ↗");
+    assert!(h.query_by_label("GitHub ↗").is_none());
+    assert!(h.query_by_label("Releases ↗").is_none());
     // The picture arrows wrap around, and the thumbnails jump.
     h.get_by_label("Previous picture (←)").click();
     h.run_steps(3);
@@ -3573,10 +3546,10 @@ fn the_rate_limit_notice_never_runs_under_the_footer_links() {
         assert!(notice.width() >= 120.0 && notice.right() <= width, "{width}: notice {notice:?}");
         // Everything on the footer's right: the website, GitHub and Discord icons and the social icons.
         let mut right = Vec::new();
-        for label in ["Website", "GitHub", "Discord", "X", "YouTube", "TikTok", "Instagram", "LinkedIn"] {
+        for label in ["Website"] {
             right.extend(h.query_all_by_label(label).map(|n| n.rect()).filter(|r| (r.center().y - notice.center().y).abs() < 12.0));
         }
-        assert_eq!(right.len(), 8, "{width}: {right:?}");
+        assert_eq!(right.len(), 1, "{width}: {right:?}");
         assert!(h.query_by_label_contains("Installing for").is_none(), "{width}: the footer no longer names the platform");
         for r in right {
             assert!(!r.intersects(notice), "{width}: notice {notice:?} overlaps {r:?}");
@@ -4103,7 +4076,8 @@ fn the_notes_card_follows_the_zoom_within_the_window() {
     h.run_steps(2);
     h.get_by_label("Release notes").click();
     h.run_steps(4);
-    let span = |h: &Harness<'_, Option<LauncherUi>>| h.get_by_label("Close").rect().right() - h.get_by_label("Open on GitHub").rect().left();
+    let span =
+        |h: &Harness<'_, Option<LauncherUi>>| h.get_by_label("Close").rect().right() - h.get_all_by_label("Website").last().unwrap().rect().left();
     let usual = span(&h);
     for _ in 0..3 {
         h.key_press_modifiers(egui::Modifiers::COMMAND, egui::Key::Plus);
@@ -4116,7 +4090,7 @@ fn the_notes_card_follows_the_zoom_within_the_window() {
     }
     let in_window = |h: &Harness<'_, Option<LauncherUi>>| {
         let window = h.ctx.content_rect();
-        for label in ["Close", "Open on GitHub"] {
+        for label in ["Close"] {
             assert!(window.contains_rect(h.get_by_label(label).rect()), "{label} left {window:?}");
         }
     };

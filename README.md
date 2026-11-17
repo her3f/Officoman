@@ -52,7 +52,7 @@ The project site lives in [`docs/`](docs) and is published from that folder with
 |---|---|
 | [Home](docs/index.html) | What the suite is, the four apps, what they share |
 | [Apps](docs/apps/index.html) | One page per app with its features and file formats |
-| [About](docs/about.html) | Upstream provenance, what changed, trademark position |
+| [Downloads](docs/download.html) | Launcher and individual apps, filtered by operating system |
 
 To point GitHub Pages at it: **Settings → Pages → Source: Deploy from a branch →
 `main` / `/docs`**.
@@ -69,10 +69,28 @@ node --test tools/test_site_ui.cjs
 python -m http.server 8765 --bind 127.0.0.1 --directory docs
 ```
 
-Open `http://127.0.0.1:8765/` for a local preview. Edit page rendering in
-`tools/site_builder.py`, app descriptions in `tools/build_docs.py`, and CSS/JavaScript
-in `tools/site/`; files under `docs/` are generated. The generator leaves application
+Open `http://127.0.0.1:8765/ar/index.html` for the Arabic preview or `/` for English.
+Edit the shared shell and build in `tools/site_builder.py`, page layouts in
+`tools/site_design.py`, illustrative document artwork in `tools/site_previews.py`,
+app descriptions in `tools/build_docs.py`, and CSS/JavaScript in `tools/site/`;
+files under `docs/` are generated. The generator leaves application
 READMEs untouched. No build or preview command publishes the site.
+
+The website follows the White Bear company palette: navy framing, cyan actions,
+and light surfaces for product information. Readex Pro (Arabic) and Manrope
+(English) are bundled locally in `tools/site/fonts/` and copied into the site.
+Their OFL-1.1 licence files, source URLs and SHA-256 hashes are included alongside
+the fonts. App icons retain their individual colours.
+
+The presentation uses a centered hero with layered document illustrations, an
+interactive app explorer, an illustrated app collection, full product pages and
+platform-filtered download cards. Illustrations are labelled and are not screenshots.
+Layouts adapt to mobile screens and RTL, and animation respects reduced-motion settings.
+The existing static generation keeps every route available without a client framework.
+
+Public pages use a compact footer and the original White Bear company logo, recorded
+in `tools/site/BRAND-ASSETS.json`. Product navigation links to the public website;
+source-repository promotions are omitted from the site and app interfaces.
 
 Arabic is available at `ar/index.html`. Every page has a language switch to its
 equivalent page, and navigation stays in the selected language. Update shared

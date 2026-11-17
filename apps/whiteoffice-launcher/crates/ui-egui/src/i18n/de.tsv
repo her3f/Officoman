@@ -449,3 +449,6 @@ anicraft	Classic tweens with eight easing presets and custom ease curves, plus s
 	Unlock version?	Versionssperre aufheben?
 	{app} is pinned to {version}. Follow the latest release instead?	{app} ist auf {version} festgelegt. Stattdessen der neuesten Version folgen?
 	Unlock	Entsperren
+	Update service busy; try again in {min} min	Aktualisierungsdienst ausgelastet; in {min} Min. erneut versuchen
+	Try again in {min} min	In {min} Min. erneut versuchen
+	Release notes are temporarily unavailable.	Versionshinweise sind vorübergehend nicht verfügbar.

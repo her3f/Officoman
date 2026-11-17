@@ -448,3 +448,6 @@ anicraft	Classic tweens with eight easing presets and custom ease curves, plus s
 	Unlock version?	განიბლოკოს ვერსია?
 	{app} is pinned to {version}. Follow the latest release instead?	{app} ფიქსირებულია {version} ვერსიაზე. სანაცვლოდ გამოიყენოთ უახლესი გამოშვება?
 	Unlock	განბლოკვა
+	Update service busy; try again in {min} min	განახლების სერვისი დაკავებულია; სცადეთ {min} წუთში
+	Try again in {min} min	სცადეთ {min} წუთში
+	Release notes are temporarily unavailable.	გამოშვების შენიშვნები დროებით მიუწვდომელია.

@@ -1,9 +1,9 @@
 //! Modal dialogs: release notes, uninstall confirmation, settings.
 
 use crate::i18n::fmt;
+use egui::{RichText, vec2};
 use whiteoffice_launcher_core::Os;
 use whiteoffice_launcher_core::protocol::Command;
-use egui::{RichText, vec2};
 
 use crate::app::{Dialog, Host, LauncherUi};
 use crate::theme::{self, Tokens};
@@ -134,7 +134,7 @@ impl LauncherUi {
             egui::Frame::new().inner_margin(egui::Margin::same(theme::PAD as i8)).show(ui, |ui| {
                 ui.set_width(ui.available_width());
                 if release.notes.is_empty() {
-                    ui.label(tl!("These notes weren't fetched (GitHub's request limit was reached). They're on the release page."));
+                    ui.label(tl!("Release notes are temporarily unavailable."));
                 } else {
                     crate::notes::show_scaled(ui, &release.notes, self.notes_zoom);
                 }
@@ -145,7 +145,7 @@ impl LauncherUi {
         egui::Frame::new().inner_margin(egui::Margin::symmetric(theme::PAD as i8, 16)).show(ui, |ui| {
             ui.set_width(ui.available_width());
             ui.horizontal(|ui| {
-                widgets::hud_link(ui, tl!("Open on GitHub"), &release.html_url);
+                widgets::hud_link(ui, tl!("Website"), whiteoffice_launcher_core::catalog::WEBSITE_URL);
                 ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
                     close = widgets::button(ui, tl!("Close"), Kind::Secondary, 90.0).clicked();
                 });
@@ -171,7 +171,7 @@ impl LauncherUi {
         ui.add_space(14.0);
         let mut close = false;
         ui.horizontal(|ui| {
-            widgets::hud_link(ui, tl!("What's new"), &r.html_url);
+            widgets::hud_link(ui, tl!("Website"), whiteoffice_launcher_core::catalog::WEBSITE_URL);
             ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
                 if self.caps.self_update {
                     if widgets::button(ui, tl!("Update and restart"), Kind::Primary, 0.0)

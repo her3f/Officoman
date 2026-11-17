@@ -1,8 +1,8 @@
 //! The Settings dialog: a large card in the shape of the app page (see `sheet.rs`), with the
 //! groups of settings in boxes, two columns once the window is wide enough.
 
-use whiteoffice_launcher_core::{Os, PackageKind};
 use egui::{RichText, Ui, vec2};
+use whiteoffice_launcher_core::{Os, PackageKind};
 
 use crate::app::{Host, LauncherUi};
 use crate::i18n::fmt;
@@ -332,7 +332,7 @@ impl LauncherUi {
         });
     }
 
-    /// Community links (Discord, website, GitHub and the social icons) opened through the safe
+    /// Public website and social links opened through the safe
     /// external-link path; it queues no app actions.
     fn settings_community(&mut self, ui: &mut Ui) {
         let t = Tokens::get(ui.ctx());
@@ -340,15 +340,9 @@ impl LauncherUi {
             ui.label(RichText::new(tl!("Questions, ideas and news from the White Office team")).color(t.muted));
             ui.add_space(6.0);
             ui.horizontal_wrapped(|ui| {
-                use whiteoffice_launcher_core::catalog::{GITHUB_URL, WEBSITE_URL};
-                if widgets::button(ui, tl!("Join the Discord"), Kind::Primary, 0.0).on_hover_text(self.discord_url).clicked() {
-                    widgets::open_external_link(ui.ctx(), self.discord_url);
-                }
+                use whiteoffice_launcher_core::catalog::WEBSITE_URL;
                 if widgets::button(ui, tl!("Website"), Kind::Secondary, 0.0).on_hover_text(WEBSITE_URL).clicked() {
                     widgets::open_external_link(ui.ctx(), WEBSITE_URL);
-                }
-                if widgets::button(ui, tl!("GitHub"), Kind::Secondary, 0.0).on_hover_text(GITHUB_URL).clicked() {
-                    widgets::open_external_link(ui.ctx(), GITHUB_URL);
                 }
                 // Wrap the social links as a group so their icons stay together.
                 let width = widgets::icon_links_width(whiteoffice_launcher_core::catalog::SOCIAL.len(), 16.0);

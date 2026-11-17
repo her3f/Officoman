@@ -173,11 +173,10 @@ impl Server {
                     "capabilities": {"tools": {}, "resources": {}},
                     "serverInfo": {"name": "podium", "title": "Podium", "version": env!("CARGO_PKG_VERSION"), "websiteUrl": podium_engine::links::APP_PAGE},
                     "instructions": format!(
-                        "{INSTRUCTIONS} Backend: {}. Community: {} (Discord), {} (app page), {} (source). The `app.links` command returns these links.",
+                        "{INSTRUCTIONS} Backend: {}. Website: {}. App page: {}. The `app.links` command returns these links.",
                         self.backend.describe(),
                         podium_engine::links::DISCORD,
-                        podium_engine::links::APP_PAGE,
-                        podium_engine::links::GITHUB
+                        podium_engine::links::APP_PAGE
                     ),
                 }))
             }

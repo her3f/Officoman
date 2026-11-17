@@ -1,8 +1,8 @@
 //! Title bar (Quick Access Toolbar, title, search, account) and status bar.
 
 use egui::{Align2, Rect, Sense, Stroke, Ui, pos2, vec2};
-use serde_json::json;
 use nib_doc::{PartKind, StoryRef};
+use serde_json::json;
 
 use crate::theme::{Tokens, TypeRung, fit_text, medium, paint_text, regular, semibold, text_width};
 use crate::{StatusCount, StatusCounts, WordApp, icons};
@@ -396,18 +396,18 @@ pub fn title_bar(app: &mut WordApp, ui: &mut Ui) {
                             icons::paint(
                                 ui.painter(),
                                 Rect::from_center_size(pos2(crate::rtl::lead_x(rtl, r, 13.0), r.center().y), vec2(14.0, 14.0)),
-                                "discord",
+                                "link",
                                 t.on_accent,
                                 t.on_accent,
                             );
                             ui.painter().text(
                                 pos2(crate::rtl::lead_x(rtl, r, 24.0), r.center().y),
                                 crate::rtl::lead_center(rtl),
-                                tl!("Discord"),
+                                tl!("Website"),
                                 medium(11.5),
                                 t.on_accent,
                             );
-                            if resp.on_hover_text(tl!("Join the White Office community on Discord")).clicked() {
+                            if resp.on_hover_text(tl!("White Office website")).clicked() {
                                 let _ = app.run("ui.discord", json!({}));
                             }
                             ui.add_space(8.0);
@@ -1000,8 +1000,7 @@ fn small_icon(ui: &mut Ui, icon: &str, tip: &str) -> bool {
 }
 
 /// [`WordApp::cached_missing_fonts`]: the list, and the warnings by font key.
-pub type MissingFontsCache =
-    (std::sync::Arc<Vec<nib_engine::cmd::font::MissingFont>>, std::sync::Arc<std::collections::HashMap<String, String>>);
+pub type MissingFontsCache = (std::sync::Arc<Vec<nib_engine::cmd::font::MissingFont>>, std::sync::Arc<std::collections::HashMap<String, String>>);
 
 /// [`WordApp::missing_fonts`]: the layout the list was read from, and the list.
 pub type MissingFontsMemo = (std::sync::Weak<nib_layout::DocLayout>, MissingFontsCache);
@@ -1014,11 +1013,8 @@ impl WordApp {
     pub fn cached_missing_fonts(&mut self, layout: &std::sync::Arc<nib_layout::DocLayout>) -> MissingFontsCache {
         if !self.missing_fonts.0.upgrade().is_some_and(|seen| std::sync::Arc::ptr_eq(&seen, layout)) {
             let found = nib_engine::cmd::font::missing_fonts(&self.session.doc, layout);
-            let warnings = found
-                .iter()
-                .filter(|f| !f.metric_compatible)
-                .map(|f| (nib_engine::cmd::font::font_key(&f.font), f.shown_as.join(", ")))
-                .collect();
+            let warnings =
+                found.iter().filter(|f| !f.metric_compatible).map(|f| (nib_engine::cmd::font::font_key(&f.font), f.shown_as.join(", "))).collect();
             self.missing_fonts = (std::sync::Arc::downgrade(layout), (std::sync::Arc::new(found), std::sync::Arc::new(warnings)));
         }
         self.missing_fonts.1.clone()

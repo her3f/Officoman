@@ -1,0 +1,10 @@
+"""Code-native illustrative documents, not application screenshots."""
+
+def preview(slug: str) -> str:
+    if slug == "nib":
+        return '''<div class="document-preview"><span class="doc-label">FIELD NOTES / 001</span><h3>Space for<br>your next idea.</h3><p>Good work starts with a blank page.<br>Make this one yours.</p><div class="ink-lines"><i></i><i></i><i></i></div><blockquote>Less getting in the way.<br>More getting it down.</blockquote><span class="doc-page">WHITE OFFICE <span>01</span></span></div>'''
+    if slug == "tally":
+        return '''<div class="sheet-preview"><div class="formula">ƒx <span>=SUM(B2:B5)</span></div><table><caption>Project budget · example data</caption><thead><tr><th scope="col">Project</th><th scope="col">Budget</th><th scope="col">Status</th></tr></thead><tbody><tr><td>Research</td><td>1,200</td><td>Complete</td></tr><tr><td>Design</td><td>2,800</td><td>In progress</td></tr><tr><td>Development</td><td>4,000</td><td>In progress</td></tr><tr><td>Launch</td><td>2,000</td><td>Planned</td></tr><tr><th scope="row">Total</th><td class="selected-cell">10,000</td><td></td></tr></tbody></table><div class="mini-chart" aria-label="Illustrative budget chart"><i style="height:30%"></i><i style="height:70%"></i><i style="height:100%"></i><i style="height:50%"></i></div></div>'''
+    if slug == "podium":
+        return '''<div class="slide-preview"><span>THE NEXT CHAPTER</span><h3>Small ideas.<br>Big possibilities.</h3><div class="slide-circle" aria-hidden="true"></div><p>A new perspective starts here.</p><small>WHITE OFFICE <span>01 / 12</span></small></div>'''
+    return '''<div class="pdf-preview"><div class="pdf-thumbs"><span>01</span><span>02</span><span>03</span></div><div class="pdf-page"><span class="doc-label">PROJECT BRIEF</span><h3>Every page.<br>In its place.</h3><div class="ink-lines"><i></i><i></i><i></i></div><div class="highlight">A clearer view of the details.</div><div class="ink-lines"><i></i><i></i><i></i></div><span class="doc-page">REVIEW COPY · 01</span></div></div>'''

@@ -7,7 +7,7 @@ use crate::canvas::{DocView, Fit, PageLayout};
 use crate::panes::{Place, TabDrop};
 use crate::tab_context::Action;
 use crate::theme::{self, ThemePreference, Tokens};
-use crate::{Dialog, Mode, SheafApp, PropsTab, RightPanel, icons, widgets, window_controls};
+use crate::{Dialog, Mode, PropsTab, RightPanel, SheafApp, icons, widgets, window_controls};
 
 /// Height of the tab strip when it doubles as the macOS title bar (#789). AppKit draws the traffic
 /// lights itself, centred in the standard 28 pt title-bar band at the top of the window, and moving
@@ -276,8 +276,8 @@ pub fn tab_strip(app: &mut SheafApp, ui: &mut egui::Ui) {
                         app.dialog = Some(Dialog::Shortcuts);
                     }
                     // One click to the community, from anywhere in the app.
-                    if widgets::ghost_button_sized(ui, "messages-square", "Discord", tab_h).on_hover_text(sheaf_engine::links::DISCORD).clicked() {
-                        app.execute("help.discord");
+                    if widgets::ghost_button_sized(ui, "globe", "Website", tab_h).on_hover_text(sheaf_engine::links::WEBSITE).clicked() {
+                        app.execute("help.website");
                     }
                 });
             });

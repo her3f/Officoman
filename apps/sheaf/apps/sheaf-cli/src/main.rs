@@ -94,7 +94,7 @@ sheaf-cli run    --script steps.json [--root DIR] [--report]
     "\
 sheaf-cli ui     --control FILE <method> [key=value …] [--out shot.png]
                                                            drive a running app started with --control FILE
-help and feedback: https://github.com/her3f/officoman/discussions"
+website: https://whiteoffile.whitebearom.com"
 );
 
 fn main() -> ExitCode {
@@ -190,8 +190,6 @@ fn stdout_line(line: std::fmt::Arguments<'_>) -> Result<(), CliError> {
 
 fn version() -> Result<(), CliError> {
     stdout_line(format_args!("sheaf-cli {}", sheaf_engine::build_info::version()))?;
-    stdout_line(format_args!("Discord: {}  (help and feedback)", sheaf_engine::links::DISCORD))?;
     stdout_line(format_args!("Web:     {}", sheaf_engine::links::APP_PAGE))?;
-    stdout_line(format_args!("Source:  {}", sheaf_engine::links::GITHUB))?;
     Ok(())
 }

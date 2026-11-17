@@ -408,3 +408,6 @@ anicraft	Classic tweens with eight easing presets and custom ease curves, plus s
 	Unlock version?	解除版本鎖定？
 	{app} is pinned to {version}. Follow the latest release instead?	{app} 已鎖定為 {version}。是否改為使用最新版本？
 	Unlock	解除鎖定
+	Update service busy; try again in {min} min	更新服務忙碌中；請在 {min} 分鐘後重試
+	Try again in {min} min	請在 {min} 分鐘後重試
+	Release notes are temporarily unavailable.	版本說明暫時無法使用。

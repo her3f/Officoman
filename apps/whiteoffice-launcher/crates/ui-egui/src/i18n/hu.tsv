@@ -450,3 +450,6 @@ anicraft	Classic tweens with eight easing presets and custom ease curves, plus s
 	Unlock version?	Feloldja a verzió zárolását?
 	{app} is pinned to {version}. Follow the latest release instead?	A(z) {app} a(z) {version} verzióra van rögzítve. Inkább a legújabb kiadást kövesse?
 	Unlock	Feloldás
+	Update service busy; try again in {min} min	A frissítési szolgáltatás foglalt; próbálja újra {min} perc múlva
+	Try again in {min} min	Próbálja újra {min} perc múlva
+	Release notes are temporarily unavailable.	A kiadási megjegyzések átmenetileg nem érhetők el.

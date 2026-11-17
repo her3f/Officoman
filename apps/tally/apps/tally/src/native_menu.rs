@@ -4,10 +4,10 @@
 use std::str::FromStr;
 use std::sync::mpsc::{Receiver, channel};
 
-use tally_ui_egui::{OpenWindow, SheetApp};
 use muda::accelerator::Accelerator;
 use muda::{CheckMenuItem, Menu, MenuEvent, MenuItem, PredefinedMenuItem, Submenu};
 use serde_json::{Value, json};
+use tally_ui_egui::{OpenWindow, SheetApp};
 
 type Entry = (&'static str, &'static str, Option<&'static str>);
 
@@ -185,7 +185,6 @@ fn tree() -> Vec<(&'static str, Vec<Entry>)> {
                 ("Agent Control (MCP)…", "dialog:agents", None),
                 ("Contributors…", "dialog:about:Contributors", None),
                 ("Tally on whiteoffile.whitebearom.com", "url:https://whiteoffile.whitebearom.com/apps/tally.html", None),
-                ("Join the White Office Discord…", "url:https://github.com/her3f/officoman/discussions", None),
             ],
         ),
     ]

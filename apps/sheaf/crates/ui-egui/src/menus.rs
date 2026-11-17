@@ -16,7 +16,7 @@ use sheaf_engine::commands::{self, Shortcut};
 
 use crate::canvas::{Fit, PageLayout};
 use crate::theme::ThemePreference;
-use crate::{SheafApp, RightPanel};
+use crate::{RightPanel, SheafApp};
 
 pub(super) mod tab_context;
 
@@ -227,8 +227,7 @@ const SIGN: &[&str] = &[
     "sign.panel",
 ];
 const WINDOW: &[&str] = &["view.next_tab", "view.previous_tab"];
-const HELP: &[&str] =
-    &["help.shortcuts", SEP, "help.app_page", "help.github", "help.website", "help.discord", SEP, "help.check_updates", SEP, "help.about"];
+const HELP: &[&str] = &["help.shortcuts", SEP, "help.app_page", "help.website", SEP, "help.check_updates", SEP, "help.about"];
 
 /// A registry shortcut as a craft-keymap chord: `command` is ⌘ (Ctrl elsewhere) and `mac_ctrl`
 /// the Control key on macOS. `None` for a key craft-keymap doesn't name.

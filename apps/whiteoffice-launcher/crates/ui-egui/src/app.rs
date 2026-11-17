@@ -1022,29 +1022,6 @@ impl LauncherUi {
         self.entry(id).is_some_and(|e| e.status(self.platform, self.caps.manage_apps).is_installed())
     }
 
-    /// "White Office API", "GitHub" or "White Office API and GitHub": the services behind the releases on
-    /// screen right now. `None` until something has loaded.
-    pub(crate) fn sources_label(&self) -> Option<String> {
-        use whiteoffice_launcher_core::protocol::Origin;
-        let mut api = false;
-        let mut github = false;
-        for e in &self.entries {
-            if matches!(e.latest, Some(LatestRelease::Found(_) | LatestRelease::None)) {
-                match e.origin {
-                    Some(Origin::WhiteOfficeApi) => api = true,
-                    Some(Origin::GitHub) => github = true,
-                    None => {}
-                }
-            }
-        }
-        match (api, github) {
-            (true, true) => Some(crate::i18n::fmt(tl!("{a} and {b}"), &[("a", Origin::WhiteOfficeApi.label()), ("b", Origin::GitHub.label())])),
-            (true, false) => Some(Origin::WhiteOfficeApi.label().to_string()),
-            (false, true) => Some(Origin::GitHub.label().to_string()),
-            (false, false) => None,
-        }
-    }
-
     pub(crate) fn count(&self, filter: Filter) -> usize {
         self.entries.iter().filter(|e| self.in_filter(e, filter)).count()
     }

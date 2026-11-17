@@ -88,6 +88,16 @@ class LocalizationTests(unittest.TestCase):
         sitemap = ET.parse(self.site / 'sitemap.xml')
         self.assertEqual(len(sitemap.getroot()), 14)
 
+    def test_public_pages_keep_company_brand_without_repository_promotions(self):
+        for path in self.site.rglob('*.html'):
+            page = Page(path)
+            source = path.read_text(encoding='utf-8')
+            self.assertNotIn('YOUR WORK. YOUR SPACE.', source)
+            self.assertNotIn('عملك. مساحتك.', source)
+            self.assertFalse(any('github.com' in a.get('href', '') for a in page.matching('a')))
+            self.assertTrue(any(a.get('src', '').endswith('whitebear-logo.png') for a in page.matching('img')))
+            self.assertFalse(page.matching('div', **{'class': 'wrap footer-wordmark'}))
+
     def test_untranslated_new_content_is_rejected(self):
         with self.assertRaisesRegex(ValueError, 'Missing Arabic translation'):
             translate('A newly added sentence that needs translation.')

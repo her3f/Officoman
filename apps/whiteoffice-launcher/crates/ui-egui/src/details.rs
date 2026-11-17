@@ -3,14 +3,14 @@
 //! and screenshots come from `core::details`; the live facts (version, date, download size, release
 //! notes) from the app's latest GitHub release.
 
-use whiteoffice_launcher_core::CraftApp;
 use std::sync::Arc;
+use whiteoffice_launcher_core::CraftApp;
 
+use egui::{Color32, CornerRadius, Id, Margin, Order, Rect, RichText, Sense, Stroke, Ui, emath::easing, pos2, vec2};
 use whiteoffice_launcher_core::details::AppDetails;
 use whiteoffice_launcher_core::platform::pick_asset;
 use whiteoffice_launcher_core::protocol::Command;
 use whiteoffice_launcher_core::status::AppStatus;
-use egui::{Color32, CornerRadius, Id, Margin, Order, Rect, RichText, Sense, Stroke, Ui, emath::easing, pos2, vec2};
 
 use crate::app::LauncherUi;
 use crate::i18n::{current, tr_ctx};
@@ -592,7 +592,7 @@ fn step_button(ui: &mut Ui, left: bool, tip: &str, t: &Tokens) -> bool {
 /// The app's links as a row of buttons each as wide as its label; the ↗ says each opens the
 /// browser, like the links on the cards.
 fn link_buttons(ui: &mut Ui, app: &CraftApp) {
-    let links = [(tl!("Website"), app.website()), (tl!("GitHub"), app.repo_url()), (tl!("Releases"), app.releases_url())];
+    let links = [(tl!("Website"), app.website())];
     ui.horizontal(|ui| {
         ui.spacing_mut().item_spacing.x = 8.0;
         for (label, url) in links {

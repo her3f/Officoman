@@ -77,11 +77,7 @@ pub fn show(app: &mut SheafApp, ui: &mut egui::Ui) {
     egui::ScrollArea::vertical().auto_shrink([false, false]).show(ui, |ui| {
         egui::Frame::NONE.inner_margin(egui::Margin { left: 36, right: 36, top: 28, bottom: 28 }).show(ui, |ui| {
             ui.label(egui::RichText::new(tl!("Welcome to Sheaf")).font(theme::semibold(24.0)));
-            ui.label(
-                egui::RichText::new(tl!("An  PDF workbench — local, private, and scriptable."))
-                    .color(t.text_muted)
-                    .font(theme::regular(14.0)),
-            );
+            ui.label(egui::RichText::new(tl!("An  PDF workbench — local, private, and scriptable.")).color(t.text_muted).font(theme::regular(14.0)));
             ui.add_space(14.0);
             if !app.community_card_closed {
                 egui::Frame::NONE
@@ -94,8 +90,8 @@ pub fn show(app: &mut SheafApp, ui: &mut egui::Ui) {
                         ui.horizontal(|ui| {
                             widgets::whiteoffice_mark(ui, 28.0);
                             ui.vertical(|ui| {
-                                ui.label(egui::RichText::new(tl!("Join the White Office community")).font(theme::semibold(15.0)));
-                                ui.label(egui::RichText::new(tl!("Get help, share feedback and follow development on Discord.")).color(t.text_muted));
+                                ui.label(egui::RichText::new(tl!("White Office")).font(theme::semibold(15.0)));
+                                ui.label(egui::RichText::new(tl!("White Office website")).color(t.text_muted));
                             });
                             // Closed for this run only: the card is back on the next launch.
                             ui.with_layout(egui::Layout::right_to_left(egui::Align::Min), |ui| {

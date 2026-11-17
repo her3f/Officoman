@@ -1,0 +1,16 @@
+[
+  {
+    "file": "readex-pro.ttf",
+    "source": "https://raw.githubusercontent.com/google/fonts/main/ofl/readexpro/ReadexPro%5BHEXP%2Cwght%5D.ttf",
+    "license": "OFL-1.1",
+    "license_file": "readexpro-OFL.txt",
+    "sha256": "268bba7e1e8f3b14d798b3fb0e40ebaa3fc39308c9ac0020e2faf6df181cc30e"
+  },
+  {
+    "file": "manrope.ttf",
+    "source": "https://raw.githubusercontent.com/google/fonts/main/ofl/manrope/Manrope%5Bwght%5D.ttf",
+    "license": "OFL-1.1",
+    "license_file": "manrope-OFL.txt",
+    "sha256": "3ae11c49db0455a3cc33e37d380f20fdb8c7f8b41dc07625c177e3d87a9d6ae6"
+  }
+]

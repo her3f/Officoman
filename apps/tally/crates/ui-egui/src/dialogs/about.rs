@@ -20,7 +20,6 @@ pub(super) fn about(ui: &mut egui::Ui, d: &mut Dialog) {
             ui.add_space(4.0);
             ui.label("A clean-room, , Rust-native spreadsheet. Part of WhiteOffice.");
             ui.hyperlink_to("whiteoffile.whitebearom.com/apps/tally", "https://whiteoffile.whitebearom.com/apps/tally.html");
-            ui.hyperlink_to("Join the White Office Discord", "https://github.com/her3f/officoman/discussions");
         }
     }
 }

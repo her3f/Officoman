@@ -765,12 +765,11 @@ impl WordApp {
             // MCP get an error.
             "ui.makeDefaultApp" => {
                 return Some(Err(
-                    "making Nib the default app needs a click in File › Options › General; scripts and agents can't change system defaults"
-                        .into(),
+                    "making Nib the default app needs a click in File › Options › General; scripts and agents can't change system defaults".into(),
                 ));
             }
             "ui.discord" => {
-                self.canvas.open_url = Some("https://github.com/her3f/officoman/discussions".into());
+                self.canvas.open_url = Some("https://whiteoffile.whitebearom.com/".into());
                 json!({})
             }
             "ui.caretAnimation" => {

@@ -1,13 +1,13 @@
 //! The header, toolbar, footer, the grid of cards and the table, laid out like the apps page on
 //! whiteoffile.whitebearom.com: hairline cells, mono labels and square controls.
 
+use egui::{Color32, CornerRadius, FontId, Rect, RichText, Sense, Stroke, Ui, vec2};
 use whiteoffice_launcher_core::catalog::AppKind;
 use whiteoffice_launcher_core::details::AppDetails;
 use whiteoffice_launcher_core::platform::pick_asset;
 use whiteoffice_launcher_core::protocol::{Command, JobPhase};
 use whiteoffice_launcher_core::status::AppStatus;
 use whiteoffice_launcher_core::{PackageKind, time};
-use egui::{Color32, CornerRadius, FontId, Rect, RichText, Sense, Stroke, Ui, vec2};
 
 use crate::app::{Dialog, LauncherUi, TitleBar};
 use crate::i18n::{current, fmt, t, tn, tr_ctx};
@@ -178,7 +178,9 @@ impl LauncherUi {
             // The White Office wordmark exactly as supplied, in its own cell.
             let logo = vec2(14.0 * crate::icons::WHITEOFFICE_LOGO_ASPECT, 14.0);
             let (cell, _) = ui.allocate_exact_size(vec2(logo.x + 40.0, h), Sense::hover());
-            egui::Image::new(crate::icons::whiteoffice_logo(t.dark)).alt_text(tl!("White Office")).paint_at(ui, Rect::from_center_size(cell.center(), logo));
+            egui::Image::new(crate::icons::whiteoffice_logo(t.dark))
+                .alt_text(tl!("White Office"))
+                .paint_at(ui, Rect::from_center_size(cell.center(), logo));
             ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
                 if bar == TitleBar::Custom {
                     widgets::window_buttons(ui, h);
@@ -282,7 +284,7 @@ impl LauncherUi {
                 }
             }
             ui.add_space(8.0);
-            widgets::hud_link(ui, tl!("What's new"), &r.html_url);
+            widgets::hud_link(ui, tl!("Website"), whiteoffice_launcher_core::catalog::WEBSITE_URL);
         });
     }
 
@@ -435,34 +437,22 @@ impl LauncherUi {
             tl!("Checking for updates…").to_string()
         } else if let Some(at) = self.settings.last_check {
             let ago = ago_text(at, now);
-            match self.sources_label() {
-                Some(using) => fmt(tl!("Checked {ago} · using {sources}"), &[("ago", &ago), ("sources", &using)]),
-                None => fmt(tl!("Checked {ago}"), &[("ago", &ago)]),
-            }
+            fmt(tl!("Checked {ago}"), &[("ago", &ago)])
         } else {
             tl!("Not checked yet").to_string()
         };
         // The full notice, and a short one for a narrow window.
         let notice = self.rate_limited_until.filter(|u| *u > now).map(|until| {
             let min = ((until - now) / 60).max(1).to_string();
-            let full = fmt(tl!("GitHub's hourly limit was reached; full details return in {min} min"), &[("min", &min)]);
-            let short = fmt(tl!("GitHub limit hit; back in {min} min"), &[("min", &min)]);
+            let full = fmt(tl!("Update service busy; try again in {min} min"), &[("min", &min)]);
+            let short = fmt(tl!("Try again in {min} min"), &[("min", &min)]);
             (format!("· {full}"), format!("· {short}"))
         });
-        use whiteoffice_launcher_core::catalog::{GITHUB_URL, SOCIAL, WEBSITE_URL};
-        // Every link is an icon, reading Website, GitHub, Discord, then the social accounts.
+        use whiteoffice_launcher_core::catalog::{SOCIAL, WEBSITE_URL};
+        // Only public product links are shown; repository locations stay in the updater.
         let named =
             |name: &'static str, label: &str, url: &'static str| widgets::IconLink { name, label: label.to_string(), tip: label.to_string(), url };
-        let mut links = vec![
-            named("Website", tl!("Website"), WEBSITE_URL),
-            named("GitHub", tl!("GitHub"), GITHUB_URL),
-            widgets::IconLink {
-                name: "Discord",
-                label: tl!("Discord").to_string(),
-                tip: tl!("Join the White Office community on Discord").to_string(),
-                url: self.discord_url,
-            },
-        ];
+        let mut links = vec![named("Website", tl!("Website"), WEBSITE_URL)];
         links.extend(SOCIAL.iter().map(|(name, url)| widgets::IconLink {
             name,
             label: (*name).to_string(),
@@ -585,7 +575,7 @@ impl LauncherUi {
             painter.rect_filled(Rect::from_min_size(inside.min, vec2(inside.width() * lift, 2.0)), CornerRadius::ZERO, app_color);
         }
 
-        // The top strip: the version in the app's colour, and its GitHub page.
+        // The top strip: the version in the app's colour.
         let status = entry.status(self.platform, self.caps.manage_apps);
         let behind = self.behind_latest(&entry);
         let version = crate::card_parts::strip_version(&entry, &status, behind.as_deref());
@@ -596,9 +586,8 @@ impl LauncherUi {
                 egui::UiBuilder::new().max_rect(strip.shrink2(vec2(CARD_PAD, 0.0))).layout(egui::Layout::left_to_right(egui::Align::Center)),
             );
             if !version.is_empty() {
-                let github_w = widgets::hud_galley(&strip_ui, &format!("{} ↗", tl!("GitHub")), t.muted).size().x;
                 let lock_w = if self.pinned_version(id).is_some() { 20.0 + strip_ui.spacing().item_spacing.x } else { 0.0 };
-                let room = (strip_ui.available_width() - github_w - 16.0 - lock_w).max(0.0);
+                let room = (strip_ui.available_width() - lock_w).max(0.0);
                 let highlight = if in_colour { t.app_ink(app) } else { t.muted };
                 let spans: Vec<(&str, egui::Color32)> =
                     version.iter().map(|(text, lit)| (text.as_str(), if *lit { highlight } else { t.muted })).collect();
@@ -608,10 +597,6 @@ impl LauncherUi {
                 }
             }
             self.version_lock(&mut strip_ui, id);
-            strip_ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
-                ui.spacing_mut().item_spacing.x = 16.0;
-                widgets::hud_link(ui, tl!("GitHub"), &app.repo_url());
-            });
         }
 
         let inner = Rect::from_min_max(egui::pos2(rect.left() + CARD_PAD, strip.bottom() + 18.0), rect.max - vec2(CARD_PAD, CARD_PAD));
@@ -1045,7 +1030,7 @@ impl LauncherUi {
     }
 
     /// The main button and the `⋯` menu beside it, within `width`, as `place` has them. On the
-    /// details page the website, GitHub and releases links are buttons of its own, not menu rows.
+    /// details page the public website link is a button of its own, not a menu row.
     /// In the grid and the table, a pinned app's actions start with the handle that reorders it,
     /// which takes one square of `width` (the table widens its column by [`Self::grip_w`] for it).
     pub(crate) fn actions_in(&mut self, ui: &mut Ui, entry: &AppEntry, status: &AppStatus, mut width: f32, place: Place) {
@@ -1346,8 +1331,6 @@ impl LauncherUi {
                     }
                 };
                 link(ui, tl!("Website"), entry.app.website());
-                link(ui, tl!("GitHub repository"), entry.app.repo_url());
-                link(ui, tl!("All releases"), entry.app.releases_url());
             }
             self.menu_pin(ui, entry, &id);
             self.menu_hide(ui, entry, &id);
