@@ -1,0 +1,25 @@
+[package]
+name = "courier-model"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+description = "Courier data model: accounts, folders, messages, contacts, calendar events with recurrence, tasks, rules and categories, with the mailbox's edit primitives and search"
+
+[lints]
+workspace = true
+
+[dependencies]
+courier-i18n = { workspace = true }
+courier-time = { workspace = true }
+courier-link = { workspace = true }
+courier-names = { workspace = true }
+serde = { workspace = true }
+# An account of a kind this version doesn't know is kept as its file has it, field for field, to
+# be written back so (`Account::as_written`).
+serde_json = { workspace = true }
+thiserror = { workspace = true }
+courier-charset = { workspace = true }
+
+[dev-dependencies]
+courier-i18n = { workspace = true, features = ["test-support"] }
+proptest = { workspace = true }

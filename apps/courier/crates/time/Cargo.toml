@@ -1,0 +1,23 @@
+[package]
+name = "courier-time"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+description = "Courier dates and times: civil calendar maths, RFC 5322 / ISO 8601 / iCalendar text, time zones (the IANA database, Windows' names for zones), the clock and the system's zone (wasm-safe)"
+
+[lints]
+workspace = true
+
+[dependencies]
+serde = { workspace = true }
+# The time-zone database and the system's zone. Only this crate depends on it: the rest of the
+# workspace sees `courier_time::Zone`.
+jiff = { workspace = true }
+
+[target.'cfg(target_arch = "wasm32")'.dependencies]
+# The browser clock and time zone (`SystemTime::now()` panics on wasm32).
+js-sys = "0.3"
+jiff = { workspace = true, features = ["js"] }
+
+[dev-dependencies]
+proptest = { workspace = true }

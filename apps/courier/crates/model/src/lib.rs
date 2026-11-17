@@ -1,0 +1,254 @@
+// SPDX-FileCopyrightText: Courier contributors
+// SPDX-License-Identifier: MIT OR Apache-2.0
+//! Courier's data model: everything a mailbox holds, and the primitives that edit it.
+//!
+//! A [`Mailbox`] owns accounts, folders, messages, contacts, calendars, events, tasks, categories,
+//! rules and signatures. Items are `Arc`-shared, so a clone of the mailbox (an undo snapshot) is
+//! cheap. Nothing here does I/O: file formats live in `courier-mime`, `-ical` and `-vcard`,
+//! servers in `courier-proto`.
+#![deny(clippy::unwrap_used, clippy::expect_used, clippy::panic, clippy::unimplemented, clippy::todo, clippy::unreachable)]
+
+mod address;
+pub mod auth_results;
+pub mod auto_replies;
+pub mod brands;
+mod calendar;
+pub mod confusables;
+mod contact;
+pub mod dav;
+mod dav_server;
+pub mod device_limits;
+#[cfg(test)]
+mod device_limits_tests;
+pub mod digital_signature;
+mod ews_server;
+pub mod gmail;
+pub mod headers;
+mod jmap_server;
+mod junk;
+pub mod load_limit;
+mod mailbox;
+mod message;
+pub mod messages;
+#[cfg(test)]
+mod messages_tests;
+mod note;
+mod offline;
+pub mod pictures;
+pub mod pop;
+pub mod protected;
+pub mod provider;
+pub mod public_keys;
+pub mod remote;
+pub mod remote_rules;
+pub mod remote_tasks;
+pub mod report;
+#[cfg(test)]
+mod report_tests;
+pub mod rich;
+mod rule;
+pub mod search;
+pub mod send_warnings;
+pub mod sender_warnings;
+pub mod shown;
+pub mod signature;
+pub mod subscription;
+pub mod sync;
+mod task;
+pub mod thread_index;
+pub mod unsubscribe;
+pub mod update;
+pub mod words;
+pub mod zoned;
+
+use serde::{Deserialize, Serialize};
+
+pub use address::{Address, MAX_ADDRESS, format_list, format_list_capped, mailbox_address};
+pub use calendar::{
+    Attendee, Calendar, CalendarOwner, Event, Freq, ListedTwice, MAX_JOIN_LINK, MAX_OPENED_CALENDARS, Occurrence, OnlineMeeting, OnlineProvider,
+    OpenedCalendar, Proposal, Recurrence, Response, ResponseOptions, Rights, ShowAs,
+};
+pub use contact::{Contact, ContactKey, KeyKind, Labeled, PostalAddress};
+pub use dav_server::{DavCollectionState, DavServer, origin_of};
+pub use device_limits::{DeviceLimits, PHONE_DEFAULTS, PHONE_DOWNLOAD, PHONE_KEEP, PHONE_STORAGE};
+pub use ews_server::{EwsServer, is_exchange_online, is_google_host, is_microsoft_domain, is_within};
+pub use gmail::{GmailCategory, is_gmail_host};
+pub use headers::{HeaderBlock, HeaderLine};
+pub use jmap_server::{JmapServer, MAX_JMAP_ID, is_jmap_id};
+pub use junk::{Added, JunkList, JunkLists, MAX_JUNK_ENTRIES, junk_entry, junk_key};
+pub use load_limit::{MIN_ITEM_BYTES, from_json};
+pub use mailbox::{
+    Account, AccountKind, AsWritten, BETWEEN_MAILBOXES, COPY_INTO_OUTBOX, Category, Directory, DownloadInFull, FOLDERS_NOT_DELETED_YET,
+    FOLDERS_STAY_YET, Folder, FolderCounts, FolderKind, FollowUp, FollowUpsSettled, GREY_CATEGORY, GraphSwitch, IMPORTED, INTO_OUTBOX, ImapStatus,
+    MAX_FOLDER_DEPTH, MAX_FOLDERS, MAX_FOLLOW_UP_AHEAD, MAX_RULES, MAX_SHARED, MAX_SNOOZE_AHEAD, MAX_SNOOZE_REFUSALS, MOVED_INTO_OUTBOX,
+    MailIdentity, Mailbox, OAuth, OAuthProvider, ONLY_SERVER_FOLDERS, PALETTE, Pending, PendingFollowUp, Queued, Security, Server, ServerFavorites,
+    ServerFolder, Settled, Snooze, preset_category_color,
+};
+pub use courier_time as time;
+pub use message::{
+    Answers, Attachment, Body, ContentRef, FlagStatus, Importance, KeptBody, MAX_HIDDEN_TEXT, MAX_ORIGINAL, MAX_ORIGINALS, Message, NOT_DOWNLOADED,
+    NOT_DOWNLOADED_NOTE, ORIGINAL_PATIENCE, ORIGINAL_TRIES, Original, PREVIEW_CHARS, RETURNED_LISTINGS, normalize_subject, size_label, size_label_in,
+    text_hash,
+};
+pub use messages::Messages;
+pub use note::{JournalEntry, Note};
+pub use offline::{KeepOffline, OfflineWindow};
+pub use remote::{AccountChoice, Origin};
+pub use rich::{RichBody, RichText};
+pub use rule::{Action, Condition, Keep, MAX_RULE_GONE, Rule, RuleGone, ServerRule};
+pub use signature::Signature;
+pub use task::{LocalTasks, MAX_TASK_GONE, SharedTaskList, SharedTaskLists, Task, TaskFields, TaskGone, TaskPatch};
+pub use thread_index::{ThreadIndex, ThreadKey};
+
+/// An item's identity inside one mailbox. 0 means "not assigned yet".
+pub type Id = u64;
+
+/// Longest name a folder, category, rule or signature may have.
+pub const MAX_NAME: usize = 120;
+
+#[derive(Debug, thiserror::Error, Clone, PartialEq, Eq)]
+pub enum ModelError {
+    #[error("no {0} with id {1}")]
+    NotFound(&'static str, Id),
+    #[error("{0}")]
+    Invalid(String),
+}
+
+/// An sRGB colour.
+#[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Hash, Serialize, Deserialize)]
+pub struct Rgb(pub u8, pub u8, pub u8);
+
+impl Rgb {
+    /// From `#RRGGBB` or `RRGGBB`.
+    pub fn parse(s: &str) -> Option<Rgb> {
+        let s = s.trim().trim_start_matches('#');
+        if s.len() != 6 || !s.is_ascii() {
+            return None;
+        }
+        let p = |i: usize| s.get(i..i + 2).and_then(|h| u8::from_str_radix(h, 16).ok());
+        Some(Rgb(p(0)?, p(2)?, p(4)?))
+    }
+
+    pub fn hex(self) -> String {
+        format!("#{:02X}{:02X}{:02X}", self.0, self.1, self.2)
+    }
+}
+
+/// A name the user typed: trimmed, without control characters, at most [`MAX_NAME`] characters;
+/// `None` when nothing is left.
+pub fn clean_name(s: &str) -> Option<String> {
+    let s: String = s.trim().chars().filter(|c| !c.is_control()).take(MAX_NAME).collect();
+    let s = s.trim().to_string();
+    (!s.is_empty()).then_some(s)
+}
+
+/// For leaving an id out of what is written when there is none.
+pub(crate) fn is_zero_id(id: &Id) -> bool {
+    *id == 0
+}
+
+/// Case-insensitive "contains", for search and rules.
+pub fn contains_ci(haystack: &str, needle: &str) -> bool {
+    needle.is_empty() || haystack.to_lowercase().contains(&needle.to_lowercase())
+}
+
+/// Bytes as base64 text in JSON.
+pub(crate) mod b64 {
+    use std::sync::Arc;
+
+    use serde::{Deserialize as _, Deserializer, Serializer};
+
+    pub fn serialize<S: Serializer>(v: &Arc<Vec<u8>>, s: S) -> Result<S::Ok, S::Error> {
+        s.serialize_str(&courier_charset::base64::STANDARD.encode(v.as_slice()))
+    }
+
+    pub fn deserialize<'de, D: Deserializer<'de>>(d: D) -> Result<Arc<Vec<u8>>, D::Error> {
+        let text = String::deserialize(d)?;
+        courier_charset::base64::STANDARD.decode(text.trim()).map(Arc::new).map_err(serde::de::Error::custom)
+    }
+}
+
+#[cfg(test)]
+mod account_categories_tests;
+#[cfg(test)]
+mod account_color_tests;
+#[cfg(test)]
+mod account_order_tests;
+#[cfg(test)]
+mod auth_results_tests;
+#[cfg(test)]
+mod auto_replies_tests;
+#[cfg(test)]
+mod calendar_rights_tests;
+#[cfg(test)]
+mod contact_key_tests;
+#[cfg(test)]
+mod gmail_labels_tests;
+#[cfg(test)]
+mod gmail_tests;
+#[cfg(test)]
+mod headers_tests;
+#[cfg(test)]
+mod hidden_text_tests;
+#[cfg(test)]
+mod junk_tests;
+#[cfg(test)]
+mod load_limit_tests;
+#[cfg(test)]
+mod mailbox_tests;
+#[cfg(test)]
+mod original_tests;
+#[cfg(test)]
+mod pictures_tests;
+#[cfg(test)]
+mod pop_tests;
+#[cfg(test)]
+mod public_keys_tests;
+#[cfg(test)]
+mod recurrence_tests;
+#[cfg(test)]
+mod rule_tests;
+#[cfg(test)]
+mod search_advanced_tests;
+#[cfg(test)]
+mod search_dates_tests;
+#[cfg(test)]
+mod search_people_tests;
+#[cfg(test)]
+mod search_quotes_tests;
+#[cfg(test)]
+mod search_suggest_tests;
+#[cfg(test)]
+mod search_tests;
+#[cfg(test)]
+mod send_warnings_tests;
+#[cfg(test)]
+mod sender_warnings_tests;
+#[cfg(test)]
+mod shown_tests;
+#[cfg(test)]
+mod snooze_tests;
+#[cfg(test)]
+mod unsubscribe_tests;
+#[cfg(test)]
+mod well_known_folder_tests;
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn colours_and_names() {
+        assert_eq!(Rgb::parse("#3B5BDB"), Some(Rgb(0x3B, 0x5B, 0xDB)));
+        assert_eq!(Rgb::parse("3b5bdb").map(Rgb::hex).as_deref(), Some("#3B5BDB"));
+        assert_eq!(Rgb::parse("#12345"), None);
+        assert_eq!(Rgb::parse("#12345é"), None);
+        assert_eq!(clean_name("  Pro\u{7}jects \n").as_deref(), Some("Projects"));
+        assert_eq!(clean_name(" \t "), None);
+        assert_eq!(clean_name(&"x".repeat(500)).map(|s| s.len()), Some(MAX_NAME));
+        assert!(contains_ci("Quarterly REPORT", "report"));
+        assert!(!contains_ci("Quarterly", "report"));
+    }
+}
+#[cfg(test)]
+mod address_tests;

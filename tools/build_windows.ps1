@@ -11,8 +11,8 @@
 #   pwsh -File tools/build_windows.ps1 -Apps nib      # one app
 
 param(
-    [ValidateSet('podium', 'nib', 'tally', 'sheaf')]
-    [string[]]$Apps = @('podium', 'nib', 'tally', 'sheaf'),
+    [ValidateSet('podium', 'nib', 'tally', 'sheaf', 'courier')]
+    [string[]]$Apps = @('podium', 'nib', 'tally', 'sheaf', 'courier'),
     [string]$Mingw = (Join-Path $env:USERPROFILE 'tools\mingw64'),
     [string]$TargetDir = $(if ($env:CARGO_TARGET_DIR) { $env:CARGO_TARGET_DIR } else { Join-Path $env:USERPROFILE 'build\whiteoffice-target' })
 )

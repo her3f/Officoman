@@ -1,0 +1,21 @@
+[alias]
+xtask = "run --package xtask --"
+
+[env]
+# The application (client) id Courier presents to Microsoft's sign-in page: the project's own
+# registration (multitenant, personal accounts too, public client with the redirect URI
+# http://localhost). An identifier, not a secret; it is compiled into the desktop app and the CLI
+# as the default. Set the variable yourself to build with another registration.
+COURIER_MS_CLIENT_ID = "6e83816e-f26c-455a-9253-494b784e61fa"
+
+# Issue #232: the project's Google Desktop OAuth client is injected into release builds from the
+# repository secrets of the same names (package.yml); a build from source alone has none.
+# Set both yourself to build with a registration of your own; never use another application's client.
+# Google's desktop client "secret" is not confidential, but never place user tokens here.
+COURIER_GOOGLE_CLIENT_ID = ""
+COURIER_GOOGLE_CLIENT_SECRET = ""
+
+# Issue #956: where Help › Report a Problem › Send report sends a report the owner wrote, on their
+# click alone: the project's report relay, which files it in a private repository for the
+# maintainers. A fork that sets it empty offers Open on GitHub alone. An address, not a secret.
+COURIER_REPORT_URL = "https://whiteoffice.whitebearom.com/api/report"

@@ -1,0 +1,18 @@
+[package]
+name = "courier-html"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+description = "Courier HTML for mail: hostile HTML to safe display blocks and plain text, and plain text to HTML"
+
+[lints]
+workspace = true
+
+[dependencies]
+courier-link = { workspace = true }
+courier-names = { workspace = true }
+serde = { workspace = true }
+
+[dev-dependencies]
+proptest = { workspace = true }
+serde_json = { workspace = true }

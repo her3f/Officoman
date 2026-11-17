@@ -1,0 +1,67 @@
+# Contributor names for the About window (docs/contributors.md).
+#
+# Everyone who contributes is credited by GitHub username automatically. Anything more is up to
+# you: add YOUR OWN entry below, in your own PR (commit it yourself). Never add someone else; a
+# maintainer may add a person only when that person asked, recording where in consent_source.
+#
+# Copy this block, replacing your-github-username (every field is optional):
+#
+#   [people.your-github-username]
+#   real_name = "Your Name"        # shown when the viewer picks "Real name"
+#   display_name = "Nickname"      # shown when the viewer picks "Display name"
+#   sync_github_name = true        # or: use the name on your public GitHub profile as display name
+#
+# To remove your names, delete your entry (or set fields empty) in a PR. The next
+# contributors.py run, and the next build, drop them.
+
+[people.daviddaryl-sys]
+real_name = "David Despres"
+display_name = "David Despres"
+
+[people.dylanmtaylor]
+sync_github_name = true
+
+[people.benandez]
+real_name = "Martin Ball"
+display_name = "Martin Ball"
+sync_github_name = false
+
+[people.vvaltson]
+sync_github_name = true
+
+[people.AchimGrolimund]
+real_name = "Achim Grolimund"
+sync_github_name = true
+
+[people.darryll077]
+sync_github_name = true
+
+[people.VenimK]
+real_name = "VenimK"
+display_name = "VenimK"
+sync_github_name = true   # use the name on your public GitHub profile as display name
+
+[people.vangel76]
+real_name = "Valentin Klein"
+
+[people.SetsuaD]
+real_name = "Setsua Dammaggher"
+display_name = "Setsua Dammaggher"
+
+[people.MPro87]
+real_name = "Michael Proff"
+display_name = "Michael Proff"
+sync_github_name = false
+
+[people.mmazzieri]
+real_name = "Mauro Mazzieri"
+display_name = "Mauro Mazzieri"
+
+[people.HarleyInfinite]
+display_name = "Harley"
+
+[people.cyberdawid]
+sync_github_name = true
+
+[people.denix666]
+real_name = "Denis Salmanovich"

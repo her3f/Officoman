@@ -1,0 +1,514 @@
+// SPDX-FileCopyrightText: Courier contributors
+// SPDX-License-Identifier: MIT OR Apache-2.0
+//! The classic ribbon's pieces (large and small buttons, groups), menu items, and the small
+//! pieces the panes share (icon buttons, avatars, category chips).
+
+use egui::{Align2, Color32, CornerRadius, Rect, Response, Sense, Stroke, Ui, pos2, vec2};
+use serde_json::Value;
+
+use crate::theme::{Tokens, regular, semibold};
+use crate::{MailApp, icons};
+
+/// Height of the ribbon content area, and of the groups' names under it (with the room between them).
+pub const CONTENT_H: f32 = 66.0;
+pub const LABEL_H: f32 = 22.0;
+
+/// Shortcut text for a command (`⌘R` on macOS, `Ctrl+R` elsewhere): its first key.
+pub fn shortcut_text(app: &MailApp, id: &str) -> String {
+    let key = app.session.registry.get(id).and_then(|s| s.shortcut.split(" / ").next()).filter(|k| !k.is_empty());
+    // The keys the body of a message being written has for its formatting.
+    key.or_else(|| crate::compose::editor::key_of(id)).map(key_text).unwrap_or_default()
+}
+
+/// A key as the platform writes it (`⌘⇧K` on macOS, `Ctrl+Shift+K` elsewhere).
+pub fn key_text(sc: &str) -> String {
+    if sc.is_empty() {
+        return String::new();
+    }
+    let sc = sc.replace("Arrow", "");
+    if cfg!(target_os = "macos") {
+        sc.replace("Mod+", "⌘").replace("Shift+", "⇧").replace("Alt+", "⌥").replace("Ctrl+", "⌃")
+    } else {
+        sc.replace("Mod+", "Ctrl+")
+    }
+}
+
+/// The tooltip of a control that runs command `id`: its name and key, where it is in the ribbon,
+/// and why it can't run when it can't. `label` is already in the interface language.
+pub(crate) fn command_tooltip(app: &MailApp, resp: Response, label: &str, id: &str) -> Response {
+    let sc = shortcut_text(app, id);
+    let spec = app.session.registry.get(id);
+    let desc = spec.map(|s| crate::i18n::location(s.location)).unwrap_or_default();
+    let reason = spec.and_then(|s| (s.enabled)(&app.session));
+    resp.on_hover_ui(|ui| {
+        ui.set_max_width(260.0);
+        if sc.is_empty() {
+            ui.label(egui::RichText::new(label).font(semibold(12.0)));
+        } else {
+            ui.label(egui::RichText::new(format!("{label} ({sc})")).font(semibold(12.0)));
+        }
+        if !desc.is_empty() {
+            ui.label(egui::RichText::new(desc).small().weak());
+        }
+        if let Some(r) = reason {
+            ui.label(egui::RichText::new(crate::i18n::fmt(tl!("Not available: {reason}"), &[("reason", tl!(r))])).small().weak());
+        }
+    })
+}
+
+pub(crate) fn bg(ui: &Ui, r: Rect, resp: &Response, checked: bool, t: &Tokens) {
+    let fill = if resp.is_pointer_button_down_on() {
+        t.pressed
+    } else if checked {
+        t.checked
+    } else if resp.hovered() {
+        t.hover
+    } else {
+        return;
+    };
+    ui.painter().rect_filled(r, CornerRadius::same(4), fill);
+    if checked {
+        ui.painter().rect_stroke(r, CornerRadius::same(4), Stroke::new(1.0, t.focus_ring), egui::StrokeKind::Inside);
+    }
+}
+
+fn text_w(ui: &Ui, text: &str, size: f32) -> f32 {
+    ui.ctx().fonts_mut(|f| f.layout_no_wrap(text.to_string(), regular(size), Color32::WHITE).size().x)
+}
+
+/// How wide a large button is whose widest line of label is `text` wide.
+pub(crate) fn big_width(text: f32, menu: bool) -> f32 {
+    (text + if menu { 20.0 } else { 12.0 }).max(46.0)
+}
+
+/// How wide a small button is whose label (if it has one) is `text` wide.
+pub(crate) fn small_width(text: Option<f32>, menu: bool) -> f32 {
+    24.0 + text.map_or(0.0, |t| t + 6.0) + if menu { 10.0 } else { 0.0 }
+}
+
+/// The width of `text` set as a label of the classic ribbon (`size` 11.5) or a group's name (11).
+pub(crate) fn label_width(ui: &Ui, text: &str, size: f32) -> f32 {
+    text_w(ui, text, size)
+}
+
+/// Lay out and paint a large button of the classic ribbon: the icon over its label (of one line or
+/// two), greyed when it isn't `on`, pressed-looking when `checked`, with a `▾` when it opens a menu.
+/// Gives back where its label was painted too. One that is greyed and opens no menu can't be
+/// clicked or given the keyboard; it still has its tooltip.
+pub(crate) fn big_frame(ui: &mut Ui, icon: &str, label: &str, on: bool, checked: bool, menu: bool) -> (Response, Rect) {
+    let t = Tokens::get(ui.ctx());
+    let galley_w = label.split('\n').map(|l| text_w(ui, l, 11.5)).fold(0.0, f32::max);
+    let w = big_width(galley_w, menu);
+    let (r, resp) = ui.allocate_exact_size(vec2(w, CONTENT_H), frame_sense(on, menu));
+    if on {
+        bg(ui, r, &resp, checked, &t);
+    }
+    let ic = Rect::from_center_size(pos2(r.center().x, r.min.y + 20.0), vec2(32.0, 32.0));
+    let (c, a) = if on { (t.icon, t.accent) } else { (t.text_disabled, t.text_disabled) };
+    icons::paint(ui.painter(), ic, icon, c, a);
+    let mut y = r.min.y + 41.0;
+    let lines: Vec<&str> = label.split('\n').collect();
+    let mut painted = Rect::NOTHING;
+    for (i, l) in lines.iter().enumerate() {
+        let txt = if menu && i + 1 == lines.len() { format!("{l} ▾") } else { (*l).to_string() };
+        let colour = if on { t.text } else { t.text_disabled };
+        painted = painted.union(ui.painter().text(pos2(r.center().x, y), Align2::CENTER_TOP, txt, regular(11.5), colour));
+        y += 13.0;
+    }
+    (resp, painted)
+}
+
+/// What a button of the classic ribbon answers: clicks (and the keyboard) while it can do
+/// something, the pointer alone (its tooltip) while it is greyed.
+fn frame_sense(on: bool, menu: bool) -> Sense {
+    if on || menu { Sense::click() } else { Sense::hover() }
+}
+
+/// Lay out and paint a small button of the classic ribbon: a 16 pt icon with its label beside it.
+pub(crate) fn small_frame(ui: &mut Ui, icon: &str, label: Option<&str>, on: bool, checked: bool, menu: bool) -> Response {
+    let t = Tokens::get(ui.ctx());
+    let (r, resp) = ui.allocate_exact_size(vec2(small_width(label.map(|l| text_w(ui, l, 11.5)), menu), 22.0), frame_sense(on, menu));
+    if on {
+        bg(ui, r, &resp, checked, &t);
+    }
+    let ic = Rect::from_center_size(pos2(r.min.x + 12.0, r.center().y), vec2(16.0, 16.0));
+    let (c, a) = if on { (t.icon, t.accent) } else { (t.text_disabled, t.text_disabled) };
+    icons::paint(ui.painter(), ic, icon, c, a);
+    if let Some(l) = label {
+        ui.painter().text(pos2(r.min.x + 24.0, r.center().y), Align2::LEFT_CENTER, l, regular(11.5), if on { t.text } else { t.text_disabled });
+    }
+    if menu {
+        icons::paint(ui.painter(), Rect::from_center_size(pos2(r.max.x - 7.0, r.center().y), vec2(8.0, 8.0)), "dropdown", c, a);
+    }
+    resp
+}
+
+/// A column of small buttons (up to three fit the ribbon's height).
+pub fn stack(ui: &mut Ui, add: impl FnOnce(&mut Ui)) {
+    ui.vertical(|ui| {
+        ui.spacing_mut().item_spacing = vec2(1.0, 0.0);
+        add(ui);
+    });
+}
+
+/// A ribbon group: content, a centred label below and a divider on the right.
+pub fn group(ui: &mut Ui, title: &str, app: &mut MailApp, add: impl FnOnce(&mut Ui, &mut MailApp)) {
+    let t = Tokens::get(ui.ctx());
+    let key = crate::ribbon::hit_id(title);
+    let title = tl!(title);
+    let label_w = text_w(ui, title, 11.0);
+    let start = ui.cursor().min;
+    let inner = ui.vertical(|ui| {
+        ui.set_min_width(label_w + 10.0);
+        ui.allocate_ui_with_layout(vec2(ui.available_width(), CONTENT_H), egui::Layout::left_to_right(egui::Align::Min), |ui| {
+            ui.spacing_mut().item_spacing = vec2(1.0, 1.0);
+            add(ui, app);
+        });
+    });
+    let r = inner.response.rect;
+    let r = Rect::from_min_max(start, pos2(r.max.x, start.y + CONTENT_H + LABEL_H));
+    // The group's name, with room above it under the buttons' labels.
+    let at = ui.painter().text(pos2(r.center().x, r.max.y - 8.0), Align2::CENTER_CENTER, title, regular(11.0), t.group_label);
+    app.hit.add("ribbonGroup", key, at);
+    group_end(ui, start.y);
+}
+
+/// The divider after a group that started at `top`, and the room round it.
+pub(crate) fn group_end(ui: &mut Ui, top: f32) {
+    let t = Tokens::get(ui.ctx());
+    ui.add_space(5.0);
+    let x = ui.cursor().min.x;
+    ui.painter().line_segment([pos2(x, top + 4.0), pos2(x, top + CONTENT_H + LABEL_H - 4.0)], Stroke::new(1.0, t.border));
+    ui.add_space(6.0);
+}
+
+/// A group folded into one button: its first icon over its name and a `▾`, the height of the
+/// whole group. It opens the group, so it is never greyed.
+pub(crate) fn fold_frame(ui: &mut Ui, icon: &str, title: &str) -> Response {
+    let t = Tokens::get(ui.ctx());
+    let w = big_width(text_w(ui, title, 11.5), true);
+    let (r, resp) = ui.allocate_exact_size(vec2(w, CONTENT_H + LABEL_H), Sense::click());
+    bg(ui, r, &resp, false, &t);
+    let ic = Rect::from_center_size(pos2(r.center().x, r.min.y + 26.0), vec2(32.0, 32.0));
+    icons::paint(ui.painter(), ic, icon, t.icon, t.accent);
+    ui.painter().text(pos2(r.center().x, r.min.y + 48.0), Align2::CENTER_TOP, format!("{title} ▾"), regular(11.5), t.text);
+    resp
+}
+
+/// A menu item that runs a command; shows its shortcut and greys out when it can't run.
+pub fn mi(ui: &mut Ui, app: &mut MailApp, label: &str, id: &str, params: Value) {
+    let sc = shortcut_text(app, id);
+    let enabled = app.enabled(id);
+    let resp = ui.add_enabled(enabled, egui::Button::new(tl!(label)).shortcut_text(sc).min_size(vec2(190.0, 0.0)));
+    if resp.clicked() {
+        let _ = app.run(id, params);
+        ui.close();
+    }
+}
+
+/// A menu item with a check mark when `checked` (the current choice of several).
+pub fn mi_check(ui: &mut Ui, app: &mut MailApp, label: &str, checked: bool, id: &str, params: Value) {
+    // An invisible mark keeps the unchecked labels aligned with the checked one.
+    let mark = egui::RichText::new("✓");
+    let mark = if checked { mark } else { mark.color(Color32::TRANSPARENT) };
+    let enabled = app.enabled(id);
+    let resp = ui.add_enabled(enabled, egui::Button::new((mark, tl!(label))).selected(checked).min_size(vec2(190.0, 0.0)));
+    if resp.clicked() {
+        let _ = app.run(id, params);
+        ui.close();
+    }
+}
+
+/// Where scroll bars float over what they scroll (a Mac's): the handle, a little wider while the
+/// pointer is on it, and how far it keeps from the list's right edge.
+const OVERLAY_HANDLE: f32 = 7.0;
+const OVERLAY_HANDLE_HOVERED: f32 = 9.0;
+const OVERLAY_MARGIN: f32 = 2.0;
+/// Clearance for a control beside the widest overlay thumb.
+pub(crate) const OVERLAY_SCROLL_INSET: f32 = OVERLAY_HANDLE_HOVERED + OVERLAY_MARGIN;
+
+/// The colour of the scroll bar's handle and arrows: half way from the list to its text.
+pub(crate) fn scroll_ink(t: &Tokens) -> Color32 {
+    t.surface.lerp_to_gamma(t.text, 0.53)
+}
+
+/// The list's scroll bar where scroll bars float over what they scroll, as a Mac's do: a slim
+/// rounded handle over the rows' right end, there while the list is scrolled or the pointer is
+/// over it and gone when it is left alone, with no lane and no arrows.
+pub(crate) fn overlay_scroll_style(ui: &mut Ui, t: &Tokens) {
+    let style = ui.style_mut();
+    style.spacing.scroll = egui::style::ScrollStyle {
+        bar_width: OVERLAY_HANDLE_HOVERED,
+        floating_width: OVERLAY_HANDLE,
+        bar_inner_margin: 0.0,
+        bar_outer_margin: OVERLAY_MARGIN,
+        handle_min_length: 24.0,
+        foreground_color: false,
+        dormant_background_opacity: 0.0,
+        active_background_opacity: 0.0,
+        interact_background_opacity: 0.0,
+        dormant_handle_opacity: 0.0,
+        active_handle_opacity: 0.85,
+        interact_handle_opacity: 1.0,
+        ..egui::style::ScrollStyle::floating()
+    };
+    let ink = scroll_ink(t);
+    let round = egui::CornerRadius::same(5);
+    let widgets = &mut style.visuals.widgets;
+    (widgets.inactive.bg_fill, widgets.inactive.corner_radius) = (ink, round);
+    (widgets.hovered.bg_fill, widgets.hovered.corner_radius) = (ink.lerp_to_gamma(t.text, 0.35), round);
+    (widgets.active.bg_fill, widgets.active.corner_radius) = (ink.lerp_to_gamma(t.text, 0.6), round);
+}
+
+/// A bare icon button (pane toolbars, the title bar). `true` on the frame it is clicked.
+pub fn icon_button(ui: &mut Ui, icon: &str, tip: &str, size: f32, enabled: bool) -> Response {
+    let t = Tokens::get(ui.ctx());
+    let (r, resp) = ui.allocate_exact_size(vec2(size + 8.0, size + 6.0), Sense::click());
+    if resp.hovered() && enabled {
+        ui.painter().rect_filled(r, 4.0, if resp.is_pointer_button_down_on() { t.pressed } else { t.hover });
+    }
+    let c = if enabled { t.icon } else { t.text_disabled };
+    icons::paint(ui.painter(), Rect::from_center_size(r.center(), vec2(size, size)), icon, c, if enabled { t.accent } else { c });
+    resp.on_hover_text(tip)
+}
+
+/// How wide [`icon_text_button`] is with `label`.
+pub(crate) fn icon_text_width(ui: &Ui, label: &str) -> f32 {
+    text_w(ui, label, 12.0) + 34.0
+}
+
+/// An icon with a label beside it, as a flat button.
+pub fn icon_text_button(ui: &mut Ui, icon: &str, label: &str, enabled: bool) -> Response {
+    let t = Tokens::get(ui.ctx());
+    let (r, resp) = ui.allocate_exact_size(vec2(icon_text_width(ui, label), 24.0), Sense::click());
+    if resp.hovered() && enabled {
+        ui.painter().rect_filled(r, 4.0, if resp.is_pointer_button_down_on() { t.pressed } else { t.hover });
+    }
+    let c = if enabled { t.icon } else { t.text_disabled };
+    icons::paint(
+        ui.painter(),
+        Rect::from_center_size(pos2(r.min.x + 13.0, r.center().y), vec2(16.0, 16.0)),
+        icon,
+        c,
+        if enabled { t.accent } else { c },
+    );
+    ui.painter().text(pos2(r.min.x + 26.0, r.center().y), Align2::LEFT_CENTER, label, regular(12.0), if enabled { t.text } else { t.text_disabled });
+    resp
+}
+
+/// A filled button in the app colour (Send, Save, the default answer of a dialog).
+pub fn primary_button(ui: &mut Ui, label: &str, enabled: bool) -> Response {
+    let t = Tokens::get(ui.ctx());
+    let (r, resp) = ui.allocate_exact_size(vec2(primary_button_width(ui, label), 26.0), if enabled { Sense::click() } else { Sense::hover() });
+    let fill = if !enabled {
+        t.pressed
+    } else if resp.hovered() {
+        t.accent_text
+    } else {
+        t.accent
+    };
+    ui.painter().rect_filled(r, 6.0, fill);
+    ui.painter().text(r.center(), Align2::CENTER_CENTER, label, crate::theme::medium(12.5), if enabled { t.on_accent } else { t.text_disabled });
+    // (Named for screen readers, as a button.)
+    resp.widget_info(|| egui::WidgetInfo::labeled(egui::Role::Button, enabled, label));
+    resp
+}
+
+/// How wide a filled button is with this label.
+pub(crate) fn primary_button_width(ui: &Ui, label: &str) -> f32 {
+    text_w(ui, label, 12.5).max(44.0) + 26.0
+}
+
+/// A button with an outline, for what leaves a dialog without committing anything (Close).
+pub fn plain_button(ui: &mut Ui, label: &str) -> Response {
+    let t = Tokens::get(ui.ctx());
+    let w = text_w(ui, label, 12.5).max(44.0);
+    let (r, resp) = ui.allocate_exact_size(vec2(w + 26.0, 26.0), Sense::click());
+    let fill = if resp.is_pointer_button_down_on() {
+        t.pressed
+    } else if resp.hovered() {
+        t.hover
+    } else {
+        t.input
+    };
+    ui.painter().rect(r, 6.0, fill, Stroke::new(1.0, t.input_border), egui::StrokeKind::Inside);
+    ui.painter().text(r.center(), Align2::CENTER_CENTER, label, crate::theme::medium(12.5), t.text);
+    resp.widget_info(|| egui::WidgetInfo::labeled(egui::Role::Button, true, label));
+    resp
+}
+
+/// A round avatar with initials.
+pub fn avatar(ui: &Ui, center: egui::Pos2, radius: f32, address: &courier_model::Address) {
+    let t = Tokens::get(ui.ctx());
+    let key = if address.email.is_empty() { &address.name } else { &address.email };
+    ui.painter().circle_filled(center, radius, crate::theme::avatar_color(key, &t));
+    let initials = address.initials();
+    ui.painter().text(
+        center,
+        Align2::CENTER_CENTER,
+        if initials.is_empty() { "?".to_string() } else { initials },
+        semibold(radius * 0.78),
+        t.on_avatar,
+    );
+}
+
+/// A category as a small coloured chip with its name. Returns the width used.
+pub fn category_chip(ui: &Ui, left_center: egui::Pos2, name: &str, color: Color32) -> f32 {
+    let t = Tokens::get(ui.ctx());
+    let w = text_w(ui, name, 10.5) + 12.0;
+    let r = Rect::from_min_size(pos2(left_center.x, left_center.y - 8.0), vec2(w, 16.0));
+    ui.painter().rect_filled(r, 8.0, t.data_fill(color));
+    ui.painter().rect_stroke(r, 8.0, Stroke::new(1.0, t.data_edge(color)), egui::StrokeKind::Inside);
+    ui.painter().text(r.center(), Align2::CENTER_CENTER, name, regular(10.5), t.text);
+    w
+}
+
+/// The longest a Gmail label's tag is drawn, its text cut with an ellipsis past it.
+pub const LABEL_TAG_MAX: f32 = 140.0;
+
+/// The laid-out name of a Gmail label's tag (#1153): one line, cut at `max_width` with an
+/// ellipsis.
+pub fn label_tag_text(p: &egui::Painter, name: &str, size: f32, max_width: f32) -> std::sync::Arc<egui::Galley> {
+    let t = Tokens::get(p.ctx());
+    let mut job = egui::text::LayoutJob::single_section(
+        name.to_string(),
+        egui::text::TextFormat { font_id: regular(size), color: t.text, ..Default::default() },
+    );
+    job.wrap = egui::text::TextWrapping { max_width: max_width.max(8.0), max_rows: 1, break_anywhere: true, overflow_character: Some('…') };
+    p.layout_job(job)
+}
+
+/// How wide a Gmail label's tag is with `text` in it.
+pub fn label_tag_width(text: &egui::Galley) -> f32 {
+    text.size().x + 15.0
+}
+
+/// A Gmail label (#1153), drawn as a luggage tag: pointed at its left with a hole, in the
+/// window's own neutral colours, so that it is never taken for one of the owner's categories
+/// (rounded and in their colour) or for Gmail's inbox category (a tab or a folder). Its left
+/// middle at `left_center`; returns its width.
+pub fn paint_label_tag(p: &egui::Painter, left_center: egui::Pos2, text: std::sync::Arc<egui::Galley>, height: f32) -> f32 {
+    let t = Tokens::get(p.ctx());
+    let w = label_tag_width(&text);
+    let (x, y, half) = (left_center.x, left_center.y, height / 2.0);
+    let points = vec![pos2(x, y), pos2(x + 6.0, y - half), pos2(x + w, y - half), pos2(x + w, y + half), pos2(x + 6.0, y + half)];
+    p.add(egui::Shape::convex_polygon(points, t.pressed, Stroke::new(1.0, t.border_strong)));
+    p.circle_filled(pos2(x + 5.5, y), 1.4, t.text_dim);
+    let size = text.size();
+    p.galley(pos2(x + 10.0, y - size.y / 2.0), text, t.text);
+    w
+}
+
+/// What a place is called: an account by its address (two accounts of one person can have one
+/// name), 0 this computer.
+pub fn place_name(mailbox: &courier_model::Mailbox, account: courier_model::Id) -> String {
+    match mailbox.account(account) {
+        Some(a) => crate::people_view::one_line(&a.email, 200),
+        None => tl!("On this computer").to_string(),
+    }
+}
+
+/// Whose items a list shows, at the top of its pane: All accounts, each of `accounts`, On this
+/// computer. Returns what was picked.
+pub fn account_choice(
+    ui: &mut Ui,
+    mailbox: &courier_model::Mailbox,
+    accounts: &[courier_model::Id],
+    current: courier_model::AccountChoice,
+) -> Option<courier_model::AccountChoice> {
+    use courier_model::AccountChoice;
+    let label = |choice: AccountChoice| match choice {
+        AccountChoice::All => tl!("All accounts").to_string(),
+        AccountChoice::Here => place_name(mailbox, 0),
+        AccountChoice::Account(account) => place_name(mailbox, account),
+    };
+    let choices = std::iter::once(AccountChoice::All).chain(accounts.iter().copied().map(AccountChoice::Account)).chain([AccountChoice::Here]);
+    let mut picked = None;
+    ui.horizontal(|ui| {
+        ui.add_space(10.0);
+        let width = (ui.available_width() - 10.0).max(60.0);
+        egui::ComboBox::from_id_salt("account_choice").width(width).selected_text(label(current)).truncate().show_ui(ui, |ui| {
+            for choice in choices {
+                if ui.selectable_label(choice == current, label(choice)).clicked() {
+                    picked = Some(choice);
+                }
+            }
+        });
+    });
+    picked
+}
+
+/// A section heading inside a side pane (`My Calendars`, `My Tasks`), in the size and weight of
+/// the folder pane's own headings.
+pub fn pane_heading(ui: &mut Ui, text: &str) {
+    let t = Tokens::get(ui.ctx());
+    let (r, _) = ui.allocate_exact_size(vec2(ui.available_width(), 24.0), Sense::hover());
+    crate::theme::paint_clipped(ui.painter(), pos2(r.min.x + 10.0, r.center().y), r.width() - 16.0, text, regular(14.667), t.text);
+}
+
+/// A colour swatch `size` square that opens the palette (`courier_model::PALETTE`), with a
+/// ring and a heavier edge on the colour in use. `color` is the one in use; `None` is drawn as an
+/// empty square with a stroke through it. With `none` the palette has a button of that name
+/// under it, which takes the colour away. Answers what was picked there: `Some(Some(colour))`, or
+/// `Some(None)` for the button; `None` when nothing was.
+pub fn color_swatch(ui: &mut Ui, size: f32, color: Option<courier_model::Rgb>, none: Option<&str>) -> Option<Option<courier_model::Rgb>> {
+    let t = Tokens::get(ui.ctx());
+    let (r, resp) = ui.allocate_exact_size(vec2(size, size), Sense::click());
+    let edge = Stroke::new(1.0, if resp.hovered() { t.text_dim } else { t.border_strong });
+    let square = r.shrink(2.0);
+    match color {
+        Some(color) => {
+            ui.painter().rect(square, 5.0, crate::theme::c32(color), edge, egui::StrokeKind::Inside);
+        }
+        None => {
+            ui.painter().rect_stroke(square, 5.0, edge, egui::StrokeKind::Inside);
+            let inner = square.shrink(4.0);
+            ui.painter().line_segment([inner.left_bottom(), inner.right_top()], edge);
+        }
+    }
+    let resp = resp.on_hover_text(tl!("Change the colour"));
+    let mut picked = None;
+    egui::Popup::menu(&resp).show(|ui| {
+        ui.spacing_mut().item_spacing = vec2(4.0, 4.0);
+        for line in courier_model::PALETTE.chunks(6) {
+            ui.horizontal(|ui| {
+                for choice in line {
+                    let (cell, cell_resp) = ui.allocate_exact_size(vec2(22.0, 22.0), Sense::click());
+                    let current = Some(*choice) == color;
+                    ui.painter().rect(
+                        cell,
+                        4.0,
+                        crate::theme::c32(*choice),
+                        Stroke::new(if current { 2.0 } else { 1.0 }, if current || cell_resp.hovered() { t.text } else { t.border_strong }),
+                        egui::StrokeKind::Inside,
+                    );
+                    if cell_resp.clicked() {
+                        picked = Some(Some(*choice));
+                    }
+                }
+            });
+        }
+        if let Some(none) = none
+            && ui.add_enabled(color.is_some(), egui::Button::new(none)).clicked()
+        {
+            picked = Some(None);
+        }
+    });
+    picked
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn keys_read_like_the_platform() {
+        if cfg!(target_os = "macos") {
+            assert_eq!(key_text("Mod+Shift+R"), "⌘⇧R");
+        } else {
+            assert_eq!(key_text("Mod+Shift+R"), "Ctrl+Shift+R");
+            assert_eq!(key_text("ArrowDown"), "Down");
+        }
+        assert_eq!(key_text(""), "");
+    }
+}

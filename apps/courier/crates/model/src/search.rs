@@ -1,0 +1,1272 @@
+// SPDX-FileCopyrightText: Courier contributors
+// SPDX-License-Identifier: MIT OR Apache-2.0
+//! The search box's query language: words, `"exact phrases"`, and `keyword:value` filters.
+//!
+//! `budget from:ada has:attachment -draft after:2026-10-01`. Every term must match; `-` in front
+//! of a term excludes what it matches. Keywords: `from`, `to`, `cc`, `subject`, `body`,
+//! `category`, `attachment` (file name), `has:attachment`, `is:unread|read|flagged|important`,
+//! `gmail:primary|social|promotions|updates|forums` (Gmail's inbox categories, #911: not the
+//! owner's own, which are `category:`), `label:` (a Gmail account's labels of a message, #1153:
+//! anywhere in the label's path, Gmail's own by their name without the backslash, `label:important`),
+//! `importance:high|normal|low`, `before:`, `after:`, `on:` (dates, `YYYY-MM-DD` or `M/D/YYYY`),
+//! and `received:` with a day, a range of days as Outlook writes one (`received:10/1/2026..10/22/2026`,
+//! both days in it, #329), or one side of one (`received:>=2026-10-01`, `<=`, and `>` and `<`, the
+//! day itself not in it), by the day a message came in. A range whose end comes before its start
+//! finds nothing; a date with more parts than three (`10/22/2026/1`) is text. A date without a
+//! year (`10/22`) is this year's, as Outlook reads it, and `received:` takes the days Outlook
+//! names in words: `today`, `yesterday`, `"this week"`, `"last week"`, `"this month"`,
+//! `"last month"` and `"this year"` (weeks from the owner's first day of the week). Such a search
+//! is made on a day: [`Query::on`].
+//! A space after a keyword's colon is allowed (`from: ada`); a keyword with nothing after it yet
+//! asks for nothing. Inside double quotes, `\"` is a double quote and `\\` a backslash.
+//!
+//! A word matches the start of a word, ignoring case and accents (`meet` finds "Meeting",
+//! `gvozdar` finds "Gvožđar"); a phrase, its words one after another ([`crate::words`]). `from:`,
+//! `to:` and `cc:` with a whole address (`from:ada@example.org`, or with a quoted name,
+//! `from:"\"ada smith\"@example.org"`) match that address and no other, ignoring case (#301): an
+//! international domain written in `xn--` form and the same domain in its own letters are two
+//! addresses (`ada@xn--bcher-kva.example` doesn't find `ada@bücher.example`). A category matches
+//! anywhere in its name. Text with no letters or digits in it (`-`, `@`) asks for nothing.
+
+use std::ops::{Bound, Range, RangeBounds};
+
+use courier_time::{Date, DateTime, Timestamp, Weekday};
+
+use crate::words::{self, ATTACHMENT, BODY, CC, FROM, SUBJECT, TO};
+use crate::{Address, Category, FlagStatus, Importance, Message, Rgb, contains_ci};
+
+pub mod advanced;
+pub use advanced::{Advanced, Field, Reading};
+
+/// Longest query read and most terms kept (the rest is ignored).
+const MAX_QUERY: usize = 2_000;
+const MAX_TERMS: usize = 64;
+
+#[derive(Clone, Debug, PartialEq, Eq)]
+enum Kind {
+    /// Words, one after another, in the parts of a message `fields` names.
+    Words {
+        fields: u8,
+        words: Vec<String>,
+        /// The same words as the owner wrote them (case and accents as typed), for a server's
+        /// search ([`Query::for_server`]).
+        raw: Vec<String>,
+    },
+    /// One whole address, in small letters, in the parts of a message `fields` names (`FROM`,
+    /// `TO`, `CC`): the address itself, not words of it (#301). Its `words` are what a word
+    /// index narrows the messages by before the address is compared.
+    Address {
+        fields: u8,
+        address: String,
+        words: Vec<String>,
+    },
+    Category(String),
+    /// One of Gmail's inbox categories (#911).
+    Gmail(crate::GmailCategory),
+    /// Text in one of Gmail's labels of a message (#1153).
+    Label(String),
+    HasAttachment,
+    Unread,
+    Read,
+    Flagged,
+    Importance(Importance),
+    Before(Date),
+    After(Date),
+    On(Date),
+    /// The days a message came in on (#329): from the first to the last, each in it or not, or
+    /// with no end on that side.
+    Received(Bound<Date>, Bound<Date>),
+    /// A date term that needs the day the search is made on ([`Query::on`]).
+    Dated(Dated),
+    /// A day the year the search is made in hasn't got (`received:2/29` in 2026): nothing.
+    Never,
+}
+
+/// A day as it was written (#329): a whole date, or a month and day of the year the search is
+/// made in (`10/22`, as Outlook reads it).
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+enum Day {
+    Date(Date),
+    ThisYear { month: u8, day: u8 },
+}
+
+/// The days Outlook names in words after `received:` (#329).
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+enum Span {
+    Today,
+    Yesterday,
+    ThisWeek,
+    LastWeek,
+    ThisMonth,
+    LastMonth,
+    ThisYear,
+}
+
+impl Span {
+    fn parse(v: &str) -> Option<Span> {
+        Some(match v.to_lowercase().as_str() {
+            "today" => Span::Today,
+            "yesterday" => Span::Yesterday,
+            "this week" => Span::ThisWeek,
+            "last week" => Span::LastWeek,
+            "this month" => Span::ThisMonth,
+            "last month" => Span::LastMonth,
+            "this year" => Span::ThisYear,
+            _ => return None,
+        })
+    }
+
+    /// Its first and last days seen from `today`, for weeks that start on `first`; `None` for one
+    /// that counts back this close to the calendar's first day, where counting back stops at it.
+    fn days(self, today: Date, first: Weekday) -> Option<(Date, Date)> {
+        let back = matches!(self, Span::Yesterday | Span::ThisWeek | Span::LastWeek | Span::LastMonth);
+        if back && today.add_days(-62).days_until(today) != 62 {
+            return None;
+        }
+        let week = today.start_of_week(first);
+        let month = today.start_of_month();
+        Some(match self {
+            Span::Today => (today, today),
+            Span::Yesterday => (today.add_days(-1), today.add_days(-1)),
+            Span::ThisWeek => (week, week.add_days(6)),
+            Span::LastWeek => (week.add_days(-7), week.add_days(-1)),
+            Span::ThisMonth => (month, today.end_of_month()),
+            Span::LastMonth => {
+                let last = month.add_months(-1);
+                (last, last.end_of_month())
+            }
+            Span::ThisYear => (Date::new(today.year, 1, 1)?, Date::new(today.year, 12, 31)?),
+        })
+    }
+}
+
+/// A date term as it was written, before the day the search is made on is known.
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+enum Dated {
+    Before(Day),
+    After(Day),
+    On(Day),
+    Received(Bound<Day>, Bound<Day>),
+    Span(Span),
+}
+
+impl Dated {
+    /// What it asks for on `today`, with weeks that start on `first`; `None` when that needs the
+    /// day and there is none, or the day isn't there (`2/29` in 2026).
+    fn on(self, today: Option<(Date, Weekday)>) -> Option<Kind> {
+        let date = |d: Day| match d {
+            Day::Date(d) => Some(d),
+            Day::ThisYear { month, day } => Date::new(today?.0.year, month, day),
+        };
+        let bound = |b: Bound<Day>| -> Option<Bound<Date>> {
+            Some(match b {
+                Bound::Included(d) => Bound::Included(date(d)?),
+                Bound::Excluded(d) => Bound::Excluded(date(d)?),
+                Bound::Unbounded => Bound::Unbounded,
+            })
+        };
+        Some(match self {
+            Dated::Before(d) => Kind::Before(date(d)?),
+            Dated::After(d) => Kind::After(date(d)?),
+            Dated::On(d) => Kind::On(date(d)?),
+            Dated::Received(first, last) => Kind::Received(bound(first)?, bound(last)?),
+            Dated::Span(span) => {
+                let (today, first) = today?;
+                let (a, b) = span.days(today, first)?;
+                Kind::Received(Bound::Included(a), Bound::Included(b))
+            }
+        })
+    }
+
+    /// The term: as it is when it doesn't need the day the search is made on.
+    fn kind(self) -> Kind {
+        self.on(None).unwrap_or(Kind::Dated(self))
+    }
+}
+
+impl Kind {
+    /// Whether it asks for nothing: words (or an address) with no letters or digits in them.
+    fn asks_nothing(&self) -> bool {
+        matches!(self, Kind::Words { words, .. } | Kind::Address { words, .. } if words.is_empty())
+    }
+}
+
+#[derive(Clone, Debug, PartialEq, Eq)]
+struct Term {
+    negate: bool,
+    kind: Kind,
+}
+
+/// A parsed search.
+#[derive(Clone, Debug, Default, PartialEq, Eq)]
+pub struct Query {
+    terms: Vec<Term>,
+}
+
+/// Split on spaces outside double quotes; the quotes are dropped, and inside them `\"` is a
+/// double quote and `\\` a backslash ([`keyword_value`]). Each token with where it stands in `s`
+/// (bytes, its quotes included).
+fn tokens(s: &str) -> Vec<(String, Range<usize>)> {
+    let mut out = Vec::new();
+    let mut cur = String::new();
+    let mut quoted = false;
+    let mut any = false;
+    let (mut start, mut end) = (0, 0);
+    let mut chars = s.char_indices().take(MAX_QUERY).peekable();
+    while let Some((i, c)) = chars.next() {
+        // (Inside quotes the token has begun already: at its opening quote.)
+        if c == '\\'
+            && quoted
+            && let Some((j, escaped)) = chars.next_if(|(_, next)| matches!(next, '"' | '\\'))
+        {
+            end = j.saturating_add(escaped.len_utf8());
+            cur.push(escaped);
+            continue;
+        }
+        if c.is_whitespace() && !quoted {
+            if any || !cur.is_empty() {
+                out.push((std::mem::take(&mut cur), start..end));
+            }
+            any = false;
+            continue;
+        }
+        if !any && cur.is_empty() {
+            start = i;
+        }
+        end = i.saturating_add(c.len_utf8());
+        if c == '"' {
+            quoted = !quoted;
+            any = true;
+        } else {
+            cur.push(c);
+        }
+    }
+    if any || !cur.is_empty() {
+        out.push((cur, start..end));
+    }
+    out
+}
+
+/// A keyword and its value as they stand in the text of a query (bytes): what the search box
+/// draws as one piece (#196). `key` is the keyword and its colon (after a `-`, when there is one).
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub struct KeywordSpan {
+    pub range: Range<usize>,
+    pub key: Range<usize>,
+}
+
+/// The keywords of `s` that [`Query::parse`] reads as keywords, with their values, in order: not
+/// `re: budget`, `is:banana` or a keyword with nothing after it yet, which it reads as text or as
+/// nothing.
+pub fn keyword_spans(s: &str) -> Vec<KeywordSpan> {
+    let mut out = Vec::new();
+    for term in scan(s) {
+        let shown = term.keyword.as_ref().is_some_and(|kind| !kind.asks_nothing());
+        let colon = s.get(term.range.clone()).and_then(|t| t.find(':')).map(|c| term.range.start.saturating_add(c).saturating_add(1));
+        if let Some(colon) = colon.filter(|_| shown) {
+            let key_start = if term.negate { term.range.start.saturating_add(1) } else { term.range.start };
+            out.push(KeywordSpan { range: term.range, key: key_start..colon });
+        }
+    }
+    out
+}
+
+/// Where the search box draws a pill (#196): around a keyword and its colon (after a `-`, when
+/// there is one: `-is:`), never its value. A pill is a keyword [`keyword_spans`] finds, or a
+/// known keyword whose value is still being typed: nothing after its colon yet at the end of the
+/// query, or a value the cursor (a byte offset, `None` while the box isn't being edited) is in or
+/// at the end of, so `is:u` on the way to `is:unread` keeps its pill. Bytes, in order.
+pub fn keyword_pills(s: &str, cursor: Option<usize>) -> Vec<Range<usize>> {
+    let read: Vec<usize> = keyword_spans(s).into_iter().map(|k| k.range.start).collect();
+    let all: Vec<(String, Range<usize>)> = tokens(s).into_iter().take(MAX_TERMS).collect();
+    let mut out = Vec::new();
+    let mut i = 0;
+    while let Some((_, at)) = all.get(i) {
+        i = i.saturating_add(1);
+        let raw = s.get(at.clone()).unwrap_or_default();
+        let dash = usize::from(raw.starts_with('-') && raw.len() > 1);
+        let body = raw.get(dash..).unwrap_or_default();
+        let Some(colon) = body.find(':').filter(|&c| body.get(..c).is_some_and(is_keyword)) else { continue };
+        let head = at.start..at.start.saturating_add(dash).saturating_add(colon).saturating_add(1);
+        // `from: stuart`: the value is the next word, unless that is a keyword of its own.
+        let mut end = at.end;
+        let mut last = i >= all.len();
+        if head.end == at.end
+            && let Some((_, next)) = all.get(i).filter(|(next, at)| !starts_with_keyword_at(s, next, at))
+        {
+            end = next.end;
+            i = i.saturating_add(1);
+            last = false;
+        }
+        let typing = cursor.is_some_and(|c| at.start <= c && c <= end);
+        if read.contains(&at.start) || typing || (last && head.end == end) {
+            out.push(head);
+        }
+    }
+    out
+}
+
+/// What `body` (`key:value`) asks for when its key is a keyword the search box knows and its value
+/// one the keyword takes; `None`: it is text.
+fn keyword_kind(body: &str) -> Option<Kind> {
+    let (key, value) = body.split_once(':').filter(|(_, v)| !v.is_empty())?;
+    let v = value.to_string();
+    let words_in = |fields: u8, v: &str| Kind::Words { fields, words: words::words(v), raw: raw_words(v) };
+    let address_in = |fields: u8, v: &str| match is_address(v) {
+        true => Kind::Address { fields, address: address_key(v), words: words::words(v) },
+        false => words_in(fields, v),
+    };
+    Some(match key.to_ascii_lowercase().as_str() {
+        "from" => address_in(FROM, &v),
+        "to" => address_in(TO, &v),
+        "cc" => address_in(CC, &v),
+        "subject" => words_in(SUBJECT, &v),
+        "body" => words_in(BODY, &v),
+        "category" | "categories" => Kind::Category(v),
+        "gmail" => Kind::Gmail(crate::GmailCategory::parse(&v)?),
+        "label" | "labels" => Kind::Label(v),
+        "attachment" | "attachments" => words_in(ATTACHMENT, &v),
+        "has" | "hasattachment" | "hasattachments" => match v.to_ascii_lowercase().as_str() {
+            "attachment" | "attachments" | "yes" | "true" => Kind::HasAttachment,
+            _ => return None,
+        },
+        "is" => match v.to_ascii_lowercase().as_str() {
+            "unread" => Kind::Unread,
+            "read" => Kind::Read,
+            "flagged" => Kind::Flagged,
+            "important" => Kind::Importance(Importance::High),
+            _ => return None,
+        },
+        "importance" => Kind::Importance(Importance::parse(&v)?),
+        "before" => Dated::Before(parse_day(&v)?).kind(),
+        "after" => Dated::After(parse_day(&v)?).kind(),
+        "received" => received(&v)?.kind(),
+        "on" | "sent" => Dated::On(parse_day(&v)?).kind(),
+        // `10:30`, `re: budget`, a URL: plain text.
+        _ => return None,
+    })
+}
+
+/// An address as two of them are compared: trimmed, with ASCII letters in small letters only
+/// (other letters, accents and an international domain's `xn--` form are left as they are).
+pub fn address_key(v: &str) -> String {
+    v.trim().to_ascii_lowercase()
+}
+
+/// Whether `v` is one whole address and nothing else (`name@domain`): a name of parts between
+/// dots, each of letters (accents too), digits and `!#$%&'*+-/=?^_`{|}~`, or a name in double
+/// quotes (`"ada smith"@example.org`, with `\"` and `\\` inside), an `@`, and a domain of parts
+/// between dots, each of letters, digits and `-` that starts and ends with a letter or digit.
+/// Only such a value after `from:`, `to:` or `cc:` is an address; one with more round it
+/// (`<ada@example.org>`, `ada@example.org,`) is words, as before.
+pub fn is_address(v: &str) -> bool {
+    let letter = |c: char| c.is_alphanumeric() || words::is_mark(c);
+    let atom = |part: &str| !part.is_empty() && part.chars().all(|c| letter(c) || "!#$%&'*+-/=?^_`{|}~".contains(c));
+    let label = |part: &str| {
+        part.chars().next().is_some_and(char::is_alphanumeric)
+            && part.chars().last().is_some_and(letter)
+            && part.chars().all(|c| letter(c) || c == '-')
+    };
+    let domain = match v.strip_prefix('"') {
+        Some(quoted) => after_quotes(quoted).and_then(|rest| rest.strip_prefix('@')),
+        None => v.split_once('@').filter(|(name, _)| name.split('.').all(atom)).map(|(_, domain)| domain),
+    };
+    domain.is_some_and(|domain| domain.split('.').all(label)) && words::words(v).len() >= 2
+}
+
+/// What follows the closing quote of `quoted` (the text after an opening one), where `\` makes
+/// the character after it part of the name; `None` when it isn't closed or has a control
+/// character in it.
+fn after_quotes(quoted: &str) -> Option<&str> {
+    let mut escaped = false;
+    for (i, c) in quoted.char_indices() {
+        if c.is_control() {
+            return None;
+        }
+        match c {
+            _ if escaped => escaped = false,
+            '\\' => escaped = true,
+            '"' => return quoted.get(i.saturating_add(1)..),
+            _ => {}
+        }
+    }
+    None
+}
+
+/// `value` as it is to be written after a keyword for the search to read it back as it is: in
+/// double quotes, with `"` and `\` in it written `\"` and `\\`, when it has a space, a quote or a
+/// backslash in it (`from:"\"ada smith\"@example.org"`); otherwise as it is.
+pub fn keyword_value(value: &str) -> String {
+    if !value.is_empty() && !value.chars().any(|c| c.is_whitespace() || c == '"' || c == '\\') {
+        return value.to_string();
+    }
+    let mut out = String::with_capacity(value.len().saturating_add(2));
+    out.push('"');
+    for c in value.chars() {
+        if matches!(c, '"' | '\\') {
+            out.push('\\');
+        }
+        out.push(c);
+    }
+    out.push('"');
+    out
+}
+
+/// Most suggestions offered at once, most of a mailbox's categories and of the people found
+/// looked through for them, and the longest category name or address offered (a longer one is
+/// typed; a longer name of a person is cut).
+const MAX_SUGGESTIONS: usize = 8;
+const MAX_CATEGORIES_READ: usize = 1_000;
+const MAX_PEOPLE_READ: usize = 100;
+const MAX_SUGGESTED_NAME: usize = 256;
+
+/// The keywords offered while the start of one is typed: each once, without the other names it
+/// may be written by (`categories:`).
+const OFFERED: &[&str] = &[
+    "from",
+    "to",
+    "cc",
+    "subject",
+    "body",
+    "category",
+    "gmail",
+    "label",
+    "attachment",
+    "has",
+    "is",
+    "importance",
+    "before",
+    "after",
+    "on",
+    "received",
+];
+
+/// What `is:` and `has:` take.
+const IS_VALUES: &[&str] = &["unread", "read", "flagged", "important"];
+const HAS_VALUES: &[&str] = &["attachment"];
+
+/// A suggestion for the word being typed in the search box (#308): what the list shows, and what
+/// goes in place of that word when it is taken.
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub struct Suggestion {
+    /// What the list shows: `category:`, `Green category`, `unread`.
+    pub label: String,
+    /// The bytes of the query it takes the place of: the word being typed, with its keyword.
+    pub range: Range<usize>,
+    /// What goes there: `category:`, or `category:"Green category"` and a space to go on with.
+    pub text: String,
+    /// A category's colour, for the mark beside its name.
+    pub color: Option<Rgb>,
+    /// A person's address, what goes after the keyword; `label` is their name, or the address
+    /// when they have none.
+    pub address: Option<String>,
+}
+
+/// What to offer for the word being typed in `query` (#308), the one the cursor (a byte offset)
+/// is at the end of: the keywords it is the start of (`cat` → `category:`, `-cat` →
+/// `-category:`); after `category:`, the mailbox's `categories` whose name starts with what was
+/// typed, then those that hold it elsewhere (when none starts with it, or two letters or digits
+/// were typed), ignoring case and accents; after `is:` and `has:`,
+/// what they take. Nothing after the other keywords (nor after `from:`, `to:` and `cc:`: see
+/// [`suggestions_with`]), for a word that starts no keyword, or with the cursor inside a word. A
+/// value goes in quotes when it needs them ([`keyword_value`]); one that would leave the query as
+/// it is isn't offered. At most [`MAX_SUGGESTIONS`].
+pub fn suggestions(query: &str, cursor: usize, categories: &[Category]) -> Vec<Suggestion> {
+    suggestions_with(query, cursor, categories, |_| Vec::new())
+}
+
+/// [`suggestions`], and after `from:`, `to:` and `cc:` (with a `-` too) the people `people` says
+/// what was typed after it could be, in its order, once something was typed (#308): each by
+/// their name, and their address goes after the keyword. Only an address the search reads back
+/// as that one address ([`is_address`]) is offered, so that, taken, it finds that address and no
+/// other (#301); each address once. A name is shown as names are (#454): without control
+/// characters or characters that show nothing, its spaces run together, cut with an ellipsis at
+/// [`MAX_SUGGESTED_NAME`] characters; by its address when nothing of it shows.
+pub fn suggestions_with(query: &str, cursor: usize, categories: &[Category], people: impl FnOnce(&str) -> Vec<Address>) -> Vec<Suggestion> {
+    let mut cursor = cursor.min(query.len());
+    while !query.is_char_boundary(cursor) {
+        cursor = cursor.saturating_sub(1);
+    }
+    let all = tokens(query);
+    let at = all.iter().position(|(_, at)| at.end == cursor);
+    // `category: |`: a keyword with nothing after it yet but spaces.
+    let bare_before = |i: usize| -> Option<usize> {
+        let (token, _) = all.get(i).filter(|(_, at)| !opening(query, at).1)?;
+        let key = token.strip_prefix('-').unwrap_or(token).strip_suffix(':')?;
+        is_keyword(key).then_some(i)
+    };
+    let (key_at, value) = match at.and_then(|i| all.get(i).map(|(token, range)| (i, token, range))) {
+        Some((i, token, range)) => {
+            let body = token.strip_prefix('-').unwrap_or(token);
+            match body.split_once(':') {
+                // In quotes it is text, not a keyword (#367).
+                Some((key, value)) if is_keyword(key) && !opening(query, range).1 => (i, value.to_string()),
+                Some(_) => return Vec::new(),
+                // `from: stu`: the keyword before it takes it.
+                None => match i.checked_sub(1).and_then(bare_before) {
+                    Some(k) => (k, token.clone()),
+                    None => return keywords_starting(query, token, range.clone()),
+                },
+            }
+        }
+        None => {
+            // Only at the end of the query or of a run of spaces, not at the start of a word.
+            let ahead = query.get(cursor..).is_some_and(|rest| rest.is_empty() || rest.starts_with(char::is_whitespace));
+            let before = all.iter().rposition(|(_, at)| at.end <= cursor);
+            let spaces =
+                before.and_then(|b| all.get(b)).and_then(|(_, at)| query.get(at.end..cursor)).is_some_and(|gap| gap.chars().all(char::is_whitespace));
+            match before.filter(|_| spaces && ahead).and_then(bare_before) {
+                Some(k) => (k, String::new()),
+                None => return Vec::new(),
+            }
+        }
+    };
+    let Some((key_token, key_range)) = all.get(key_at) else { return Vec::new() };
+    let range = key_range.start..cursor;
+    let head = key_token.split_once(':').map_or("", |(head, _)| head);
+    let space = if query.get(cursor..).is_some_and(|rest| rest.starts_with(char::is_whitespace)) { "" } else { " " };
+    let offer = |label: &str, color: Option<Rgb>| Suggestion {
+        label: label.to_string(),
+        range: range.clone(),
+        text: format!("{head}:{}{space}", keyword_value(label)),
+        color,
+        address: None,
+    };
+    let key = head.strip_prefix('-').unwrap_or(head).to_ascii_lowercase();
+    let typed = value.to_lowercase();
+    let mut out: Vec<Suggestion> = match key.as_str() {
+        "category" | "categories" => {
+            // Words folded as search compares them, a space between: `green c` starts "Green
+            // category", and `ctat` isn't in "Project Atlas".
+            let fold = |text: &str| words::words(text).join(" ");
+            let wanted = fold(&value);
+            let named: Vec<(&Category, String)> = categories
+                .iter()
+                .take(MAX_CATEGORIES_READ)
+                .filter(|c| !c.name.trim().is_empty() && c.name.chars().nth(MAX_SUGGESTED_NAME).is_none() && !c.name.chars().any(char::is_control))
+                .map(|c| (c, fold(&c.name)))
+                .collect();
+            // A value with no letter or digit in it (`&`) folds to nothing, which every name starts
+            // with: it is matched as it was typed, as the search matches it.
+            let marks = value.trim_matches(|c: char| c == '"' || c.is_whitespace());
+            let mut picked: Vec<&Category> = if wanted.is_empty() && !marks.is_empty() {
+                named.iter().filter(|(c, _)| crate::contains_ci(&c.name, marks)).map(|(c, _)| *c).collect()
+            } else {
+                named.iter().filter(|(_, f)| f.starts_with(&wanted)).map(|(c, _)| *c).collect()
+            };
+            // Those that hold it elsewhere only when none starts with it, or from two letters on:
+            // `category:g` isn't every "… category".
+            if picked.is_empty() || wanted.chars().nth(1).is_some() {
+                picked.extend(named.iter().filter(|(_, f)| !wanted.is_empty() && !f.starts_with(&wanted) && f.contains(&wanted)).map(|(c, _)| *c));
+            }
+            let mut seen: Vec<&str> = Vec::new();
+            picked
+                .into_iter()
+                .filter(|c| {
+                    let new = !seen.contains(&c.name.as_str());
+                    if new {
+                        seen.push(&c.name);
+                    }
+                    new
+                })
+                .take(MAX_SUGGESTIONS.saturating_add(1))
+                .map(|c| offer(&c.name, Some(c.color)))
+                .collect()
+        }
+        "from" | "to" | "cc" if !value.trim().is_empty() => {
+            let mut seen: Vec<String> = Vec::new();
+            people(value.trim())
+                .into_iter()
+                .take(MAX_PEOPLE_READ)
+                .filter_map(|person| {
+                    let email = person.email.trim();
+                    let key = address_key(email);
+                    if !is_address(email) || email.chars().nth(MAX_SUGGESTED_NAME).is_some() || seen.contains(&key) {
+                        return None;
+                    }
+                    seen.push(key);
+                    let name = shown_name(&person.name);
+                    Some(Suggestion {
+                        label: if name.is_empty() { email.to_string() } else { name },
+                        range: range.clone(),
+                        text: format!("{head}:{}{space}", keyword_value(email)),
+                        color: None,
+                        address: Some(email.to_string()),
+                    })
+                })
+                .take(MAX_SUGGESTIONS.saturating_add(1))
+                .collect()
+        }
+        "is" => IS_VALUES.iter().filter(|v| v.starts_with(&typed)).map(|v| offer(v, None)).collect(),
+        "has" => HAS_VALUES.iter().filter(|v| v.starts_with(&typed)).map(|v| offer(v, None)).collect(),
+        "gmail" => crate::GmailCategory::ALL.iter().map(|c| c.code()).filter(|v| v.starts_with(&typed)).map(|v| offer(v, None)).collect(),
+        _ => Vec::new(),
+    };
+    out.retain(|s| query.get(s.range.clone()) != Some(s.text.trim_end()));
+    out.truncate(MAX_SUGGESTIONS);
+    out
+}
+
+/// The keywords that `token` (the word the cursor is at the end of, standing at `range`) is the
+/// start of, each with its colon: `cat` → `category:`. Not a word in quotes, nor `-` alone.
+fn keywords_starting(query: &str, token: &str, range: Range<usize>) -> Vec<Suggestion> {
+    let written = query.get(range.clone()).unwrap_or_default();
+    let (dash, body) = match token.strip_prefix('-') {
+        Some(rest) => ("-", rest),
+        None => ("", token),
+    };
+    if body.is_empty() || written.contains('"') {
+        return Vec::new();
+    }
+    OFFERED
+        .iter()
+        .filter(|k| k.len() >= body.len() && k.get(..body.len()).is_some_and(|start| start.eq_ignore_ascii_case(body)))
+        .map(|k| Suggestion { label: format!("{dash}{k}:"), range: range.clone(), text: format!("{dash}{k}:"), color: None, address: None })
+        .take(MAX_SUGGESTIONS)
+        .collect()
+}
+
+/// A person's name as the list shows it, as a name is shown (#454): one line, without control
+/// characters or characters that show nothing, spaces run together, at most
+/// [`MAX_SUGGESTED_NAME`] characters, the last an ellipsis where it was cut.
+fn shown_name(name: &str) -> String {
+    courier_names::shown(name, MAX_SUGGESTED_NAME)
+}
+
+/// Whether a server's search takes `word` as it is: letters, digits and `@._-'+`, which keep an
+/// address whole ([`raw_words`]), and no longer than a word that goes to a server.
+fn server_takes(word: &str) -> bool {
+    !word.is_empty() && word.chars().count() <= MAX_SERVER_WORD && word.chars().all(|c| c.is_alphanumeric() || SERVER_WORD.contains(c))
+}
+
+/// What a word for a server's search may have besides letters and digits (`+` only inside an
+/// address, `ada+news@example.org`).
+const SERVER_WORD: &str = "@._-'+";
+
+/// Most words of one term, and most characters of one word, that go to a server.
+const MAX_SERVER_WORDS: usize = 8;
+const MAX_SERVER_WORD: usize = 64;
+/// Most terms that go to a server; the rest are checked here.
+const MAX_SERVER_TERMS: usize = 16;
+
+/// The words of `text` as a server's search is to be given them: runs of letters, digits and
+/// `@._-'` (so that an address stays whole), each trimmed of what isn't a letter or a digit at
+/// its ends, in the case and with the accents they were typed in. A `+` parts words, except in a
+/// whole address (`ada+news@example.org`, #301), which is one word.
+fn raw_words(text: &str) -> Vec<String> {
+    let trim = |w: &str| w.trim_matches(|c: char| !c.is_alphanumeric()).to_string();
+    text.split(|c: char| !(c.is_alphanumeric() || SERVER_WORD.contains(c)))
+        .map(trim)
+        .flat_map(|run| match is_address(&run) {
+            true => vec![run],
+            false => run.split('+').map(trim).collect(),
+        })
+        .filter(|w| !w.is_empty())
+        .take(MAX_SERVER_WORDS)
+        .map(|w| w.chars().take(MAX_SERVER_WORD).collect())
+        .collect()
+}
+
+/// Whether a server was given less of a term than was typed (as many words as it takes, or a word
+/// as long, and so perhaps cut short) in parts of a message that a message found on the server
+/// has here whole: its people and its subject. Such a term is looked at here too; one in the
+/// body or an attachment's name isn't, as such a message has only a preview of its body here and
+/// no attachments, so looking would drop what the server rightly found.
+fn cut_short(fields: u8, raw: &[String]) -> bool {
+    let whole_here = fields & !(FROM | TO | CC | SUBJECT) == 0;
+    whole_here && (raw.len() >= MAX_SERVER_WORDS || raw.iter().any(|w| w.chars().count() >= MAX_SERVER_WORD))
+}
+
+/// The part of a message a server's search is asked to look in.
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum ServerField {
+    From,
+    To,
+    Cc,
+    Subject,
+    Body,
+    Attachment,
+}
+
+/// A term of a query a server's search understands (Microsoft Graph's, R6.2).
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub enum ServerTerm {
+    /// Words one after another (a phrase, when there are several), as the owner wrote them: in
+    /// one part of a message, or (`None`) wherever the server looks by itself.
+    Words {
+        field: Option<ServerField>,
+        words: Vec<String>,
+    },
+    HasAttachment,
+    /// High or low (a server's search has no word for normal).
+    Importance(Importance),
+}
+
+/// A query split for a server: what it understands, and what is left to check here against what
+/// comes back.
+#[derive(Clone, Debug, Default, PartialEq, Eq)]
+pub struct ServerQuery {
+    pub terms: Vec<ServerTerm>,
+    pub local: Query,
+}
+
+fn parse_day(s: &str) -> Option<Day> {
+    if let Some(d) = Date::parse_iso(s) {
+        return Some(Day::Date(d));
+    }
+    let mut parts = s.split('/');
+    let (m, d) = (parts.next()?.parse().ok()?, parts.next()?.parse().ok()?);
+    let Some(y) = parts.next() else {
+        // `10/22`: that day of the year the search is made in (#329). A day no year has (`2/30`)
+        // isn't a date; 2024 has every day a year can have.
+        return Date::new(2024, m, d).map(|_| Day::ThisYear { month: m, day: d });
+    };
+    let y = y.parse().ok()?;
+    // `10/22/2026/junk` isn't a date.
+    if parts.next().is_some() {
+        return None;
+    }
+    Date::new(y, m, d).map(Day::Date)
+}
+
+/// A whole date as the search reads one, `2026-10-22` or `10/22/2026`, around spaces: not one
+/// without a year (Advanced Search's two days, #329).
+pub fn full_date(s: &str) -> Option<Date> {
+    match parse_day(s.trim())? {
+        Day::Date(d) => Some(d),
+        Day::ThisYear { .. } => None,
+    }
+}
+
+/// What `received:` takes (#329): a day, a range of days `A..B` as Outlook's Advanced Search
+/// writes it, one side of a range, `>=A`, `<=B`, `>A`, `<B`, or days Outlook names in words
+/// (`today`, `"last week"`).
+fn received(v: &str) -> Option<Dated> {
+    use Bound::{Excluded, Included, Unbounded};
+    if let Some(span) = Span::parse(v) {
+        return Some(Dated::Span(span));
+    }
+    let (first, last) = if let Some((a, b)) = v.split_once("..") {
+        (Included(parse_day(a)?), Included(parse_day(b)?))
+    } else if let Some(a) = v.strip_prefix(">=") {
+        (Included(parse_day(a)?), Unbounded)
+    } else if let Some(b) = v.strip_prefix("<=") {
+        (Unbounded, Included(parse_day(b)?))
+    } else if let Some(a) = v.strip_prefix('>') {
+        (Excluded(parse_day(a)?), Unbounded)
+    } else if let Some(b) = v.strip_prefix('<') {
+        (Unbounded, Excluded(parse_day(b)?))
+    } else {
+        let d = parse_day(v)?;
+        (Included(d), Included(d))
+    };
+    Some(Dated::Received(first, last))
+}
+
+/// The keywords the search box knows (what comes before a `:`), in small letters.
+pub(crate) const KEYWORDS: &[&str] = &[
+    "from",
+    "to",
+    "cc",
+    "subject",
+    "body",
+    "category",
+    "categories",
+    "gmail",
+    "label",
+    "labels",
+    "attachment",
+    "attachments",
+    "has",
+    "hasattachment",
+    "hasattachments",
+    "is",
+    "importance",
+    "before",
+    "after",
+    "on",
+    "received",
+    "sent",
+];
+
+fn is_keyword(key: &str) -> bool {
+    KEYWORDS.iter().any(|k| k.eq_ignore_ascii_case(key))
+}
+
+/// Whether `token` (with a `-` in front or not) is a known keyword and its colon: `subject:`,
+/// `-from:ada`.
+fn starts_with_keyword(token: &str) -> bool {
+    let body = token.strip_prefix('-').unwrap_or(token);
+    body.split_once(':').is_some_and(|(key, _)| is_keyword(key))
+}
+
+/// How the token standing at `at` in `s` begins: with a `-` before any quote (it is left out),
+/// and with a quote after that. What is in quotes is text, even when it reads like a keyword or a
+/// `-`: `"is:unread"` looks for those words (#367).
+fn opening(s: &str, at: &Range<usize>) -> (bool, bool) {
+    let raw = s.get(at.clone()).unwrap_or_default();
+    let rest = raw.strip_prefix('-').filter(|rest| !rest.is_empty());
+    (rest.is_some(), rest.unwrap_or(raw).starts_with('"'))
+}
+
+/// Whether the token at `at` is a keyword's value or a keyword of its own: one in quotes never is.
+fn starts_with_keyword_at(s: &str, token: &str, at: &Range<usize>) -> bool {
+    !opening(s, at).1 && starts_with_keyword(token)
+}
+
+/// A term of a query as it stands in the text: what [`Query::parse`] reads, [`keyword_spans`] draws
+/// and Advanced Search fills its fields from ([`advanced`]), so that the three never read a query
+/// differently.
+#[derive(Clone, Debug)]
+struct Scanned {
+    /// Where it stands (bytes): from its `-`, if it has one, to the end of its value, the word
+    /// after the keyword's colon in `from: ada`.
+    range: Range<usize>,
+    negate: bool,
+    /// The term without its `-`, its quotes taken off: `from:ada`, `budget`.
+    body: String,
+    /// What it asks for as a keyword; `None`: it is text (a word, a phrase, text in quotes).
+    keyword: Option<Kind>,
+}
+
+/// The terms of `s`, within the longest query read and the most terms kept. `from: stuart` is
+/// `from:stuart`, as Outlook reads it: a keyword with nothing after its colon takes what comes
+/// next. With nothing next (the owner is still typing it), or another keyword, it is no term at
+/// all (#194). What is in quotes is text (#367).
+fn scan(s: &str) -> Vec<Scanned> {
+    let mut out = Vec::new();
+    let mut tokens = tokens(s).into_iter().take(MAX_TERMS).peekable();
+    while let Some((token, at)) = tokens.next() {
+        let (negate, quoted) = opening(s, &at);
+        let body = if negate { token.strip_prefix('-').unwrap_or(&token) } else { token.as_str() };
+        let (body, range) = match body.strip_suffix(':') {
+            Some(key) if !quoted && is_keyword(key) => match tokens.next_if(|(next, at)| !starts_with_keyword_at(s, next, at)) {
+                Some((value, next)) => (format!("{body}{value}"), at.start..next.end),
+                None => continue,
+            },
+            _ => (body.to_string(), at),
+        };
+        let keyword = if quoted { None } else { keyword_kind(&body) };
+        out.push(Scanned { range, negate, body, keyword });
+    }
+    out
+}
+
+impl Query {
+    pub fn parse(s: &str) -> Query {
+        let terms = scan(s)
+            .into_iter()
+            .map(|term| Term {
+                negate: term.negate,
+                kind: term.keyword.unwrap_or_else(|| Kind::Words { fields: words::ALL, words: words::words(&term.body), raw: raw_words(&term.body) }),
+            })
+            // Text with no words in it asks for nothing.
+            .filter(|t| !t.kind.asks_nothing())
+            .collect();
+        Query { terms }
+    }
+
+    pub fn is_empty(&self) -> bool {
+        self.terms.is_empty()
+    }
+
+    /// Whether it needs the day it is made on ([`Query::on`]): a date without a year, a day in
+    /// words.
+    pub fn needs_day(&self) -> bool {
+        self.terms.iter().any(|t| matches!(t.kind, Kind::Dated(_)))
+    }
+
+    /// Whether any term is a date (`received:`, `on:`, `before:`, `after:`): such a search finds
+    /// other messages in another zone.
+    pub fn has_dates(&self) -> bool {
+        self.terms.iter().any(|t| matches!(t.kind, Kind::Before(_) | Kind::After(_) | Kind::On(_) | Kind::Received(..) | Kind::Dated(_)))
+    }
+
+    /// Whether any term reads a message's text (a bare word, or `body:`): such a search wants the
+    /// bodies of the messages it looks at in memory.
+    pub fn reads_bodies(&self) -> bool {
+        (0..self.terms.len()).any(|i| self.term_reads_body(i))
+    }
+
+    /// How many terms it has.
+    pub fn len(&self) -> usize {
+        self.terms.len()
+    }
+
+    /// Term `i`, when it is words: the parts of a message it looks in ([`words::ALL`] for a bare
+    /// word) and its words, folded, one after another. Other terms (`is:`, dates, `category:`)
+    /// say `None`.
+    pub fn words_of(&self, i: usize) -> Option<(u8, &[String])> {
+        match &self.terms.get(i)?.kind {
+            Kind::Words { fields, words, .. } | Kind::Address { fields, words, .. } => Some((*fields, words)),
+            _ => None,
+        }
+    }
+
+    /// Whether term `i` is a whole address (`from:ada@example.org`): its words only narrow the
+    /// messages, and the address itself is looked at on each.
+    pub fn is_address_term(&self, i: usize) -> bool {
+        matches!(self.terms.get(i).map(|t| &t.kind), Some(Kind::Address { .. }))
+    }
+
+    /// Whether term `i` reads a message's text.
+    pub fn term_reads_body(&self, i: usize) -> bool {
+        self.words_of(i).is_some_and(|(fields, _)| fields & BODY != 0)
+    }
+
+    /// The query split for a server's search (R6.2): words, phrases and `from:`, `to:`, `cc:`,
+    /// `subject:`, `body:` and `attachment:` with them, `has:attachment`, and `importance:` high
+    /// or low go to the server; a term with `-` in front, `is:`, `category:`, dates, normal
+    /// importance, and whatever is past [`MAX_SERVER_TERMS`] are left to check here. A message the
+    /// server finds for the first matches the whole query when it matches the second.
+    pub fn for_server(&self) -> ServerQuery {
+        let mut out = ServerQuery::default();
+        for term in &self.terms {
+            let sent = match (&term.kind, term.negate) {
+                (_, true) => None,
+                // A server reads a whole address after `from:`, `to:` or `cc:` as that address,
+                // where here such a term is words (`from:<ada@example.org>` finds
+                // adam@example.org): it is looked at here alone.
+                (Kind::Words { fields: FROM | TO | CC, raw, .. }, false) if raw.iter().any(|w| is_address(w)) => None,
+                (Kind::Words { fields, raw, .. }, false) if !raw.is_empty() => {
+                    let field = match *fields {
+                        words::ALL => Some(None),
+                        FROM => Some(Some(ServerField::From)),
+                        TO => Some(Some(ServerField::To)),
+                        CC => Some(Some(ServerField::Cc)),
+                        SUBJECT => Some(Some(ServerField::Subject)),
+                        BODY => Some(Some(ServerField::Body)),
+                        ATTACHMENT => Some(Some(ServerField::Attachment)),
+                        _ => None,
+                    };
+                    field.map(|field| ServerTerm::Words { field, words: raw.clone() })
+                }
+                // An address a server's search can't be given as it is (one with `!#$%…` or too
+                // long) is looked at here alone.
+                (Kind::Address { fields, address, .. }, false) if server_takes(address) => {
+                    let field = match *fields {
+                        FROM => Some(ServerField::From),
+                        TO => Some(ServerField::To),
+                        CC => Some(ServerField::Cc),
+                        _ => None,
+                    };
+                    field.map(|field| ServerTerm::Words { field: Some(field), words: vec![address.clone()] })
+                }
+                (Kind::HasAttachment, false) => Some(ServerTerm::HasAttachment),
+                (Kind::Importance(i @ (Importance::High | Importance::Low)), false) => Some(ServerTerm::Importance(*i)),
+                _ => None,
+            };
+            match sent {
+                Some(sent) if out.terms.len() < MAX_SERVER_TERMS => {
+                    out.terms.push(sent);
+                    // A whole address is looked at here too: a server's search may find it
+                    // inside a longer one; and so are words the server was given less of.
+                    let cut = matches!(&term.kind, Kind::Words { fields, raw, .. } if cut_short(*fields, raw));
+                    if cut || matches!(term.kind, Kind::Address { .. }) {
+                        out.local.terms.push(term.clone());
+                    }
+                }
+                _ => out.local.terms.push(term.clone()),
+            }
+        }
+        out
+    }
+
+    /// This search made on `today`, with weeks that start on `first` (#329): a date without a
+    /// year is this year's, and `received:today` and the other days named in words are those
+    /// days. A search that isn't made on a day finds nothing when it has such a date.
+    pub fn on(mut self, today: Date, first: Weekday) -> Query {
+        for t in &mut self.terms {
+            if let Kind::Dated(d) = t.kind {
+                t.kind = d.on(Some((today, first))).unwrap_or(Kind::Never);
+            }
+        }
+        self
+    }
+
+    /// Whether `m` matches every term. Dates compare in a zone `offset_minutes` east of UTC.
+    pub fn matches(&self, m: &Message, offset_minutes: i32) -> bool {
+        self.matches_with(m, |_| offset_minutes, |_| None)
+    }
+
+    /// [`Query::matches`] in a zone whose offset (minutes east of UTC) `offset` gives at an
+    /// instant: when it was sent and when it came in each fall on their own day, a change of the
+    /// clocks between the two or not (#329).
+    pub fn matches_in(&self, m: &Message, offset: impl Fn(Timestamp) -> i32) -> bool {
+        self.matches_with(m, offset, |_| None)
+    }
+
+    /// [`Query::matches_in`], with what `known` says of a term (whether `m` has what term `i` asks
+    /// for, before its `-`; a word index's answer) in place of looking at `m`; `None`: look.
+    pub fn matches_with(&self, m: &Message, offset: impl Fn(Timestamp) -> i32, known: impl Fn(usize) -> Option<bool>) -> bool {
+        let local = |at: Timestamp| DateTime::from_timestamp(at, offset(at)).date;
+        let day = || local(m.date);
+        // When it came in; a message that doesn't say is taken to have come in when it was sent.
+        let received = || local(if m.received != 0 { m.received } else { m.date });
+        // A date that needs the day the search is made on finds nothing without it, `-` or not.
+        if self.needs_day() {
+            return false;
+        }
+        self.terms.iter().enumerate().all(|(i, t)| {
+            let hit = known(i).unwrap_or_else(|| match &t.kind {
+                Kind::Words { fields, words, .. } => {
+                    words::texts(m, &m.body.text, |field, text| field & fields != 0 && words::starts_in(text, words))
+                }
+                Kind::Address { fields, address, .. } => {
+                    let is = |a: &crate::Address| address_key(&a.email) == *address;
+                    (fields & FROM != 0 && is(&m.from)) || (fields & TO != 0 && m.to.iter().any(is)) || (fields & CC != 0 && m.cc.iter().any(is))
+                }
+                Kind::Category(x) => m.categories.iter().any(|c| contains_ci(c, x)),
+                Kind::Gmail(c) => m.gmail_category == Some(*c),
+                Kind::Label(x) => {
+                    let x = x.trim_matches(|c: char| c == '"' || c.is_whitespace());
+                    !x.is_empty() && m.gmail_labels.iter().any(|l| contains_ci(crate::gmail::label_name(l), x))
+                }
+                Kind::HasAttachment => m.has_attachments(),
+                Kind::Unread => !m.read,
+                Kind::Read => m.read,
+                Kind::Flagged => m.flag == FlagStatus::Flagged,
+                Kind::Importance(i) => m.importance == *i,
+                Kind::Before(d) => day() < *d,
+                Kind::After(d) => day() > *d,
+                Kind::On(d) => day() == *d,
+                Kind::Received(first, last) => (*first, *last).contains(&received()),
+                Kind::Dated(_) | Kind::Never => false,
+            });
+            hit != t.negate
+        })
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::{Address, Attachment};
+
+    fn msg() -> Message {
+        Message {
+            from: Address::new("Ada Lovelace", "ada@example.org"),
+            to: vec![Address::new("Charles", "charles@example.org")],
+            cc: vec![Address::new("", "team@example.org")],
+            subject: "Budget review: Q4".into(),
+            body: crate::Body { text: "Numbers attached. See the engine estimate.".into(), html: None },
+            attachments: vec![Attachment::new("estimate.xlsx", "application/octet-stream", vec![1, 2, 3])],
+            categories: vec!["Blue category".into()],
+            // 2026-10-11T23:30:00Z
+            date: 1_791_761_400,
+            ..Default::default()
+        }
+    }
+
+    fn hit(q: &str) -> bool {
+        Query::parse(q).matches(&msg(), 0)
+    }
+
+    #[test]
+    fn words_and_phrases_must_all_match() {
+        assert!(hit("budget"));
+        assert!(hit("BUDGET engine"));
+        assert!(hit("\"budget review\""));
+        assert!(!hit("\"review budget\""));
+        assert!(!hit("budget invoice"));
+        assert!(hit("estimate.xlsx") && hit("charles") && hit("team@"));
+        assert!(hit(""));
+        assert!(Query::parse("  \"\"  ").is_empty());
+    }
+
+    #[test]
+    fn keywords_filter_fields() {
+        assert!(hit("from:ada") && !hit("from:charles"));
+        assert!(hit("to:charles") && hit("cc:team") && !hit("to:team"));
+        assert!(hit("subject:q4") && !hit("subject:engine") && hit("body:engine"));
+        assert!(hit("from:\"Ada Lovelace\""));
+        assert!(hit("has:attachment") && hit("hasattachment:yes") && hit("attachment:estimate"));
+        assert!(hit("is:unread") && !hit("is:read") && !hit("is:flagged"));
+        assert!(hit("category:blue") && !hit("category:red"));
+        assert!(hit("importance:normal") && !hit("is:important"));
+    }
+
+    #[test]
+    fn negation_and_dates() {
+        assert!(hit("budget -invoice") && !hit("budget -engine") && !hit("-from:ada") && hit("-is:read"));
+        assert!(hit("on:2026-10-11") && hit("after:2026-10-10") && hit("before:10/12/2026"));
+        assert!(!hit("after:2026-10-11") && !hit("before:2026-10-11"));
+        // In a zone an hour east it is already the 12th.
+        assert!(Query::parse("on:2026-10-12").matches(&msg(), 60));
+    }
+
+    /// R6.2: a word matches the start of a word, whatever its case and accents; inside a word it
+    /// doesn't (it used to: substring matching).
+    #[test]
+    fn words_match_word_starts_ignoring_case_and_accents() {
+        assert!(hit("budg") && hit("rev") && hit("ESTIM") && hit("lovelace"));
+        assert!(!hit("udget") && !hit("view") && !hit("ngine") && !hit("ovelace"));
+        assert!(hit("\"budget rev\"") && hit("from:\"ada love\"") && !hit("from:\"ada charles\""));
+        let m = Message { subject: "Sjednica u četvrtak".into(), from: Address::new("Đorđe Gvožđar", "dg@example.org"), ..Default::default() };
+        for q in ["gvozdar", "from:GVOŽĐAR", "dorde", "cetvrtak", "četvrtak", "subject:sjed"] {
+            assert!(Query::parse(q).matches(&m, 0), "{q}");
+        }
+        // Punctuation alone asks for nothing; with words, the words.
+        assert!(Query::parse("- @ ... \"\"").is_empty());
+        assert!(hit("ada@") && hit("@example") && !hit("@nowhere"));
+    }
+
+    #[test]
+    fn what_is_known_of_a_term_stands_in_for_looking() {
+        let q = Query::parse("budget -invoice is:unread");
+        assert_eq!(q.len(), 3);
+        assert_eq!(q.words_of(0), Some((words::ALL, ["budget".to_string()].as_slice())));
+        assert!(q.words_of(2).is_none() && q.term_reads_body(1) && !q.term_reads_body(2));
+        let m = msg();
+        assert!(q.matches(&m, 0));
+        // An index that says the message has "invoice": excluded; that it lacks "budget": too.
+        assert!(!q.matches_with(&m, |_| 0, |i| (i == 1).then_some(true)));
+        assert!(!q.matches_with(&m, |_| 0, |i| (i == 0).then_some(false)));
+        assert!(!Query::parse("subject:x").reads_bodies() && Query::parse("body:x").reads_bodies());
+    }
+
+    /// R6.2: what a server's search understands goes there; the rest is checked here, and the
+    /// two together are the whole query.
+    #[test]
+    fn a_query_splits_into_what_a_server_understands_and_what_is_checked_here() {
+        let split =
+            Query::parse(r#"Budget from:ada@example.org subject:"Q4 plan" has:attachment is:unread -lunch importance:low category:red"#).for_server();
+        let words = |field, w: &[&str]| ServerTerm::Words { field, words: w.iter().map(|w| w.to_string()).collect() };
+        assert_eq!(
+            split.terms,
+            [
+                words(None, &["Budget"]),
+                words(Some(ServerField::From), &["ada@example.org"]),
+                words(Some(ServerField::Subject), &["Q4", "plan"]),
+                ServerTerm::HasAttachment,
+                ServerTerm::Importance(Importance::Low),
+            ]
+        );
+        assert_eq!(split.local.len(), 4, "the address (#301), is:unread, -lunch, category:red");
+        assert!(!split.local.matches(&msg(), 0), "its category is blue");
+        let unread_red = Message { categories: vec!["Red".into()], ..msg() };
+        assert!(split.local.matches(&unread_red, 0));
+        // Accents and case as typed; punctuation at a word's ends trimmed; an address whole.
+        assert_eq!(Query::parse("Gvožđar, (ada@example.org).").for_server().terms, [words(None, &["Gvožđar"]), words(None, &["ada@example.org"])]);
+        // Nothing for the server: all of it is checked here.
+        let none = Query::parse("is:flagged -x after:2026-01-01 importance:normal").for_server();
+        assert!(none.terms.is_empty() && none.local.len() == 4);
+        // At most so many terms go; the rest stay here.
+        let many = Query::parse(&"word ".repeat(40)).for_server();
+        assert_eq!((many.terms.len(), many.local.len()), (MAX_SERVER_TERMS, 40 - MAX_SERVER_TERMS));
+    }
+
+    /// #194: a space after a keyword's colon is allowed, as in Outlook; a keyword with nothing
+    /// after it yet, while the owner types, asks for nothing; a partial word is a word start.
+    #[test]
+    fn a_keyword_may_have_a_space_after_its_colon() {
+        let m = Message { subject: "[IQA] Audit summary".into(), from: Address::new("Stuart Example", "stuart@example.org"), ..Default::default() };
+        let on = |q: &str| Query::parse(q).matches(&m, 0);
+        for q in [
+            "from: stuart",
+            "from: stuart subject: iqa",
+            "FROM:  Stuart   Subject: IQA",
+            "from: stuart subject:",
+            "from: stuart su",
+            "subject: \"iqa audit\"",
+            "subject: \"iqa audit s\"",
+            "subject: from:stuart",
+        ] {
+            assert!(on(q), "{q}");
+        }
+        for q in ["from: ada", "from: stuart subject: budget", "subject: stuart", "-from: stuart", "from: stuart sz"] {
+            assert!(!on(q), "{q}");
+        }
+        assert!(on("-from: ada"));
+        assert_eq!(Query::parse("from: stuart subject: iqa"), Query::parse("from:stuart subject:iqa"));
+        assert_eq!(Query::parse("-from: stuart"), Query::parse("-from:stuart"));
+        // Nothing after the keyword (yet): no condition, the rest as it is.
+        assert!(Query::parse("subject:").is_empty() && Query::parse("from: subject:").is_empty() && Query::parse("-is:").is_empty());
+        assert_eq!(Query::parse("from: stuart subject:"), Query::parse("from:stuart"));
+        assert_eq!(Query::parse("subject: from:stuart"), Query::parse("from:stuart"));
+        // A word ending in a colon that is no keyword is still text.
+        assert_eq!(Query::parse("re: budget").len(), 2);
+        assert_eq!(Query::parse("is: unread"), Query::parse("is:unread"));
+        assert_eq!(Query::parse("before: 2026-10-12"), Query::parse("before:2026-10-12"));
+        // The server is given the same.
+        let split = Query::parse("from: stuart subject: iqa").for_server();
+        let words = |field, w: &str| ServerTerm::Words { field: Some(field), words: vec![w.to_string()] };
+        assert_eq!(split.terms, [words(ServerField::From, "stuart"), words(ServerField::Subject, "iqa")]);
+        assert!(split.local.is_empty());
+    }
+
+    /// #194: `subject:iqa` finds the word wherever it stands among punctuation.
+    #[test]
+    fn a_subject_word_is_found_among_punctuation() {
+        for subject in ["[IQA] Audit dates", "IQA-2026 review", "RE: IQA", "Fwd: (iqa)", "Re: Re: IQA."] {
+            let m = Message { subject: subject.into(), ..Default::default() };
+            assert!(Query::parse("subject:iqa").matches(&m, 0) && Query::parse("subject: IQA").matches(&m, 0), "{subject}");
+        }
+        assert!(!Query::parse("subject:iqa").matches(&Message { subject: "LIQA notes".into(), ..Default::default() }, 0));
+    }
+
+    /// #196: where the keywords the parser reads stand in the text, for the search box's pills.
+    #[test]
+    fn keywords_are_found_where_they_stand() {
+        fn spans(q: &str) -> Vec<(&str, &str)> {
+            keyword_spans(q).into_iter().map(|k| (&q[k.range], &q[k.key])).collect()
+        }
+        assert_eq!(spans("from: stuart subject: iqa"), [("from: stuart", "from:"), ("subject: iqa", "subject:")]);
+        assert_eq!(spans("budget  -from:ada  is:unread"), [("-from:ada", "from:"), ("is:unread", "is:")]);
+        assert_eq!(spans(r#"subject:"q4 plan" x"#), [(r#"subject:"q4 plan""#, "subject:")]);
+        assert_eq!(spans(r#"subject: "q4 plan""#), [(r#"subject: "q4 plan""#, "subject:")]);
+        assert_eq!(spans("Grüße from:Đorđe"), [("from:Đorđe", "from:")]);
+        // What the parser reads as text or as nothing is no keyword.
+        for q in ["re: budget", "is:banana", "subject:", "from: subject:", "from:@@", "10:30", "budget", ""] {
+            assert!(spans(q).is_empty(), "{q}");
+        }
+        assert_eq!(spans("from: subject:iqa"), [("subject:iqa", "subject:")]);
+        // Hostile text: never a panic, every range on a character boundary.
+        for q in ["\"from:\"x", "-", "-:", "\u{301}from:\u{301}", "from:\"", &"from: ".repeat(500)] {
+            for k in keyword_spans(q) {
+                assert!(q.get(k.range.clone()).is_some() && q.get(k.key.clone()).is_some(), "{q}");
+            }
+        }
+    }
+
+    /// #196: the pills are around the keywords alone, and a keyword being typed keeps its pill.
+    #[test]
+    fn pills_are_around_the_keywords() {
+        fn heads(q: &str, cursor: Option<usize>) -> Vec<&str> {
+            keyword_pills(q, cursor).into_iter().map(|r| &q[r]).collect()
+        }
+        assert_eq!(heads("from: stuart smith subject: iqa", None), ["from:", "subject:"]);
+        assert_eq!(heads("budget -is:unread From:ada", None), ["-is:", "From:"]);
+        // As soon as the colon is typed, and while a value is on its way.
+        assert_eq!(heads("from:", None), ["from:"]);
+        assert_eq!(heads("budget subject:", Some(15)), ["subject:"]);
+        assert_eq!(heads("is:u", Some(4)), ["is:"]);
+        assert_eq!(heads("is: u", Some(5)), ["is:"]);
+        // Left as what the parser reads as text: no pill.
+        assert!(heads("is:u", None).is_empty());
+        assert!(heads("is:banana x", Some(11)).is_empty());
+        assert_eq!(heads("from: subject:iqa", None), ["subject:"]);
+        for q in ["re: budget", "10:30", "nosuch:thing", "-", "-:", "", ":"] {
+            assert!(heads(q, None).is_empty(), "{q}");
+        }
+        // Hostile text: never a panic, every range on a character boundary.
+        for q in ["\"from:\"x", "\u{301}from:\u{301}", "-from:\"", "Đ-is:", &"from: ".repeat(500)] {
+            for c in [None, Some(0), Some(1), Some(q.len()), Some(usize::MAX)] {
+                for r in keyword_pills(q, c) {
+                    assert!(q.get(r).is_some(), "{q}");
+                }
+            }
+        }
+    }
+
+    #[test]
+    fn unknown_keywords_and_junk_are_text() {
+        assert!(hit("review: q4"));
+        assert!(!hit("nosuch:thing"));
+        assert!(!hit("before:someday"));
+        assert!(Query::parse("-").matches(&Message { subject: "a - b".into(), ..Default::default() }, 0));
+        let long = "x ".repeat(10_000);
+        assert!(Query::parse(&long).terms.len() <= MAX_TERMS);
+        let _ = Query::parse("\"unterminated from:").matches(&msg(), i32::MAX);
+    }
+}

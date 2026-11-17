@@ -1,0 +1,43 @@
+[package]
+name = "courier-web"
+description = "Courier in the browser (eframe web runner, WebGPU with WebGL2 fallback)"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+publish = false
+
+[lints]
+workspace = true
+
+[[bin]]
+name = "courier-web"
+path = "src/main.rs"
+
+[dependencies]
+courier-engine = { workspace = true }
+courier-ui-egui = { workspace = true }
+courier-model = { workspace = true }
+courier-html = { workspace = true }
+courier-link = { workspace = true }
+courier-time = { workspace = true }
+# JMAP accounts, over the browser's `fetch` (`src/fetch.rs`, `src/jmap.rs`).
+courier-jmap = { workspace = true }
+egui = { workspace = true }
+log = { workspace = true }
+serde_json = { workspace = true }
+
+[target.'cfg(target_arch = "wasm32")'.dependencies]
+# `wgpu` pulls egui-wgpu's defaults: WebGPU plus the WebGL2 fallback.
+eframe = { workspace = true, features = ["default_fonts", "wgpu", "accesskit"] }
+# `inner()`: the browser's own File, to read its size before reading it (#729).
+rfd = { workspace = true, features = ["file-handle-inner"] }
+wasm-bindgen = "0.2"
+wasm-bindgen-futures = "0.4"
+js-sys = "0.3"
+web-sys = { version = "0.3", features = [
+    "Window", "Document", "Element", "HtmlElement", "HtmlCanvasElement", "HtmlAnchorElement", "Blob", "BlobPropertyBag", "Url", "Location",
+    "CssStyleDeclaration", "Storage", "Navigator",
+    # `fetch`, for JMAP (src/fetch.rs).
+    "Headers", "RequestInit", "RequestMode", "RequestCredentials", "RequestCache", "RequestRedirect", "ReferrerPolicy", "Response", "ResponseType",
+    "ReadableStream", "ReadableStreamDefaultReader", "ReadableStreamReadResult", "AbortController", "AbortSignal", "DomException",
+] }

@@ -1,0 +1,18 @@
+[package]
+name = "courier-vcard"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+description = "Courier vCard (2.1, 3.0, 4.0) reader and writer"
+
+[lints]
+workspace = true
+
+[dependencies]
+courier-time = { workspace = true }
+courier-model = { workspace = true }
+courier-charset = { workspace = true }
+courier-names = { workspace = true }
+
+[dev-dependencies]
+proptest = { workspace = true }

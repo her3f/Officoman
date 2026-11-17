@@ -1,0 +1,474 @@
+// SPDX-FileCopyrightText: Courier contributors
+// SPDX-License-Identifier: MIT OR Apache-2.0
+//! Courier engine: the session and its commands.
+//!
+//! **Everything is a command.** Each user-visible action is a [`CommandSpec`] with a stable id
+//! (`mail.reply`, `calendar.new`), a label, the ribbon/menu location, a default shortcut, a
+//! params description and a `run` function. The ribbon, shortcuts, command search, the CLI, the
+//! JSON control channel and the MCP server all call [`Session::run`].
+#![deny(clippy::unwrap_used, clippy::expect_used, clippy::panic, clippy::unimplemented, clippy::todo, clippy::unreachable)]
+
+/// A text with values (`courier_i18n::Text`): `said!("no folder named {name}", name)`, or
+/// `said!("{name} is larger than {mb} MB", name, mb = MAX >> 20)`. The template is a literal, so
+/// `cargo xtask i18n` finds it; a value that is interface text itself is `courier_i18n::Arg::words(…)`.
+macro_rules! said {
+    (@arg $k:ident) => { courier_i18n::ToArg::to_arg(&$k) };
+    (@arg $k:ident = $v:expr) => { courier_i18n::ToArg::to_arg(&$v) };
+    ($t:literal $(, $k:ident $(= $v:expr)?)* $(,)?) => {
+        courier_i18n::Text::new($t, vec![$((stringify!($k), said!(@arg $k $(= $v)?))),*])
+    };
+}
+
+/// A command that failed, saying why with values in it ([`CmdError::Said`]); as [`said!`].
+macro_rules! failed {
+    ($($t:tt)*) => { $crate::CmdError::Said(said!($($t)*)) };
+}
+
+pub mod agent;
+pub mod arrivals;
+pub mod catalog;
+pub mod cmd;
+pub mod composing;
+mod conversations;
+pub mod counts;
+mod digital_signature;
+#[cfg(test)]
+mod digital_signature_tests;
+pub mod gmail;
+pub mod import_pst;
+pub mod import_tree;
+pub mod io;
+#[cfg(test)]
+mod launchable_tests;
+pub mod list;
+#[cfg(test)]
+mod mailbox_readers_tests;
+pub mod mark;
+#[cfg(test)]
+mod mark_tests;
+pub mod opening;
+#[cfg(test)]
+mod opening_tests;
+#[cfg(test)]
+mod openpgp_signature_tests;
+mod picture_fit;
+pub mod private_keys;
+#[cfg(test)]
+#[allow(dead_code)]
+mod private_keys_fixtures_tests;
+#[cfg(test)]
+mod private_keys_tests;
+pub mod sample;
+pub mod send_warnings;
+pub mod sender_warnings;
+mod session;
+#[cfg(not(target_arch = "wasm32"))]
+pub mod store;
+#[cfg(not(target_arch = "wasm32"))]
+pub mod store_before;
+pub mod sync_driver;
+#[cfg(any(test, feature = "test-support"))]
+pub mod test_support;
+mod undo;
+#[cfg(not(target_arch = "wasm32"))]
+pub mod words;
+
+use std::collections::HashMap;
+
+use serde_json::Value;
+
+pub use courier_html as html;
+pub use courier_mime_model as mime;
+pub use courier_model as model;
+pub use courier_time as time;
+pub use session::{
+    BodyFormat, BodyLater, BodyRead, CalView, Clock, Compose, ComposeMode, Doc, Drawn, Filter, InsertedSignature, Missing, Module, Pane, Part,
+    PeopleSort, Prefs, Quote, Scope, Selection, Session, SignatureEdit, SortBy, Stays, TaskFilter, TaskSort, ViewState, WordIndex,
+};
+
+/// What a message says instead of text that couldn't be read back from where the mailbox keeps
+/// it (`store::UNAVAILABLE`; the same words in every build).
+pub fn store_placeholder() -> &'static str {
+    "[This message's text is unavailable: the file that keeps it is missing from the mailbox's content folder, or damaged.]"
+}
+
+/// Why a command didn't run. Its `Display` is English (for the CLI, MCP and the control
+/// channel); [`CmdError::in_lang`] is what the window says.
+#[derive(Debug, thiserror::Error, Clone, PartialEq)]
+pub enum CmdError {
+    #[error("unknown command `{0}`")]
+    Unknown(String),
+    /// For whoever wrote the parameters (an agent, a script): English.
+    #[error("bad parameters: {0}")]
+    Params(String),
+    #[error("not available: {0}")]
+    Disabled(String),
+    /// A fixed English text, looked up whole in the catalogue.
+    #[error("{0}")]
+    Failed(String),
+    /// A text with values in it ([`failed!`]): its template is looked up, then filled.
+    #[error("{0}")]
+    Said(courier_i18n::Text),
+}
+
+impl CmdError {
+    /// What the window says of it in `lang`, without the "bad parameters:" / "not available:"
+    /// that the English starts with for an agent.
+    pub fn in_lang(&self, lang: courier_i18n::Lang) -> String {
+        match self {
+            CmdError::Unknown(_) => self.to_string(),
+            CmdError::Params(s) | CmdError::Disabled(s) | CmdError::Failed(s) => lang.t(s).to_string(),
+            CmdError::Said(t) => t.in_lang(lang),
+        }
+    }
+}
+
+impl From<courier_model::ModelError> for CmdError {
+    fn from(e: courier_model::ModelError) -> Self {
+        CmdError::Failed(e.to_string())
+    }
+}
+
+pub type CmdResult = Result<Value, CmdError>;
+
+/// A registered command.
+#[derive(Clone)]
+pub struct CommandSpec {
+    pub id: &'static str,
+    pub label: &'static str,
+    /// Where it lives in the UI: `Home › Respond`, `Folder › New`, `File`…
+    pub location: &'static str,
+    /// Default shortcut in a portable form (`Mod+R`, `Mod+Shift+M`, `F9`). `Mod` = Ctrl, or ⌘ on macOS.
+    pub shortcut: &'static str,
+    /// Parameter description for agents (`{"id": number}`).
+    pub params: &'static str,
+    /// Changes the mailbox (so it is undoable and marks the mailbox as edited).
+    pub mutates: bool,
+    /// Changes nothing of the mailbox, ever ([`CommandSpec::reads`]): no copy of it is taken
+    /// before the command runs, which over a large mailbox takes longer than the command.
+    pub reads: bool,
+    /// `None` = enabled; `Some(reason)` = disabled.
+    pub enabled: fn(&Session) -> Option<&'static str>,
+    /// `enabled` only asks for a selection: the command still runs for a caller that names what
+    /// to act on (`id` / `ids` in its params), whatever is selected.
+    pub selection: bool,
+    /// It acts on a message being written (#286): it takes an optional `compose` id naming which
+    /// one ([`Session::run`]), and an agent names it whenever more than one is open.
+    pub writing: bool,
+    pub run: fn(&mut Session, &Value) -> CmdResult,
+}
+
+fn always(_: &Session) -> Option<&'static str> {
+    None
+}
+
+impl CommandSpec {
+    pub const fn new(id: &'static str, label: &'static str, location: &'static str, run: fn(&mut Session, &Value) -> CmdResult) -> Self {
+        CommandSpec {
+            id,
+            label,
+            location,
+            shortcut: "",
+            params: "{}",
+            mutates: true,
+            reads: false,
+            enabled: always,
+            selection: false,
+            writing: false,
+            run,
+        }
+    }
+    pub const fn key(mut self, s: &'static str) -> Self {
+        self.shortcut = s;
+        self
+    }
+    pub const fn params(mut self, p: &'static str) -> Self {
+        self.params = p;
+        self
+    }
+    /// Isn't a step of the history (navigation, view, export, composing, mail that came from
+    /// a server): what it changes of the mailbox is noted and saved, but not undone.
+    pub const fn pure(mut self) -> Self {
+        self.mutates = false;
+        self
+    }
+    /// [`CommandSpec::pure`], and changes nothing of the mailbox at all (the view, the search, the
+    /// folder in view, a listing): the copy of the mailbox every other command is checked against
+    /// is not taken for it. Tests check the claim for every command that makes it.
+    pub const fn reads(mut self) -> Self {
+        self.mutates = false;
+        self.reads = true;
+        self
+    }
+    pub const fn when(mut self, f: fn(&Session) -> Option<&'static str>) -> Self {
+        self.enabled = f;
+        self
+    }
+    /// Enabled when something is selected (`f` says what is missing). Buttons grey out without
+    /// a selection; scripts and agents may name the target in the params instead.
+    pub const fn selection(mut self, f: fn(&Session) -> Option<&'static str>) -> Self {
+        self.enabled = f;
+        self.selection = true;
+        self
+    }
+    /// Enabled while there is a message being written (`f` says what is missing), and acting on
+    /// one: the one its `compose` id names, else the current one (#286).
+    pub const fn when_writing(mut self, f: fn(&Session) -> Option<&'static str>) -> Self {
+        self.enabled = f;
+        self.writing = true;
+        self
+    }
+}
+
+/// All commands by id.
+pub struct Registry {
+    specs: Vec<CommandSpec>,
+    by_id: HashMap<&'static str, usize>,
+}
+
+impl Registry {
+    pub fn new(specs: Vec<CommandSpec>) -> Self {
+        let mut by_id = HashMap::new();
+        for (i, s) in specs.iter().enumerate() {
+            by_id.insert(s.id, i);
+        }
+        Registry { specs, by_id }
+    }
+    pub fn get(&self, id: &str) -> Option<&CommandSpec> {
+        self.by_id.get(id).and_then(|i| self.specs.get(*i))
+    }
+    pub fn all(&self) -> &[CommandSpec] {
+        &self.specs
+    }
+    /// Command list as JSON (for agents: `commands` / `list_commands`).
+    pub fn describe(&self) -> Value {
+        Value::Array(
+            self.specs
+                .iter()
+                .map(|s| {
+                    let mut v = serde_json::json!({"id": s.id, "label": s.label, "location": s.location, "shortcut": s.shortcut, "params": s.params, "mutates": s.mutates});
+                    agent_fields(&mut v, s.id);
+                    v
+                })
+                .collect(),
+        )
+    }
+    /// The command bound to a shortcut, if any.
+    pub fn by_shortcut(&self, key: &str) -> Option<&CommandSpec> {
+        self.specs.iter().find(|s| !s.shortcut.is_empty() && s.shortcut.split(" / ").any(|k| k.eq_ignore_ascii_case(key)))
+    }
+}
+
+/// Add `agent` (`"safe"`, `"owner"`, `"never"`) and, for `"owner"`, `needs` (the `--allow`
+/// class) to a command's description.
+pub fn agent_fields(v: &mut Value, id: &str) {
+    let a = agent::access(id).unwrap_or(agent::Access::Never);
+    if let Some(o) = v.as_object_mut() {
+        o.insert("agent".into(), Value::from(a.label()));
+        if let agent::Access::Owner(c) = a {
+            o.insert("needs".into(), Value::from(c.as_str()));
+        }
+    }
+}
+
+/// Parameter helpers.
+pub mod p {
+    use courier_model::Id;
+    use courier_time::{Date, DateTime};
+    use serde_json::Value;
+
+    use crate::CmdError;
+
+    /// Most ids one command takes (a hostile caller can't make a command walk forever).
+    pub const MAX_IDS: usize = 100_000;
+
+    pub fn str<'a>(v: &'a Value, k: &str) -> Option<&'a str> {
+        v.get(k).and_then(Value::as_str)
+    }
+    pub fn req_str<'a>(v: &'a Value, k: &str) -> Result<&'a str, CmdError> {
+        str(v, k).ok_or_else(|| CmdError::Params(format!("`{k}` (string) is required")))
+    }
+    pub fn u64(v: &Value, k: &str) -> Option<u64> {
+        v.get(k).and_then(whole)
+    }
+    /// A whole number, as a number (`12` or `12.0`, never `"12"`).
+    fn whole(x: &Value) -> Option<u64> {
+        x.as_u64().or_else(|| x.as_f64().filter(|f| *f >= 0.0 && f.is_finite() && f.fract() == 0.0 && *f < 9.1e15).map(|f| f as u64))
+    }
+    pub fn i64(v: &Value, k: &str) -> Option<i64> {
+        v.get(k).and_then(|x| x.as_i64().or_else(|| x.as_f64().filter(|f| f.is_finite() && f.abs() < 9.1e15).map(|f| f as i64)))
+    }
+    pub fn bool(v: &Value, k: &str) -> Option<bool> {
+        v.get(k).and_then(Value::as_bool)
+    }
+    pub fn id(v: &Value, k: &str) -> Option<Id> {
+        u64(v, k).filter(|i| *i != 0)
+    }
+    pub fn req_id(v: &Value, k: &str) -> Result<Id, CmdError> {
+        id(v, k).ok_or_else(|| CmdError::Params(format!("`{k}` (id) is required")))
+    }
+    /// `true` or `false` under `k`, read strictly: `None` when `k` isn't given; anything else
+    /// (`"false"`, `0`, `null`) is refused.
+    pub fn opt_bool(v: &Value, k: &str) -> Result<Option<bool>, CmdError> {
+        match v.get(k) {
+            None => Ok(None),
+            Some(Value::Bool(b)) => Ok(Some(*b)),
+            Some(_) => Err(CmdError::Params(format!("`{k}` is true or false"))),
+        }
+    }
+    /// `ids` (an array of ids) or `id` (one), read strictly, for a command whose mistake reaches
+    /// other people (#360): `None` when neither is given. Anything else under those names (`null`,
+    /// which a look-up that found nothing gives (#512), an id as text, zero, a fraction, `ids`
+    /// that isn't a list or names no message or has an entry that isn't an id, or more than
+    /// [`MAX_IDS`], both at once) is refused, never taken to mean the selection. Every command that
+    /// takes messages by `id` / `ids` reads them this way (#553).
+    pub fn ids_strict(v: &Value) -> Result<Option<Vec<Id>>, CmdError> {
+        object(v)?;
+        let null = |k: &str| CmdError::Params(format!("`{k}` is null, which names no message"));
+        match (v.get("id"), v.get("ids")) {
+            (None, None) => Ok(None),
+            (Some(Value::Null), _) => Err(null("id")),
+            (_, Some(Value::Null)) => Err(null("ids")),
+            (Some(_), Some(_)) => Err(CmdError::Params("name the messages by `id` (one) or by `ids` (several), not both".into())),
+            (Some(x), None) => whole(x)
+                .filter(|i| *i != 0)
+                .map(|i| Some(vec![i]))
+                .ok_or_else(|| CmdError::Params("`id` is a message id: a whole number above 0".into())),
+            (None, Some(x)) => {
+                let wrong = || CmdError::Params(format!("`ids` is a list of 1 to {MAX_IDS} message ids: whole numbers above 0"));
+                let list = x.as_array().filter(|a| !a.is_empty() && a.len() <= MAX_IDS).ok_or_else(wrong)?;
+                list.iter().map(|x| whole(x).filter(|i| *i != 0).ok_or_else(wrong)).collect::<Result<_, _>>().map(Some)
+            }
+        }
+    }
+    /// The one message a command acts on, named by `id` (or by `ids` naming one), read as
+    /// [`ids_strict`] reads them (#553): `None` when neither is given, which takes the selection.
+    /// Anything else, `ids` naming more than one message too, is refused.
+    pub fn message_strict(v: &Value) -> Result<Option<Id>, CmdError> {
+        match ids_strict(v)?.as_deref() {
+            None => Ok(None),
+            Some([one]) => Ok(Some(*one)),
+            Some(_) => Err(CmdError::Params("this command acts on one message: name it by `id`".into())),
+        }
+    }
+    /// One item named by `k` (an appointment's `id`, a meeting request's `message`), read as
+    /// [`ids_strict`] reads messages (#553): `None` when `k` is left out, which takes the
+    /// selection; anything else under it that isn't a whole number above 0 (`null`, an id as
+    /// text, zero, a fraction) is refused, never taken to mean the selection.
+    pub fn id_strict(v: &Value, k: &str) -> Result<Option<Id>, CmdError> {
+        object(v)?;
+        match v.get(k) {
+            None => Ok(None),
+            Some(Value::Null) => Err(CmdError::Params(format!("`{k}` is null, which names nothing"))),
+            Some(x) => whole(x).filter(|i| *i != 0).map(Some).ok_or_else(|| CmdError::Params(format!("`{k}` is an id: a whole number above 0"))),
+        }
+    }
+    /// Parameters that aren't an object (or none) name nothing, and aren't taken for the
+    /// selection either.
+    fn object(v: &Value) -> Result<(), CmdError> {
+        if v.is_object() || v.is_null() { Ok(()) } else { Err(CmdError::Params("the parameters are an object".into())) }
+    }
+    /// Refuses any parameter but `known`: a caller that names what the command doesn't take
+    /// means something by it that the command would not do.
+    pub fn only(v: &Value, known: &[&str]) -> Result<(), CmdError> {
+        match v {
+            Value::Null => Ok(()),
+            Value::Object(map) => match map.keys().find(|k| !known.contains(&k.as_str())) {
+                Some(k) => Err(CmdError::Params(format!(
+                    "`{k}` isn't a parameter of this command (it takes {})",
+                    known.iter().map(|k| format!("`{k}`")).collect::<Vec<_>>().join(", ")
+                ))),
+                None => Ok(()),
+            },
+            _ => Err(CmdError::Params("the parameters are an object".into())),
+        }
+    }
+    /// A `YYYY-MM-DD` date.
+    pub fn date(v: &Value, k: &str) -> Result<Option<Date>, CmdError> {
+        match v.get(k) {
+            None | Some(Value::Null) => Ok(None),
+            Some(Value::String(s)) if s.trim().is_empty() => Ok(None),
+            Some(Value::String(s)) => Date::parse_iso(s).map(Some).ok_or_else(|| CmdError::Params(format!("`{k}` must be a date like 2026-10-11"))),
+            Some(_) => Err(CmdError::Params(format!("`{k}` must be a date like 2026-10-11"))),
+        }
+    }
+    /// A wall-clock time: `2026-10-11T09:30` (an offset, if any, is ignored).
+    pub fn datetime(v: &Value, k: &str) -> Result<Option<DateTime>, CmdError> {
+        let bad = || CmdError::Params(format!("`{k}` must be a date and time like 2026-10-11T09:30"));
+        match v.get(k) {
+            None | Some(Value::Null) => Ok(None),
+            Some(Value::String(s)) if s.trim().is_empty() => Ok(None),
+            Some(Value::String(s)) => courier_time::parse_iso(s).map(|(t, _)| Some(t)).ok_or_else(bad),
+            Some(_) => Err(bad()),
+        }
+    }
+    /// A list of strings from an array, or from one string split on commas.
+    pub fn strings(v: &Value, k: &str) -> Option<Vec<String>> {
+        match v.get(k)? {
+            Value::Array(a) => Some(a.iter().filter_map(Value::as_str).map(|s| s.trim().to_string()).filter(|s| !s.is_empty()).take(1000).collect()),
+            Value::String(s) => Some(s.split(',').map(|s| s.trim().to_string()).filter(|s| !s.is_empty()).take(1000).collect()),
+            _ => None,
+        }
+    }
+}
+
+#[cfg(test)]
+mod agent_gate_tests;
+#[cfg(test)]
+mod agent_ids_tests;
+#[cfg(test)]
+mod agent_tests;
+#[cfg(test)]
+mod catalog_tests;
+#[cfg(test)]
+mod category_rows_tests;
+#[cfg(test)]
+mod composing_tests;
+#[cfg(test)]
+mod counts_tests;
+#[cfg(test)]
+mod ews_account_tests;
+#[cfg(test)]
+mod focus_stays_tests;
+#[cfg(test)]
+mod gmail_labels_tests;
+#[cfg(test)]
+mod gmail_tests;
+#[cfg(test)]
+mod imap_status_tests;
+#[cfg(test)]
+mod import_pst_calendar_tests;
+#[cfg(test)]
+mod import_pst_memory_tests;
+#[cfg(test)]
+mod import_pst_review_tests;
+#[cfg(test)]
+mod import_pst_tests;
+#[cfg(test)]
+mod import_tests;
+#[cfg(test)]
+mod import_tree_progress_tests;
+#[cfg(test)]
+mod import_tree_tests;
+#[cfg(test)]
+mod list_sort_tests;
+#[cfg(test)]
+mod many_folders_tests;
+#[cfg(test)]
+mod pop_out_tests;
+#[cfg(test)]
+mod send_warnings_tests;
+#[cfg(test)]
+mod sender_trust_tests;
+#[cfg(test)]
+mod sender_warnings_tests;
+#[cfg(test)]
+mod strict_ids_all_tests;
+#[cfg(test)]
+mod strict_ids_tests;
+#[cfg(test)]
+mod sync_driver_tests;
+#[cfg(test)]
+mod tests;
+#[cfg(test)]
+mod undo_removes_mail_tests;

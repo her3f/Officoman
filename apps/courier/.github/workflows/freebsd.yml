@@ -1,0 +1,31 @@
+# Builds and tests the workspace on FreeBSD, inside a FreeBSD VM on a Linux runner
+# (GitHub has no FreeBSD runners). GPU tests skip themselves when the VM has no adapter.
+name: FreeBSD
+
+# The VM build is slow, so it runs nightly on main and on a pushed release tag (`v*`), not on
+# every push or dependency change: a drifted dependency still shows up within a day, and always
+# when a release is tagged. PRs that change the FreeBSD packaging itself still run it.
+on:
+  schedule:
+    - cron: "37 4 * * *"
+  push:
+    tags: ["v*"]
+  pull_request:
+    paths:
+      - .github/workflows/freebsd.yml
+      - packaging/env.sh
+  workflow_dispatch:
+
+concurrency:
+  group: freebsd-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+permissions:
+  contents: read
+
+jobs:
+  freebsd:
+    # Pinned to a full commit SHA of the shared workflow's main branch; moved by hand, after reading the change.
+    uses: storytold/craft-common-actions/.github/workflows/freebsd.yml@293de72429d3ed5d9fa92aded5e500544c0fa28f # main # zizmor: ignore[ref-version-mismatch]
+    with:
+      craft-fonts-ref: 8dcdacd5153e64560d109541a47d806f26f048c0

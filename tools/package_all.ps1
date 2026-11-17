@@ -7,8 +7,8 @@
 # shared CARGO_TARGET_DIR.
 
 param(
-    [ValidateSet('nib', 'tally', 'podium', 'sheaf')]
-    [string[]]$Apps = @('nib', 'tally', 'podium', 'sheaf'),
+    [ValidateSet('nib', 'tally', 'podium', 'sheaf', 'courier')]
+    [string[]]$Apps = @('nib', 'tally', 'podium', 'sheaf', 'courier'),
     [string]$Python = 'python',
     [string]$ReleaseDir = $(if ($env:CARGO_TARGET_DIR) { Join-Path $env:CARGO_TARGET_DIR 'release' } else { Join-Path $env:USERPROFILE 'build\whiteoffice-target\release' })
 )

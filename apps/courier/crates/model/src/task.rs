@@ -1,0 +1,349 @@
+// SPDX-FileCopyrightText: Courier contributors
+// SPDX-License-Identifier: MIT OR Apache-2.0
+//! To-do items.
+
+use std::collections::{BTreeMap, BTreeSet};
+
+use courier_time::{Date, Timestamp};
+use serde::{Deserialize, Serialize};
+
+use crate::{Id, Importance, Origin};
+
+#[derive(Clone, Debug, Default, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(default, rename_all = "camelCase")]
+pub struct Task {
+    pub id: Id,
+    pub title: String,
+    pub notes: String,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub start: Option<Date>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub due: Option<Date>,
+    /// When it was marked complete.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub completed: Option<Timestamp>,
+    pub importance: Importance,
+    #[serde(skip_serializing_if = "Vec::is_empty")]
+    pub categories: Vec<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub reminder: Option<Timestamp>,
+    /// The flagged message this to-do stands for, if any.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub message: Option<Id>,
+    /// iCalendar `UID` (VTODO).
+    #[serde(skip_serializing_if = "String::is_empty")]
+    pub uid: String,
+    /// Set for a to-do that an account's server keeps (Microsoft To Do): what the server calls it.
+    /// An account with no id yet is waiting to be made there.
+    #[serde(skip_serializing_if = "Origin::is_local")]
+    pub origin: Origin,
+    /// What the server calls the list the to-do is in; empty for one that was never there.
+    #[serde(skip_serializing_if = "String::is_empty")]
+    pub list: String,
+    /// What the server had when the to-do was last in step with it: a change made here since
+    /// is what is left to tell it ([`Task::patch`]).
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub synced: Option<TaskFields>,
+    /// The server refused to make this to-do, or the owner keeps it on this computer
+    /// (`kept_here`): it stays here, neither sent nor offered.
+    #[serde(skip_serializing_if = "is_false")]
+    pub local_only: bool,
+    /// The owner chose to keep this to-do on this computer: the question about the to-dos that
+    /// exist only here leaves it out. Such a to-do is `local_only` too, which a build from before
+    /// #632 reads and so neither sends it nor offers it, until the to-do is changed there.
+    #[serde(skip_serializing_if = "is_false")]
+    pub kept_here: bool,
+    /// The key of the item of a .pst file it was brought in from.
+    #[serde(skip_serializing_if = "String::is_empty")]
+    pub imported: String,
+}
+
+fn is_false(b: &bool) -> bool {
+    !*b
+}
+
+/// What of a to-do a server keeps and this program changes.
+#[derive(Clone, Debug, Default, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(default, rename_all = "camelCase")]
+pub struct TaskFields {
+    pub title: String,
+    pub notes: String,
+    pub start: Option<Date>,
+    pub due: Option<Date>,
+    pub completed: Option<Timestamp>,
+    pub importance: Importance,
+    pub categories: Vec<String>,
+    pub reminder: Option<Timestamp>,
+}
+
+/// The fields of a to-do that differ from what the server has; only those are sent.
+#[derive(Clone, Debug, Default, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(default, rename_all = "camelCase")]
+pub struct TaskPatch {
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub title: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub notes: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub start: Option<Option<Date>>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub due: Option<Option<Date>>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub completed: Option<Option<Timestamp>>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub importance: Option<Importance>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub categories: Option<Vec<String>>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub reminder: Option<Option<Timestamp>>,
+}
+
+impl TaskPatch {
+    pub fn is_empty(&self) -> bool {
+        *self == TaskPatch::default()
+    }
+}
+
+impl TaskFields {
+    /// What of `self` differs from `base`.
+    pub fn since(&self, base: &TaskFields) -> TaskPatch {
+        fn diff<T: Clone + PartialEq>(now: &T, then: &T) -> Option<T> {
+            (now != then).then(|| now.clone())
+        }
+        TaskPatch {
+            title: diff(&self.title, &base.title),
+            notes: diff(&self.notes, &base.notes),
+            start: diff(&self.start, &base.start),
+            due: diff(&self.due, &base.due),
+            completed: diff(&self.completed, &base.completed),
+            importance: diff(&self.importance, &base.importance),
+            categories: diff(&self.categories, &base.categories),
+            reminder: diff(&self.reminder, &base.reminder),
+        }
+    }
+
+    /// Every field, as a patch to a to-do that doesn't exist yet.
+    pub fn whole(&self) -> TaskPatch {
+        TaskPatch::default().with_all(self)
+    }
+
+    /// `self` after `patch` was applied.
+    pub fn after(mut self, patch: &TaskPatch) -> TaskFields {
+        if let Some(v) = &patch.title {
+            self.title = v.clone();
+        }
+        if let Some(v) = &patch.notes {
+            self.notes = v.clone();
+        }
+        if let Some(v) = patch.start {
+            self.start = v;
+        }
+        if let Some(v) = patch.due {
+            self.due = v;
+        }
+        if let Some(v) = patch.completed {
+            self.completed = v;
+        }
+        if let Some(v) = patch.importance {
+            self.importance = v;
+        }
+        if let Some(v) = &patch.categories {
+            self.categories = v.clone();
+        }
+        if let Some(v) = patch.reminder {
+            self.reminder = v;
+        }
+        self
+    }
+
+    /// Per field: what `here` has when it was changed since `base` (this is `base`), else what
+    /// `there` has. The three-way merge a download makes with a to-do that was changed here.
+    pub fn merged(&self, here: &TaskFields, there: &TaskFields) -> TaskFields {
+        let mine = here.since(self);
+        there.clone().after(&mine)
+    }
+}
+
+impl TaskPatch {
+    fn with_all(mut self, f: &TaskFields) -> TaskPatch {
+        self.title = Some(f.title.clone());
+        self.notes = Some(f.notes.clone());
+        self.start = Some(f.start);
+        self.due = Some(f.due);
+        self.completed = Some(f.completed);
+        self.importance = Some(f.importance);
+        self.categories = Some(f.categories.clone());
+        self.reminder = Some(f.reminder);
+        self
+    }
+}
+
+/// A to-do that was deleted here and that its server is yet to be told about.
+#[derive(Clone, Debug, Default, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(default, rename_all = "camelCase")]
+pub struct TaskGone {
+    pub account: Id,
+    /// What the server calls it.
+    pub id: String,
+    /// And the list it is in.
+    pub list: String,
+}
+
+/// The lists of each account's to-dos that its server shares with other people (To Do's
+/// `isShared`): the account, and what the server calls each list. What a download names is at
+/// most [`MAX_TASK_LISTS`](crate::remote_tasks::MAX_TASK_LISTS); a list one doesn't name stays
+/// while a to-do is in it.
+pub type SharedTaskLists = BTreeMap<Id, BTreeSet<String>>;
+
+/// Written as a list of [`SharedTaskList`]s.
+pub(crate) fn write_shared_lists<S: serde::Serializer>(lists: &SharedTaskLists, serializer: S) -> Result<S::Ok, S::Error> {
+    serializer.collect_seq(lists.iter().flat_map(|(account, ids)| ids.iter().map(|id| SharedTaskList { account: *account, id: id.clone() })))
+}
+
+/// The shared lists a mailbox file names: each id cut as a download's is, and at most
+/// [`MAX_TASKS`](crate::remote_tasks::MAX_TASKS) an account (no more lists can have one of its
+/// to-dos in them; the rest of that account's are dropped).
+pub(crate) fn read_shared_lists<'de, D: serde::Deserializer<'de>>(deserializer: D) -> Result<SharedTaskLists, D::Error> {
+    let read: Vec<SharedTaskList> = crate::sync::lenient_list(deserializer)?;
+    let mut kept = SharedTaskLists::new();
+    for list in read {
+        let id = crate::remote::key(&list.id);
+        let ids = kept.entry(list.account).or_default();
+        if !id.is_empty() && ids.len() < crate::remote_tasks::MAX_TASKS {
+            ids.insert(id);
+        }
+    }
+    kept.retain(|_, ids| !ids.is_empty());
+    Ok(kept)
+}
+
+/// A list of an account's to-dos that its server shares with other people, as a mailbox file
+/// names it ([`SharedTaskLists`]).
+#[derive(Clone, Debug, Default, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(default, rename_all = "camelCase")]
+pub struct SharedTaskList {
+    pub account: Id,
+    /// What the server calls the list.
+    pub id: String,
+}
+
+/// What the owner said about the to-dos that exist only in this mailbox when an account that
+/// keeps to-dos (Microsoft To Do) comes along. Nothing local goes to a server before the owner
+/// has said yes.
+#[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub enum LocalTasks {
+    /// Not asked, or not answered: they stay on this computer.
+    #[default]
+    Unasked,
+    /// "Not now": they stay on this computer, and the owner can offer them again.
+    NotNow,
+    /// Sent to that account's default list. A new to-do goes where it is put, not here: this
+    /// account is only where the owner is first offered to put one.
+    SendTo(Id),
+}
+
+impl LocalTasks {
+    pub fn is_unasked(&self) -> bool {
+        *self == LocalTasks::Unasked
+    }
+}
+
+/// Most deletions that wait for a server at once; the rest are forgotten.
+pub const MAX_TASK_GONE: usize = 5_000;
+
+impl Task {
+    /// Whether it exists only on this computer and could go to an account's To Do.
+    pub fn only_here(&self) -> bool {
+        self.origin.is_local() && self.origin.id.is_empty() && !self.local_only && !self.kept_here
+    }
+
+    /// Whether the two would be the same to a server: what it keeps of a to-do
+    /// ([`Task::fields`]), its list and what it calls it. Nothing is copied.
+    pub fn same_on_server(&self, other: &Task) -> bool {
+        self.title == other.title
+            && self.notes == other.notes
+            && self.start == other.start
+            && self.due == other.due
+            && self.completed == other.completed
+            && self.importance == other.importance
+            && self.categories == other.categories
+            && self.reminder == other.reminder
+            && self.list == other.list
+            && self.origin.account == other.origin.account
+            && self.origin.id == other.origin.id
+    }
+
+    /// What of the to-do a server keeps.
+    pub fn fields(&self) -> TaskFields {
+        TaskFields {
+            title: self.title.clone(),
+            notes: self.notes.clone(),
+            start: self.start,
+            due: self.due,
+            completed: self.completed,
+            importance: self.importance,
+            categories: self.categories.clone(),
+            reminder: self.reminder,
+        }
+    }
+
+    /// Put `fields` in the to-do.
+    pub fn set_fields(&mut self, fields: TaskFields) {
+        self.title = fields.title;
+        self.notes = fields.notes;
+        self.start = fields.start;
+        self.due = fields.due;
+        self.completed = fields.completed;
+        self.importance = fields.importance;
+        self.categories = fields.categories;
+        self.reminder = fields.reminder;
+    }
+
+    /// What was changed here since the server had it; `None` for a to-do the server doesn't have.
+    pub fn patch(&self) -> Option<TaskPatch> {
+        let base = self.synced.as_ref()?;
+        Some(self.fields().since(base)).filter(|patch| !patch.is_empty())
+    }
+
+    pub fn is_complete(&self) -> bool {
+        self.completed.is_some()
+    }
+
+    /// Due before `today` and not done.
+    pub fn is_overdue(&self, today: Date) -> bool {
+        !self.is_complete() && self.due.is_some_and(|d| d < today)
+    }
+
+    /// `Today`, `Tomorrow`, `Overdue`, the weekday within a week, else the date; `No date`.
+    pub fn due_label(&self, today: Date) -> String {
+        let Some(due) = self.due else { return "No date".into() };
+        match today.days_until(due) {
+            0 => "Today".into(),
+            1 => "Tomorrow".into(),
+            -1 => "Yesterday".into(),
+            n if (2..7).contains(&n) => due.weekday().name().into(),
+            _ => due.medium(),
+        }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn due_labels_and_overdue() {
+        let today = Date::new(2026, 10, 14).unwrap();
+        let task = |due: Option<Date>| Task { due, ..Default::default() };
+        assert_eq!(task(None).due_label(today), "No date");
+        assert_eq!(task(Some(today)).due_label(today), "Today");
+        assert_eq!(task(Some(today.add_days(1))).due_label(today), "Tomorrow");
+        assert_eq!(task(Some(today.add_days(3))).due_label(today), "Saturday");
+        assert_eq!(task(Some(today.add_days(30))).due_label(today), "Nov 13, 2026");
+        let mut late = task(Some(today.add_days(-2)));
+        assert!(late.is_overdue(today));
+        late.completed = Some(1);
+        assert!(!late.is_overdue(today) && late.is_complete());
+    }
+}

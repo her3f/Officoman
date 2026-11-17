@@ -12,11 +12,11 @@
       },
       "windows-x64-portable.zip": {
         "name": "whiteoffice-launcher-0.19.2-windows-x64-portable.zip",
-        "size": 11626444
+        "size": 11642691
       },
       "windows-x64.msi": {
         "name": "whiteoffice-launcher-0.19.2-windows-x64.msi",
-        "size": 10227712
+        "size": 10235904
       }
     }
   },
@@ -101,6 +101,19 @@
       "windows-x64.msi": {
         "name": "sheaf-0.21.1-windows-x64.msi",
         "size": 43266048
+      }
+    }
+  },
+  "courier": {
+    "version": "0.13.0",
+    "assets": {
+      "windows-x64-portable.zip": {
+        "name": "courier-0.13.0-windows-x64-portable.zip",
+        "size": 39962200
+      },
+      "windows-x64.msi": {
+        "name": "courier-0.13.0-windows-x64.msi",
+        "size": 30531584
       }
     }
   }

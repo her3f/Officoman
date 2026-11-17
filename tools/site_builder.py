@@ -54,7 +54,7 @@ def page(title: str, body: str, path: str, description: str) -> str:
 
 def release_catalog(dist: Path) -> dict:
     result = {}
-    for slug in ("whiteoffice-launcher", "nib", "tally", "podium", "sheaf"):
+    for slug in ("whiteoffice-launcher", "nib", "tally", "podium", "sheaf", "courier"):
         version, assets = latest_assets(dist, slug)
         if assets:
             result[slug] = {"version": version, "assets": {suffix: {"name": p.name, "size": p.stat().st_size} for suffix, p in assets.items()}}

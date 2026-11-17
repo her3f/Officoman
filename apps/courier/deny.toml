@@ -1,0 +1,109 @@
+# cargo-deny: what the dependency tree may contain (`cargo xtask deny`, and the `deny` job in
+# .github/workflows/ci.yml). https://embarkstudios.github.io/cargo-deny/
+#
+# - advisories: a RustSec vulnerability fails the build; an unmaintained or yanked crate warns.
+#   An ignored advisory carries the reason and the date it was looked at.
+# - licenses: OSI-approved permissive licences only. No GPL, LGPL or AGPL, ever (clean room,
+#   CLAUDE.md): a crate offered under "X OR GPL" is taken under X. The two non-OSI licences the
+#   tree needs are allowed for exactly the crate that needs them.
+# - bans: two versions of one crate warn (the GUI stack brings some).
+# - sources: crates.io, and our fork of winit from its git repository alone.
+
+[graph]
+all-features = true
+
+[advisories]
+version = 2
+db-urls = ["https://github.com/rustsec/advisory-db"]
+unmaintained = "all"
+yanked = "warn"
+# The same advisories are listed in osv-scanner.toml, for the OSV scanner and Scorecard.
+ignore = [
+    # 2026-10-17: zvariant, zvariant_derive and zbus_names are merged into zbus 6 and no longer
+    # kept up as crates of their own; nothing is known wrong with them.
+    # 2026-10-18: the credential store moved from keyring 3 to keyring-core 1, and with it from
+    # zbus 4 to zbus 5, so zbus 4 (zvariant 4, zbus_names 3) is gone from the tree. What remains is
+    # zbus 5 (zvariant 5, zbus_names 4) on Linux and FreeBSD, through the GUI stack's accessibility
+    # (eframe, accesskit, atspi) and the Secret Service store (secret-service 5), neither of which
+    # has moved to zbus 6 yet. Look again when they do.
+    # 2026-10-19: the program also asks the desktop portal for the light or dark preference
+    # through the same zbus 5 (#73), so moving to zbus 6 is one line there when the others move.
+    { id = "RUSTSEC-2026-0370", reason = "zvariant merged into zbus 6; zbus 5 waits on accesskit/atspi and secret-service" },
+    { id = "RUSTSEC-2026-0371", reason = "zbus_names merged into zbus 6; zbus 5 waits on accesskit/atspi and secret-service" },
+    { id = "RUSTSEC-2026-0372", reason = "zvariant_derive merged into zbus 6; zbus 5 waits on accesskit/atspi and secret-service" },
+    # 2026-11-09: rPGP 0.21 (`courier-openpgp`, #30) brings rsa 0.9 and crypto-bigint 0.5. Both
+    # advisories are timing leaks of a *private* key while it signs or decrypts; Courier only
+    # checks Digital signatures with Public keys, where nothing secret is computed on. Look again
+    # before signing or decrypting with a key Courier holds itself (#30, later parts), and when
+    # rPGP moves to rsa 0.10 / crypto-bigint 0.7.
+    { id = "RUSTSEC-2023-0071", reason = "rsa Marvin attack: private-key timing; courier-openpgp only verifies with public keys; remove or justify again before Courier signs or decrypts with a key it holds (#30 parts 5 and 6)" },
+    { id = "RUSTSEC-2026-0387", reason = "crypto-bigint 0.5 timing on secret integers; courier-openpgp only verifies with public keys; remove or justify again before Courier signs or decrypts with a key it holds (#30 parts 5 and 6)" },
+]
+
+[licenses]
+version = 2
+confidence-threshold = 0.93
+allow = [
+    "0BSD",
+    "Apache-2.0",
+    "Apache-2.0 WITH LLVM-exception",
+    "BSD-2-Clause",
+    "BSD-3-Clause",
+    "BSL-1.0",
+    "ISC",
+    "MIT",
+    "OFL-1.1",
+    "Unicode-3.0",
+    "Unlicense",
+    "Zlib",
+]
+
+[[licenses.exceptions]]
+# Mozilla's root certificates as data: a permissive data licence, not OSI, used for this crate
+# alone. rustls-platform-verifier brings it only for the browser and Android, where there is no
+# system verifier; Courier's own builds check certificates with the system's (#501), and
+# `courier-net` has no TLS in the browser build at all.
+name = "webpki-root-certs"
+allow = ["CDLA-Permissive-2.0"]
+
+[[licenses.exceptions]]
+# egui's built-in fonts (Ubuntu Light among them): the Ubuntu Font Licence permits redistribution;
+# not OSI, used for this crate alone.
+name = "epaint_default_fonts"
+allow = ["Ubuntu-font-1.0"]
+
+# UniFFI, which joins the Rust core to the phone apps' Kotlin and Swift: MPL-2.0, a file-level
+# copyleft. Allowed for these crates alone, used unchanged at a pinned version (owner's decision,
+# 2026-11-13); the apps name it in their licences. Any other MPL-2.0 crate is still refused.
+[[licenses.exceptions]]
+name = "uniffi"
+allow = ["MPL-2.0"]
+[[licenses.exceptions]]
+name = "uniffi_core"
+allow = ["MPL-2.0"]
+[[licenses.exceptions]]
+name = "uniffi_internal_macros"
+allow = ["MPL-2.0"]
+[[licenses.exceptions]]
+name = "uniffi_macros"
+allow = ["MPL-2.0"]
+[[licenses.exceptions]]
+name = "uniffi_meta"
+allow = ["MPL-2.0"]
+[[licenses.exceptions]]
+name = "uniffi_pipeline"
+allow = ["MPL-2.0"]
+
+[licenses.private]
+ignore = true
+
+[bans]
+multiple-versions = "warn"
+# Workspace crates name each other by path alone; every crates.io dependency has a version.
+wildcards = "allow"
+
+[sources]
+unknown-registry = "deny"
+unknown-git = "deny"
+allow-registry = ["https://github.com/rust-lang/crates.io-index"]
+allow-git = ["https://github.com/her3f/officoman/winit"]

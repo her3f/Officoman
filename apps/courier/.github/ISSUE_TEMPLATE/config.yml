@@ -1,0 +1,8 @@
+blank_issues_enabled: true
+contact_links:
+  - name: How to contribute
+    url: https://github.com/her3f/officoman/blob/main/CONTRIBUTING.md
+    about: Found a bug with a fix? Open the report and the pull request together. Anything else, claim an issue before you build.
+  - name: Report a security vulnerability
+    url: https://github.com/her3f/officoman/security/advisories/new
+    about: Please report security problems privately, not in a public issue.

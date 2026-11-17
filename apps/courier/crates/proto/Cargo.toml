@@ -1,0 +1,17 @@
+[package]
+name = "courier-proto"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+description = "Courier mail protocols without sockets: IMAP4rev1 and SMTP clients over any Read + Write stream"
+
+[lints]
+workspace = true
+
+[dependencies]
+courier-charset = { workspace = true }
+courier-i18n = { workspace = true }
+log = { workspace = true }
+
+[dev-dependencies]
+proptest = { workspace = true }

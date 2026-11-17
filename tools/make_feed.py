@@ -27,6 +27,7 @@ APPS = {
     "tally": ("Tally", None),
     "podium": ("Podium", None),
     "sheaf": ("Sheaf", None),
+    "courier": ("Courier", None),
 }
 REPO = "her3f/officoman"
 

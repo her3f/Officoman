@@ -1,0 +1,53 @@
+// SPDX-FileCopyrightText: Courier contributors
+// SPDX-License-Identifier: MIT OR Apache-2.0
+//! macOS open-documents and quit Apple events.
+//!
+//! Finder double-clicks, Open With, drops on the Dock icon and `open -a Courier note.eml` don't
+//! pass paths on the command line: LaunchServices sends the running (or just-launched) app a
+//! `kAEOpenDocuments` ('odoc') Apple event. winit 0.30 doesn't handle it and owns the
+//! `NSApplicationDelegate`. Handling it ourselves needs Objective-C class declarations, i.e.
+//! `unsafe`, which this workspace forbids. The `fmv-macos-events` crate (also used by WordCraft,
+//! PdfCraft and PhotoCraft) wraps exactly that, an `NSAppleEventManager` handler registered before
+//! Finder's launch event that leaves winit's delegate alone, behind a safe main-thread API.
+
+use fmv_macos_events::{Event, Inbox, Registration};
+use courier_ui_egui::MailApp;
+
+/// Keeps the Apple-event handlers registered; hold it until the event loop returns.
+pub struct AppleEvents {
+    _registration: Registration,
+    inbox: Inbox,
+}
+
+impl AppleEvents {
+    /// Register the handlers. Call on the main thread before the event loop starts, so the event
+    /// that launched the app (a Finder double-click) is caught too.
+    pub fn install() -> Self {
+        let (registration, inbox) = Registration::install();
+        Self { _registration: registration, inbox }
+    }
+
+    /// The queue the app drains every frame ([`poll`]); events arriving later wake `ctx`.
+    pub fn connect(&self, ctx: &egui::Context) -> Inbox {
+        let ctx = ctx.clone();
+        self.inbox.set_wake(move || ctx.request_repaint());
+        self.inbox.clone()
+    }
+}
+
+/// Open the files and act on the quit requests that arrived since the last frame. A mailbox file
+/// opens; a message opens in a window of its own; a calendar or contact file is imported once the
+/// owner says so (`MailApp::open_from_system`); quitting closes the window, which asks about a
+/// message being written.
+pub fn poll(inbox: &Inbox, app: &mut MailApp, ctx: &egui::Context) {
+    for e in inbox.drain() {
+        match e {
+            Event::Open(paths) => {
+                for p in paths.iter().filter_map(|p| p.to_str()) {
+                    app.open_from_system(p);
+                }
+            }
+            Event::Quit => crate::quit::request(ctx),
+        }
+    }
+}

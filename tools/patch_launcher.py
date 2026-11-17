@@ -82,6 +82,22 @@ publisher = "White Office"
 msi_publisher = "White Office"
 former_bundles = []
 site = "https://whiteoffice.whitebearom.com/apps/sheaf.html"
+
+[[apps]]
+id = "courier"
+name = "Courier"
+tagline = "Mail"
+color = [176, 62, 88]
+ink_light = [126, 44, 63]
+ink_dark = [226, 119, 142]
+repo = "her3f/officoman"
+former_ids = []
+former_names = []
+kind = "official"
+publisher = "White Office"
+msi_publisher = "White Office"
+former_bundles = []
+site = "https://whiteoffice.whitebearom.com/apps/courier.html"
 '''
 
 ICONS_BLOCK = '''pub fn app_icon_png(id: &str) -> Option<&'static [u8]> {
@@ -90,6 +106,7 @@ ICONS_BLOCK = '''pub fn app_icon_png(id: &str) -> Option<&'static [u8]> {
         "tally" => include_bytes!("../../../assets/app-icons/tally.png"),
         "podium" => include_bytes!("../../../assets/app-icons/podium.png"),
         "sheaf" => include_bytes!("../../../assets/app-icons/sheaf.png"),
+        "courier" => include_bytes!("../../../assets/app-icons/courier.png"),
         _ => return None,
     })
 }'''

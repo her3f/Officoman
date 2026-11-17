@@ -1,0 +1,1016 @@
+// SPDX-FileCopyrightText: Courier contributors
+// SPDX-License-Identifier: MIT OR Apache-2.0
+//! Undo and redo for the Microsoft accounts kept in step through Microsoft Graph (R3.5).
+//!
+//! Undo puts back what a change touched, as it was before it (#605): the messages and folders it
+//! changed, and the waiting changes it added or took away. What it left alone stays as it is now:
+//! mail that arrived since, what the server took away, how far an IMAP folder has been read
+//! ([`leave_alone`]). For a Microsoft
+//! account, what its server last said stays as it is now: each message's and folder's last synced
+//! state, the queue of what can't be worked out by comparing, the mail that came down since and
+//! what the server took away. The next run then sends the difference, which is the reverse of the
+//! change undone: a move back, a flag cleared, categories as they were, out of Deleted Items.
+//! So the history is no longer forgotten when a change reaches the server.
+//!
+//! Undo merges three mailboxes: the one it goes back to, the one right after the change (only
+//! what the change touched is kept of it, [`Touched`]) and the one there is now. What the change
+//! didn't touch is taken as it is now (mail that came down since, a message read by opening it); of
+//! what it touched, only the parts it changed go back.
+//!
+//! What can't be reversed on the server isn't brought back here, and the undo says so:
+//! - **Deleted for good** (a message or a folder the server has): it stays deleted.
+//! - **Sending**: nothing in a Microsoft account's Outbox is undone or brought back, so an undo
+//!   never unsends, holds back or sends again; nor is the draft that became the message sent.
+//! - **Moved out of the account** once the server's copy is removed: it stays where it was moved.
+//!
+//! What the change made that the server has already (a copy, a draft, a folder) goes into Deleted
+//! Items, here and there, rather than being deleted for good; what the server hasn't got yet is
+//! taken away here and never made there.
+
+use std::collections::{BTreeMap, BTreeSet, HashMap, HashSet};
+use std::sync::Arc;
+
+use courier_model::sync::{DraftState, MovingOut, ServerMessage, same_category};
+use courier_model::{AccountKind, Calendar, Folder, FolderKind, Id, Mailbox, Message, Pending, Queued, RETURNED_LISTINGS};
+
+/// What a change did to the mail of the Microsoft accounts: the messages and folders it changed,
+/// as they were right after it (`None`: it took them away). Nothing for a mailbox without one.
+///
+/// Besides, for every account (#605): which messages and folders the change touched, and which
+/// changes waiting to go to a mail server it added or took away. Undo puts back only those.
+#[derive(Clone, Debug, Default)]
+pub(crate) struct Touched {
+    messages: BTreeMap<Id, Option<Arc<Message>>>,
+    folders: BTreeMap<Id, Option<Folder>>,
+    changed_messages: BTreeSet<Id>,
+    /// The messages whose reminder the change itself changed (#948).
+    follow_up_changed: BTreeSet<Id>,
+    changed_folders: BTreeSet<Id>,
+    /// The contacts it added, changed or took away.
+    changed_contacts: BTreeSet<Id>,
+    pending_added: HashSet<String>,
+    pending_removed: HashSet<String>,
+    /// What the changes the step added or took away were while they waited for their copy.
+    waiting: HashSet<String>,
+    /// The Public keys it imported, removed or changed (#30): an undo puts back only those.
+    keys: Vec<courier_model::public_keys::KeyName>,
+}
+
+impl Touched {
+    /// The message `id` as the change left it, when it noted one: for letting go of its content.
+    #[cfg(not(target_arch = "wasm32"))]
+    pub(crate) fn message_mut(&mut self, id: Id) -> Option<&mut Arc<Message>> {
+        self.messages.get_mut(&id).and_then(Option::as_mut)
+    }
+
+    /// Every message noted as the change left it.
+    #[cfg(test)]
+    pub(crate) fn noted_messages(&self) -> impl Iterator<Item = &Arc<Message>> {
+        self.messages.values().flatten()
+    }
+
+    /// Whether the change imported, removed or changed a Public key: an undo of it changes
+    /// them back, which is a setting's change.
+    pub(crate) fn changed_keys(&self) -> bool {
+        !self.keys.is_empty()
+    }
+
+    /// Whether the change added, changed or took away the contact `id`.
+    pub(crate) fn changed_contact(&self, id: Id) -> bool {
+        self.changed_contacts.contains(&id)
+    }
+}
+
+/// The accounts of `mb` whose mail is known to its server by the ids the server hands out, and
+/// whose changes go up as the difference to what the server last said: kept in step through
+/// Graph, through Exchange Web Services, or over JMAP.
+fn graph_accounts(mb: &Mailbox) -> BTreeSet<Id> {
+    mb.accounts.iter().filter(|a| matches!(a.kind, AccountKind::Microsoft | AccountKind::Exchange | AccountKind::Jmap)).map(|a| a.id).collect()
+}
+
+/// Whether `m` is one of those accounts' (or is being moved out of one).
+fn relevant(m: &Message, g: &BTreeSet<Id>) -> bool {
+    g.contains(&m.account) || m.moving_out.as_ref().is_some_and(|out| g.contains(&out.account))
+}
+
+/// A change waiting to go to a server, as a key to compare it by.
+fn key(p: &Pending) -> String {
+    format!("{p:?}")
+}
+
+/// What a change that waits for the server's copy of its message to come down (UID 0) is once
+/// that copy has come and given it its UID (`waited_for`, which does so only for a Message-ID
+/// that is one copy's in its folder): the same change, though not the same by [`key`]. The UID,
+/// and what the server last said of the message, are left out. `None` for a change that has a
+/// UID: it is never loose, since two copies of one mail are told apart by theirs alone.
+fn loose_key(p: &Pending) -> Option<String> {
+    match p {
+        Pending::Move { account, message, from, uid: 0, to, .. } => Some(format!("move {account} {message} {from:?} {to}")),
+        Pending::Delete { account, from, uid: 0, message_id, seen: Some(seen) } if !message_id.is_empty() => {
+            Some(format!("delete {account} {from:?} {message_id:?} {seen:?}"))
+        }
+        _ => None,
+    }
+}
+
+/// [`loose_key`], of a change that may have its UID now.
+fn loose_key_of_attached(p: &Pending) -> String {
+    match p {
+        Pending::Move { account, message, from, to, .. } => format!("move {account} {message} {from:?} {to}"),
+        Pending::Delete { account, from, message_id, seen: Some(seen), .. } if !message_id.is_empty() => {
+            format!("delete {account} {from:?} {message_id:?} {seen:?}")
+        }
+        Pending::Delete { .. } => String::new(),
+    }
+}
+
+/// `before`'s message `id`, which `after` no longer has, noted in `t`.
+fn gone(t: &mut Touched, id: Id, b: &Arc<Message>, g: &BTreeSet<Id>) {
+    t.changed_messages.insert(id);
+    if relevant(b, g) {
+        t.messages.insert(id, None);
+    }
+}
+
+/// What going from `before` to `after` changed: of the Microsoft accounts' mail, what it is now;
+/// of every account's, which messages and folders it was, and the waiting changes it added or took away.
+pub(crate) fn touched(before: &Mailbox, after: &Mailbox) -> Touched {
+    let mut g = graph_accounts(before);
+    g.extend(graph_accounts(after));
+    let mut t = Touched::default();
+    // Only the messages the two differ in: the chunks of the map the two share aren't looked
+    // into (a walk of every message took longer than the command it followed).
+    for (id, b, a) in after.messages.changes(&before.messages) {
+        match (b, a) {
+            (Some(b), Some(a)) if a != b => {
+                t.changed_messages.insert(id);
+                if a.follow_up != b.follow_up {
+                    t.follow_up_changed.insert(id);
+                }
+                if relevant(b, &g) || relevant(a, &g) {
+                    t.messages.insert(id, Some(a.clone()));
+                }
+            }
+            // Gone since: `before` has it and `after` has none of its id.
+            (Some(b), None) => gone(&mut t, id, b, &g),
+            // Come since.
+            (None, Some(a)) => {
+                t.changed_messages.insert(id);
+                if relevant(a, &g) {
+                    t.messages.insert(id, Some(a.clone()));
+                }
+            }
+            _ => {}
+        }
+    }
+    // (One walk of both maps, as for the messages.)
+    let mut was = before.contacts.iter().peekable();
+    let mut is = after.contacts.iter().peekable();
+    loop {
+        match (was.peek(), is.peek()) {
+            (None, None) => break,
+            (Some((id, b)), Some((n, a))) if id == n => {
+                if !(Arc::ptr_eq(a, b) || a == b) {
+                    t.changed_contacts.insert(**id);
+                }
+                was.next();
+                is.next();
+            }
+            (Some((id, _)), Some((n, _))) if id < n => {
+                t.changed_contacts.insert(**id);
+                was.next();
+            }
+            (Some((id, _)), None) => {
+                t.changed_contacts.insert(**id);
+                was.next();
+            }
+            (_, Some((id, _))) => {
+                t.changed_contacts.insert(**id);
+                is.next();
+            }
+        }
+    }
+    for b in &before.folders {
+        match after.folder(b.id) {
+            Some(a) if a == b => {}
+            a => {
+                t.changed_folders.insert(b.id);
+                if g.contains(&b.account) {
+                    t.folders.insert(b.id, a.cloned());
+                }
+            }
+        }
+    }
+    for a in after.folders.iter().filter(|f| before.folder(f.id).is_none()) {
+        t.changed_folders.insert(a.id);
+        if g.contains(&a.account) {
+            t.folders.insert(a.id, Some(a.clone()));
+        }
+    }
+    if before.pending != after.pending {
+        let (was, is): (HashSet<String>, HashSet<String>) = (before.pending.iter().map(key).collect(), after.pending.iter().map(key).collect());
+        t.pending_added = is.difference(&was).cloned().collect();
+        t.pending_removed = was.difference(&is).cloned().collect();
+        let changed = |list: &[Pending], keys: &HashSet<String>| -> Vec<String> {
+            list.iter().filter(|p| keys.contains(&key(p))).filter_map(loose_key).collect()
+        };
+        t.waiting.extend(changed(&after.pending, &t.pending_added));
+        t.waiting.extend(changed(&before.pending, &t.pending_removed));
+    }
+    t.keys = after.public_keys.differences(&before.public_keys);
+    t
+}
+
+/// What an undo couldn't do, for saying it once.
+#[derive(Debug, Default)]
+struct Said {
+    deleted: Vec<String>,
+    folders: Vec<String>,
+    sent: Vec<String>,
+    moved_out: Vec<String>,
+    /// Moved on from a mailbox whose copy was let go while the copy it was first moved out of
+    /// waits for the bytes it came as (#30).
+    held: Vec<String>,
+    /// What the server is to be told besides (#70): a copy made in another mailbox of the
+    /// owner's that goes again, a move back into the mailbox a message came from.
+    queued: Vec<Queued>,
+}
+
+/// A subject or a name as a line about it shows it.
+fn shown(text: &str) -> String {
+    let text: String = text.chars().filter(|c| !c.is_control()).take(60).collect();
+    if text.trim().is_empty() { "(no subject)".to_string() } else { text }
+}
+
+impl Said {
+    fn lines(&self, lang: courier_i18n::Lang) -> Vec<String> {
+        let mut lines = Vec::new();
+        match self.deleted.as_slice() {
+            [] => {}
+            [one] => lines.push(format!("'{}' was permanently deleted: that can't be undone here.", shown(one))),
+            many => lines.push(format!("{} messages were permanently deleted: that can't be undone here.", many.len())),
+        }
+        match self.folders.as_slice() {
+            [] => {}
+            [one] => lines.push(format!("The folder '{}' was permanently deleted: that can't be undone here.", shown(one))),
+            many => lines.push(format!("{} folders were permanently deleted: that can't be undone here.", many.len())),
+        }
+        match self.sent.as_slice() {
+            [] => {}
+            [one] => lines.push(format!("Sending '{}' can't be undone.", shown(one))),
+            many => lines.push(format!("Sending {} messages can't be undone.", many.len())),
+        }
+        match self.moved_out.as_slice() {
+            [] => {}
+            [one] => lines.push(format!("'{}' was moved out of its account and the server's copy removed: that can't be undone here.", shown(one))),
+            many => lines
+                .push(format!("{} messages were moved out of their account and the server's copies removed: that can't be undone here.", many.len())),
+        }
+        match self.held.as_slice() {
+            [] => {}
+            [one] => lines.push(courier_i18n::fmt(
+                lang.t("'{subject}' stays where it was moved: it is Digitally signed or Encrypted, and its copy in the mailbox it came from was removed while the copy it was first moved out of keeps the bytes it came as. Move it back to put it there again."),
+                &[("subject", &shown(one))],
+            )),
+            many => {
+                let n = u64::try_from(many.len()).unwrap_or(u64::MAX);
+                let line = lang.tn(
+                    n,
+                    "{n} message stays where it was moved: it is Digitally signed or Encrypted, and its copy in the mailbox it came from was removed while the copy it was first moved out of keeps the bytes it came as. Move it back to put it there again.",
+                    "{n} messages stay where they were moved: they are Digitally signed or Encrypted, and their copies in the mailbox they came from were removed while the copies they were first moved out of keep the bytes they came as. Move them back to put them there again.",
+                );
+                lines.push(courier_i18n::fmt(line, &[("n", &n.to_string())]));
+            }
+        }
+        lines
+    }
+}
+
+/// `target`, the mailbox an undo (or redo) goes back to, with the Microsoft accounts' mail kept in
+/// step with `now`; `touched` is what the change being undone did. Answers the mailbox and what
+/// couldn't be undone, in words.
+pub(crate) fn keep_in_step(mut out: Mailbox, touched: &Touched, now: &Mailbox, lang: courier_i18n::Lang) -> (Mailbox, Vec<String>) {
+    // Ids are never given out twice, whatever the undo brings back.
+    out.ids_after(now);
+    // The certificates Digital signatures brought are what was learnt, not what the owner did
+    // (#30): an undo leaves them, and puts back only the keys the change imported, removed or
+    // changed, never taking a revocation away or marking a key Verified.
+    let mut keys = now.public_keys.clone();
+    keys.put_back(&out.public_keys, &touched.keys);
+    out.public_keys = keys;
+    // Reminders kept for a sent copy to come down are what was learnt of the server, not the owner's
+    // change: an undo leaves them as they are now (#948).
+    out.follow_ups_pending = now.follow_ups_pending.clone();
+    returned(&mut out, now);
+    subscribed_stay(&mut out, now);
+    // A message handed to a server to be sent (AU3-26) is the run's until its answer comes: undo
+    // and redo leave it as it is now, or its mark would be lost and it could be sent twice (#950).
+    for m in now.messages.values().filter(|m| m.sending) {
+        out.messages.insert(m.id, m.clone());
+    }
+    let g: BTreeSet<Id> = graph_accounts(now).intersection(&graph_accounts(&out)).copied().collect();
+    leave_alone(&mut out, touched, now, &g);
+    if g.is_empty() {
+        return (out, Vec::new());
+    }
+    let mut said = Said::default();
+    let dropped = folders(&mut out, touched, now, &g, &mut said);
+    messages(&mut out, touched, now, &g, &mut said);
+    // A folder the change made, not on the server, that something still lies in stays.
+    for f in dropped {
+        if out.messages.values().any(|m| m.folder == f.id) || out.folders.iter().any(|o| o.parent == Some(f.id)) {
+            out.folders.push(f);
+        }
+    }
+    tidy(&mut out, now, &g);
+    queue(&mut out, now, &g);
+    for q in std::mem::take(&mut said.queued) {
+        if let Queued::PlaceMessage { message, .. } = &q {
+            let message = *message;
+            out.queued.retain(|o| !matches!(o, Queued::PlaceMessage { message: other, .. } if *other == message));
+        }
+        out.queued.push(q);
+    }
+    // What the server last gave of these is the server's, not the owner's to undo.
+    server_lists(&mut out, now, &g);
+    out.favorites_from_server = now.favorites_from_server.clone();
+    (out, said.lines(lang))
+}
+
+/// Subscribed calendars and their events are the web's and the refresh's, never the change's to
+/// undo: undoing a subscribe must not drop the calendar and orphan its address in the credential
+/// store, and undoing an unsubscribe must not bring one back without its address.
+fn subscribed_stay(out: &mut Mailbox, now: &Mailbox) {
+    let theirs: BTreeSet<Id> = out.calendars.iter().filter(|c| c.is_subscribed()).map(|c| c.id).collect();
+    out.events.retain(|_, e| !theirs.contains(&e.calendar));
+    // What the owner set on one (its colour, whether it is shown, a name given) is the change's to
+    // undo when the calendar is on both sides; the subscription and its events are as now.
+    let before: Vec<Calendar> = out.calendars.iter().filter(|c| c.is_subscribed()).cloned().collect();
+    out.calendars.retain(|c| !c.is_subscribed());
+    for c in now.calendars.iter().filter(|c| c.is_subscribed()) {
+        let mut c = c.clone();
+        if let Some(was) = before.iter().find(|b| b.id == c.id) {
+            (c.name, c.color, c.visible, c.own_color) = (was.name.clone(), was.color, was.visible, was.own_color);
+        }
+        out.calendars.push(c);
+    }
+    for (id, e) in &now.events {
+        if now.calendar(e.calendar).is_some_and(|c| c.is_subscribed()) {
+            out.events.insert(*id, e.clone());
+        }
+    }
+}
+
+/// Each account's list of categories in `out` with what reads have done to it since kept: a name
+/// its server stopped listing stays gone, one it added stays, and so does the colour it gave. A
+/// first read since is made again on what `out` holds, for what comes across from the shared list
+/// and what leaves the other lists (#633). An account on one side of the step alone keeps what
+/// `out` has of it.
+fn server_lists(out: &mut Mailbox, now: &Mailbox, g: &BTreeSet<Id>) {
+    let then = out.server_categories.clone();
+    out.server_categories.retain(|account, _| !g.contains(account));
+    out.server_categories
+        .extend(now.server_categories.iter().filter(|(account, _)| g.contains(account)).map(|(account, names)| (*account, names.clone())));
+    let on = |list: Option<&Vec<String>>, name: &str| list.is_some_and(|names| names.iter().any(|n| same_category(n, name)));
+    for (account, list) in now.account_categories.iter().filter(|(account, _)| g.contains(account)) {
+        let (was, is) = (then.get(account), now.server_categories.get(account));
+        out.start_account_categories(*account, is.map(Vec::as_slice).unwrap_or_default());
+        let Some(own) = out.account_categories.get_mut(account) else { continue };
+        own.retain(|c| !on(was, &c.name) || on(is, &c.name));
+        for c in list.iter().filter(|c| on(is, &c.name)) {
+            if let Some(kept) = own.iter_mut().find(|o| same_category(&o.name, &c.name)) {
+                *kept = c.clone();
+            } else if !on(was, &c.name) {
+                own.push(c.clone());
+            }
+        }
+    }
+}
+
+/// A message the undo puts back into the IMAP account it was being moved out of, while the run
+/// that deletes its original there may be on its way: should that run's answer be lost, it is kept
+/// here rather than forgotten when the server no longer lists it, as when it is moved back (#451).
+fn returned(out: &mut Mailbox, now: &Mailbox) {
+    for p in &now.pending {
+        let Pending::Move { account, message, uid, .. } = p else { continue };
+        let back = out.message(*message).is_some_and(|m| m.account == *account && m.uid == *uid && *uid != 0);
+        if back
+            && now.message(*message).is_some_and(|m| m.account != *account)
+            && let Ok(m) = out.message_mut(*message)
+        {
+            m.returned = RETURNED_LISTINGS;
+        }
+    }
+}
+
+/// Everything but the Microsoft accounts' mail (the rest of `keep_in_step`'s work) stays as it is
+/// now, but for what the change touched (#605): mail that came down after it, a message the
+/// server took away since, and how far each IMAP folder has been read are not the change's to
+/// undo. A message the change touched goes back to how it was before it; a folder the change
+/// touched too, but with the server's side of it (its path, how far it has been read) as now.
+/// The changes waiting to go to the server are as now, less those the change added and plus
+/// those it took away.
+fn leave_alone(out: &mut Mailbox, touched: &Touched, now: &Mailbox, g: &BTreeSet<Id>) {
+    // Accounts that the undo takes away again (one the change added): nothing of theirs stays.
+    let gone: BTreeSet<Id> = now.accounts.iter().map(|a| a.id).filter(|id| !out.accounts.iter().any(|a| a.id == *id)).collect();
+    // Only the messages the two differ in: one that is the same in both is as now already.
+    let ids: Vec<Id> = now.messages.changes(&out.messages).into_iter().map(|(id, _, _)| id).collect();
+    for id in ids {
+        let (t, c) = (out.messages.get(&id), now.messages.get(&id));
+        if t.is_some_and(|m| relevant(m, g)) || c.is_some_and(|m| relevant(m, g)) || touched.changed_messages.contains(&id) {
+            continue;
+        }
+        match c {
+            Some(c) => {
+                out.messages.insert(id, c.clone());
+            }
+            None => {
+                out.messages.remove(&id);
+            }
+        }
+    }
+    // A reminder's state (raised, put off) is not the change's to undo: a message the change
+    // touched goes back to its reminder as it was, with the state it has now (#948).
+    for id in &touched.changed_messages {
+        let (Some(t), Some(c)) = (out.messages.get(id), now.messages.get(id)) else { continue };
+        // A step that left the reminder alone leaves it as it is now (ended, raised, put off);
+        // one that changed it goes back to the reminder as it was, with its state now.
+        let undone = if touched.follow_up_changed.contains(id) { courier_model::FollowUp::undone(t.follow_up, c.follow_up) } else { c.follow_up };
+        if undone != t.follow_up
+            && let Some(t) = out.messages.get_mut(id)
+        {
+            Arc::make_mut(t).follow_up = undone;
+        }
+    }
+    // What Gmail last said of a message's category is Gmail's, not the change's (#911): a message
+    // the change moved between Gmail's categories goes back to the one it was in, against what
+    // Gmail says now, so that a move Gmail has had already is moved back there at the next run.
+    for id in &touched.changed_messages {
+        let (Some(t), Some(c)) = (out.messages.get(id), now.messages.get(id)) else { continue };
+        if relevant(t, g) || relevant(c, g) || t.gmail_synced == c.gmail_synced || (t.folder, t.gmail_id) != (c.folder, c.gmail_id) {
+            continue;
+        }
+        let synced = c.gmail_synced;
+        if let Some(t) = out.messages.get_mut(id) {
+            let t = Arc::make_mut(t);
+            (t.gmail_synced, t.gmail_refusals) = (synced, 0);
+        }
+    }
+    // Gmail's refusals count against a move waiting, and nothing else.
+    for id in &touched.changed_messages {
+        if let Some(t) = out.messages.get_mut(id)
+            && t.gmail_refusals != 0
+            && t.gmail_move_waiting().is_none()
+        {
+            Arc::make_mut(t).gmail_refusals = 0;
+        }
+    }
+    // Contacts the change didn't touch are as they are now (those an import put in and a later
+    // step's snapshot holds are not brought back by undoing that step).
+    let ids: BTreeSet<Id> = out.contacts.keys().chain(now.contacts.keys()).copied().collect();
+    for id in ids.into_iter().filter(|id| !touched.changed_contacts.contains(id)) {
+        match now.contacts.get(&id) {
+            Some(c) => {
+                out.contacts.insert(id, c.clone());
+            }
+            None => {
+                out.contacts.remove(&id);
+            }
+        }
+    }
+    let then = std::mem::take(&mut out.folders);
+    let mut kept = Vec::with_capacity(then.len());
+    let mut seen = BTreeSet::new();
+    for t in then {
+        seen.insert(t.id);
+        if g.contains(&t.account) {
+            kept.push(t);
+            continue;
+        }
+        match (touched.changed_folders.contains(&t.id), now.folder(t.id)) {
+            (true, Some(c)) => {
+                let mut f = t;
+                (f.remote, f.uid_validity, f.uid_seen, f.uid_from) = (c.remote.clone(), c.uid_validity, c.uid_seen, c.uid_from);
+                (f.whole, f.server, f.awaiting_listing) = (c.whole, c.server.clone(), c.awaiting_listing);
+                f.imap_status = c.imap_status;
+                kept.push(f);
+            }
+            (true, None) => kept.push(t),
+            (false, Some(c)) => kept.push(c.clone()),
+            // Gone since (the server's, or the account's).
+            (false, None) => {}
+        }
+    }
+    let mut made = Vec::new();
+    for c in now.folders.iter().filter(|f| !g.contains(&f.account) && !seen.contains(&f.id)) {
+        if touched.changed_folders.contains(&c.id) { made.push(c.clone()) } else { kept.push(c.clone()) }
+    }
+    out.folders = kept;
+    out.folders.retain(|f| !gone.contains(&f.account));
+    if !gone.is_empty() {
+        out.messages.retain(|_, m| !gone.contains(&m.account));
+    }
+    // A folder the change made that something still lies in stays.
+    for f in made.into_iter().filter(|f| !gone.contains(&f.account)) {
+        if out.messages.values().any(|m| m.folder == f.id) || out.folders.iter().any(|o| o.parent == Some(f.id)) {
+            out.folders.push(f);
+        }
+    }
+    // The waiting changes of the Microsoft accounts are as the mailbox goes back to (`queue`'s
+    // business); the others are as now, but for the change's own.
+    let then = std::mem::take(&mut out.pending);
+    // A change the mailbox goes back to has its UID there already: it is not one a copy's UID was
+    // given to since, however alike its mail is to one that waited.
+    let then_keys: HashSet<String> = then.iter().map(key).collect();
+    let loose = |p: &Pending| p.source().1 != 0 && !then_keys.contains(&key(p)) && touched.waiting.contains(&loose_key_of_attached(p));
+    let owned = |p: &Pending| {
+        let k = key(p);
+        touched.pending_added.contains(&k)
+            || touched.pending_removed.contains(&k)
+            || loose(p)
+            || matches!(p, Pending::Move { message, .. } if touched.changed_messages.contains(message))
+    };
+    let mut pending: Vec<Pending> = then.iter().filter(|p| g.contains(&p.account())).cloned().collect();
+    pending.extend(now.pending.iter().filter(|p| !g.contains(&p.account()) && !owned(p)).cloned());
+    pending.extend(then.iter().filter(|p| !g.contains(&p.account()) && owned(p)).cloned());
+    pending.retain(|p| !gone.contains(&p.account()));
+    out.pending = pending;
+    // A change the server's copy has been matched to since (it has its UID now) that the undo takes
+    // away, or puts back as it was before, must not lose that UID: the copy is not coming
+    // down again.
+    let attached: Vec<&Pending> =
+        now.pending.iter().filter(|p| p.source().1 != 0 && !g.contains(&p.account()) && !gone.contains(&p.account()) && owned(p)).collect();
+    if attached.is_empty() {
+        return;
+    }
+    // (Looked up once, not for each change: an undo of a big move has thousands.)
+    let folders: HashMap<Id, &Folder> = out.folders.iter().map(|f| (f.id, f)).collect();
+    // The waiting changes (UID 0) by the message they are about, and by its Message-ID.
+    let mut waiting: HashMap<(Id, String, String), Vec<usize>> = HashMap::new();
+    for (at, p) in out.pending.iter().enumerate().filter(|(_, p)| p.source().1 == 0) {
+        let (account, from) = (p.account(), p.source().0.to_string());
+        let ids: Vec<String> = match p {
+            Pending::Move { message, .. } => {
+                let mid = out.message(*message).map(|m| m.message_id.clone()).unwrap_or_default();
+                vec![format!("m{message}"), format!("i{mid}")].into_iter().filter(|k| k != "i").collect()
+            }
+            Pending::Delete { message_id, .. } => vec![format!("i{message_id}")].into_iter().filter(|k| k != "i").collect(),
+        };
+        for id in ids {
+            waiting.entry((account, from.clone(), id)).or_default().push(at);
+        }
+    }
+    // The messages awaiting their copy, by the mailbox and Message-ID.
+    let mut awaiting: HashMap<(Id, String, String), Vec<Id>> = HashMap::new();
+    for m in out.messages.values().filter(|m| m.uid == 0 && m.synced.is_some() && m.placed.is_empty() && !m.message_id.is_empty()) {
+        if let Some(f) = folders.get(&m.folder).filter(|f| f.account == m.account) {
+            awaiting.entry((m.account, f.remote.clone(), m.message_id.clone())).or_default().push(m.id);
+        }
+    }
+    for attached in attached {
+        // (Only a change that was waiting for its copy when the step was made is known by its
+        // mail: two copies of one mail are told apart by their UIDs, which a change has.)
+        keep_attached(out, attached, loose(attached), &waiting, &awaiting);
+    }
+}
+
+/// `attached`, a change of the mailbox as it is now, has the UID its message's copy has on the
+/// server, and the undo doesn't keep it. The change that takes its place in `out` waiting for
+/// that copy (UID 0) gets the UID; else a message back in the folder the change was from is the
+/// server's copy again, as one moved back to where the server has it is (`imap_side`).
+fn keep_attached(
+    out: &mut Mailbox,
+    attached: &Pending,
+    loose: bool,
+    waiting: &HashMap<(Id, String, String), Vec<usize>>,
+    awaiting: &HashMap<(Id, String, String), Vec<Id>>,
+) {
+    let (from, uid) = attached.source();
+    let account = attached.account();
+    let mid = match attached {
+        Pending::Move { message, .. } => out.message(*message).map(|m| m.message_id.clone()).unwrap_or_default(),
+        Pending::Delete { message_id, .. } => message_id.clone(),
+    };
+    let mut keys = Vec::new();
+    if let Pending::Move { message, .. } = attached {
+        keys.push(format!("m{message}"));
+    }
+    if loose && !mid.is_empty() {
+        keys.push(format!("i{mid}"));
+    }
+    let at = keys
+        .iter()
+        .filter_map(|k| waiting.get(&(account, from.to_string(), k.clone())))
+        .flatten()
+        .copied()
+        .find(|at| out.pending.get(*at).is_some_and(|p| p.source().1 == 0));
+    if let Some(p) = at.and_then(|at| out.pending.get_mut(at)) {
+        match p {
+            Pending::Move { uid: u, synced, .. } => (*u, *synced) = (uid, synced.map(|flags| flags.at(uid))),
+            Pending::Delete { uid: u, .. } => *u = uid,
+        }
+        return;
+    }
+    if !loose {
+        return;
+    }
+    let here: Vec<Id> = match attached {
+        Pending::Move { message, .. } => {
+            let ok = out
+                .message(*message)
+                .is_some_and(|m| m.account == account && m.uid == 0 && m.synced.is_some() && m.placed.is_empty() && !m.message_id.is_empty())
+                && out.message(*message).and_then(|m| out.folder(m.folder)).is_some_and(|f| f.account == account && f.remote == from);
+            if ok { vec![*message] } else { Vec::new() }
+        }
+        Pending::Delete { message_id, seen, .. } => awaiting
+            .get(&(account, from.to_string(), message_id.clone()))
+            .into_iter()
+            .flatten()
+            .filter_map(|id| out.message(*id))
+            .filter(|m| seen.as_ref().is_some_and(|seen| seen.fits(m)))
+            .map(|m| m.id)
+            .collect(),
+    };
+    if let [id] = here[..]
+        && let Ok(m) = out.message_mut(id)
+    {
+        m.uid = uid;
+        m.synced = m.synced.map(|flags| flags.at(uid));
+    }
+}
+
+/// The folders of the Microsoft accounts. Answers the folders the change made that weren't on the
+/// server, taken away unless something still lies in them.
+fn folders(out: &mut Mailbox, touched: &Touched, now: &Mailbox, g: &BTreeSet<Id>, said: &mut Said) -> Vec<Folder> {
+    let then = std::mem::take(&mut out.folders);
+    let mut kept = Vec::with_capacity(then.len());
+    let mut seen = BTreeSet::new();
+    let mut dropped = Vec::new();
+    for t in then {
+        if !g.contains(&t.account) {
+            kept.push(t);
+            continue;
+        }
+        seen.insert(t.id);
+        let c = now.folder(t.id);
+        match (touched.folders.get(&t.id), c) {
+            // Not the change's: as it is now (gone from the server, or renamed there).
+            (None, c) => kept.extend(c.cloned()),
+            (Some(Some(a)), Some(c)) => {
+                let mut f = c.clone();
+                if t.name != a.name {
+                    f.name = t.name.clone();
+                }
+                if t.parent != a.parent {
+                    f.parent = t.parent;
+                }
+                if t.favorite != a.favorite {
+                    f.favorite = t.favorite;
+                }
+                kept.push(f);
+            }
+            // Taken away by the change but put back since (the server refused).
+            (Some(None), Some(c)) => kept.push(c.clone()),
+            // Deleted for good by the change.
+            (Some(None), None) if t.server.is_some() => said.folders.push(t.name.clone()),
+            (Some(None), None) => kept.push(t),
+            // Gone from the server since.
+            (Some(Some(_)), None) => {}
+        }
+    }
+    for c in now.folders.iter().filter(|f| g.contains(&f.account) && !seen.contains(&f.id)) {
+        match touched.folders.get(&c.id) {
+            // Made by the change and on the server already: into Deleted Items, with what is in it.
+            Some(Some(_)) if c.server.is_some() => {
+                let mut f = c.clone();
+                if let Some(deleted) = now.folder_of_kind(c.account, FolderKind::Deleted).filter(|d| *d != c.id) {
+                    f.parent = Some(deleted);
+                }
+                kept.push(f);
+            }
+            Some(Some(_)) => dropped.push(c.clone()),
+            // Come down since.
+            _ => kept.push(c.clone()),
+        }
+    }
+    out.folders = kept;
+    dropped
+}
+
+/// Whether `m` lies in its Microsoft account's Outbox.
+fn in_outbox(m: &Message, now: &Mailbox, g: &BTreeSet<Id>) -> bool {
+    g.contains(&m.account) && now.folder_of_kind(m.account, FolderKind::Outbox) == Some(m.folder)
+}
+
+/// The messages of the Microsoft accounts.
+fn messages(out: &mut Mailbox, touched: &Touched, now: &Mailbox, g: &BTreeSet<Id>, said: &mut Said) {
+    // Those the change touched, and those the two differ in: one the same in both and not the
+    // change's is as now already.
+    let mut ids: BTreeSet<Id> = touched.messages.keys().copied().collect();
+    ids.extend(now.messages.changes(&out.messages).into_iter().map(|(id, _, _)| id));
+    // The messages the change put in an Outbox: the drafts they were are sent, not undone.
+    let sent: Vec<&Message> = touched.messages.values().flatten().map(AsRef::as_ref).filter(|m| in_outbox(m, now, g)).collect();
+    for id in ids {
+        let t = out.messages.get(&id).cloned();
+        let c = now.messages.get(&id);
+        if !t.as_deref().is_some_and(|m| relevant(m, g)) && !c.is_some_and(|m| relevant(m, g)) {
+            continue;
+        }
+        let result = match touched.messages.get(&id) {
+            // Not the change's: as it is now.
+            None => c.cloned(),
+            Some(a) => merge(t.as_deref(), a.as_deref(), c, now, g, &sent, said),
+        };
+        match result {
+            Some(m) => {
+                out.messages.insert(id, m);
+            }
+            None => {
+                out.messages.remove(&id);
+            }
+        }
+    }
+}
+
+/// One message the change touched: as it was before it (`t`), right after it (`a`) and now (`c`).
+fn merge(
+    t: Option<&Message>,
+    a: Option<&Message>,
+    c: Option<&Arc<Message>>,
+    now: &Mailbox,
+    g: &BTreeSet<Id>,
+    sent: &[&Message],
+    said: &mut Said,
+) -> Option<Arc<Message>> {
+    // Sending is never undone: what is in an Outbox, or went from it, stays as it is now.
+    if [t, a, c.map(AsRef::as_ref)].into_iter().flatten().any(|m| in_outbox(m, now, g)) {
+        if t.is_none()
+            && let Some(m) = a
+        {
+            said.sent.push(m.subject.clone());
+        }
+        return c.cloned();
+    }
+    match (t, a, c) {
+        (Some(t), None, None) => {
+            // The draft that became a message sent.
+            if !t.message_id.is_empty() && sent.iter().any(|m| m.account == t.account && m.message_id == t.message_id) {
+                return None;
+            }
+            // Deleted for good by the change: the server's copy is gone, or going.
+            if t.server.as_ref().is_some_and(|s| !s.gone) || t.moving_out.is_some() {
+                said.deleted.push(t.subject.clone());
+                return None;
+            }
+            // Never on the server: back, as ever.
+            Some(Arc::new(t.clone()))
+        }
+        // Taken away by the server since, or made by the change and gone since.
+        (_, Some(_), None) | (None, None, None) => None,
+        // Taken away by the change and put back since (the server refused to delete it).
+        (Some(_), None, Some(c)) => Some(c.clone()),
+        // Made by the change.
+        (None, Some(_), Some(c)) => {
+            if now.queued.iter().any(|q| match q {
+                Queued::CopyMessage { copy, .. } => *copy == c.id,
+                Queued::PlaceMessage { message, .. } => *message == c.id,
+                _ => false,
+            }) {
+                // A copy the server hasn't made: never made there.
+                return None;
+            }
+            if !c.server.as_ref().is_some_and(|s| !s.gone) {
+                return None;
+            }
+            // On the server already: into Deleted Items there and here, nothing deleted for good.
+            let mut m = c.as_ref().clone();
+            if let Some(deleted) = now.folder_of_kind(c.account, FolderKind::Deleted)
+                && !now.subtree(deleted).contains(&c.folder)
+            {
+                m.folder = deleted;
+                m.left_gmail_inbox();
+            }
+            Some(Arc::new(m))
+        }
+        (None, None, Some(c)) => Some(c.clone()),
+        (Some(t), Some(a), Some(c)) => fields(t, a, c, now, g, said),
+    }
+}
+
+/// Whether `m` is a JMAP account's and was never on its server: nothing is made on such a server
+/// from a message here, so one with no word of the server's has no original there.
+fn never_on_its_jmap_server(now: &Mailbox, m: &Message) -> bool {
+    m.server.is_none() && m.moving_out.is_none() && now.account(m.account).is_some_and(|a| a.kind == AccountKind::Jmap)
+}
+
+/// A message here before the change, after it and now: as it is now, but for what the change
+/// changed, which is as it was before.
+fn fields(t: &Message, a: &Message, c: &Arc<Message>, now: &Mailbox, g: &BTreeSet<Id>, said: &mut Said) -> Option<Arc<Message>> {
+    let mut m = c.as_ref().clone();
+    if t.account != c.account {
+        let placed = c.server.as_ref().filter(|s| !s.gone && !s.id.is_empty() && g.contains(&c.account));
+        // A message its JMAP server never had (a draft written here, one brought in from a file):
+        // nothing of it was removed there, so it goes back as one of an account with no server would.
+        let from_server = g.contains(&t.account) && !never_on_its_jmap_server(now, t);
+        if from_server && c.moving_out.as_ref().is_none_or(|out| out.account != t.account) {
+            // The copy it was first moved out of, in a third mailbox, is kept while it may hold the
+            // bytes a protected message came as (#30, `Mailbox::place_called_off`): it stays the
+            // one this message is moved out of, and the copy made here goes instead.
+            let first = c.moving_out.as_ref().is_some_and(|out| out.account != t.account && out.account != c.account && (!out.left || out.listing))
+                || now
+                    .pending
+                    .iter()
+                    .any(|p| matches!(p, Pending::Move { message, .. } if *message == c.id) && p.account() != t.account && p.account() != c.account);
+            // Moved into another mailbox of the owner's, and the original removed (#70): moved
+            // back as it went, a copy made there from the whole message, and this one gone once it is.
+            let Some(placed) = placed.filter(|_| now.between_mailboxes(c.account, t.account)) else {
+                if first {
+                    said.held.push(t.subject.clone())
+                } else {
+                    said.moved_out.push(t.subject.clone())
+                }
+                return Some(c.clone());
+            };
+            let source = courier_model::sync::fingerprint(placed.id.as_bytes());
+            // The stamps of the server it leaves stay behind (#781).
+            courier_model::auth_results::forget_stamps(&mut m);
+            said.queued.push(Queued::PlaceMessage {
+                account: t.account,
+                message: c.id,
+                marker: format!("courier-place-{:x}-u-{source:016x}", c.id),
+                copy: false,
+                from: None,
+            });
+            if first {
+                said.queued.push(Queued::DeleteMessage { account: c.account, id: placed.id.clone(), kept: None });
+            } else {
+                m.moving_out = Some(MovingOut { account: c.account, id: placed.id.clone(), folder: placed.folder.clone(), ..Default::default() });
+            }
+            (m.server, m.uid, m.synced) = (None, 0, None);
+        } else if from_server {
+            // Moved out of a Microsoft account: back while the server's copy is still there.
+            let Some(out) = c.moving_out.clone().filter(|out| out.account == t.account && !out.left) else {
+                said.moved_out.push(t.subject.clone());
+                return Some(c.clone());
+            };
+            // A copy made already in the mailbox it went to goes again there (#70).
+            if let Some(placed) = placed {
+                said.queued.push(Queued::DeleteMessage { account: c.account, id: placed.id.clone(), kept: None });
+            }
+            m.server = t.server.clone().filter(|s| s.id == out.id).or_else(|| {
+                Some(ServerMessage {
+                    id: out.id.clone(),
+                    read: t.read,
+                    flag: t.flag,
+                    flag_due: t.flag_due,
+                    categories: t.categories.clone(),
+                    importance: t.importance,
+                    ..Default::default()
+                })
+            });
+            (m.moving_out, m.uid, m.synced) = (None, 0, None);
+            // Its run may be removing the server's copy: should that answer be lost, it is kept
+            // here rather than forgotten.
+            m.returned = RETURNED_LISTINGS;
+        } else {
+            // Moved back into the account it was being moved out of: out of it again.
+            m.moving_out = c
+                .server
+                .as_ref()
+                .filter(|s| !s.gone)
+                .map(|s| MovingOut { account: c.account, id: s.id.clone(), folder: s.folder.clone(), ..Default::default() })
+                // What is known now of the same original (where it is, whether it left) stands.
+                .or_else(|| match (&t.moving_out, &c.moving_out) {
+                    (Some(then), Some(now)) if now.account == then.account && now.id == then.id => Some(now.clone()),
+                    (then, _) => then.clone(),
+                });
+            (m.server, m.uid, m.synced) = (None, t.uid, t.synced);
+        }
+        m.account = t.account;
+    }
+    macro_rules! back {
+        ($($field:ident),*) => {
+            $(if t.$field != a.$field {
+                m.$field = t.$field.clone();
+            })*
+        };
+    }
+    back!(folder, read, flag, flag_due, importance, pinned, answered, forwarded, draft, held, placed, snooze);
+    // A reminder as it was, but what has become of it since (raised, put off) stays (#948).
+    if t.follow_up != a.follow_up {
+        m.follow_up = courier_model::FollowUp::undone(t.follow_up, c.follow_up);
+    }
+    // Categories as a list that others add to too (R3 spec S17): what the change added is taken
+    // off and what it took off is put back; one added in Outlook meanwhile stays.
+    if t.categories != a.categories {
+        let has = |list: &[String], name: &String| list.iter().any(|c| same_category(c, name));
+        m.categories.retain(|c| has(&t.categories, c) || !has(&a.categories, c));
+        for c in t.categories.iter().filter(|c| !has(&a.categories, c)) {
+            if !has(&m.categories, c) {
+                m.categories.push(c.clone());
+            }
+        }
+    }
+    back!(subject, from, reply_to, to, cc, bcc, date, attachments, in_reply_to, references);
+    // The body goes back as one with where it is kept and what the sender hid (#688): a body only
+    // brought in from disk while the change ran differs from the one there before, which named
+    // its text on disk; put back without that name, it would be no text at all.
+    if t.body != a.body || t.kept != a.kept || t.hidden_text != a.hidden_text {
+        m.body = t.body.clone();
+        m.kept = t.kept.clone();
+        m.hidden_text = t.hidden_text.clone();
+    }
+    if t.account != c.account {
+        m.folder = t.folder;
+    }
+    // A draft written back to what it was goes up again as that.
+    let differs = m.draft && DraftState::of(&m) != DraftState::of(c);
+    if let Some(sd) = m.server_draft.as_mut().filter(|_| differs) {
+        sd.pending = true;
+        sd.saves = sd.saves.saturating_add(1);
+    }
+    Some(Arc::new(m))
+}
+
+/// Every message of a Microsoft account lies in a folder there is.
+fn tidy(out: &mut Mailbox, now: &Mailbox, g: &BTreeSet<Id>) {
+    let folders: BTreeSet<Id> = out.folders.iter().map(|f| f.id).collect();
+    let parentless: Vec<usize> = out
+        .folders
+        .iter()
+        .enumerate()
+        .filter(|(_, f)| g.contains(&f.account) && f.parent.is_some_and(|p| !folders.contains(&p)))
+        .map(|(i, _)| i)
+        .collect();
+    for i in parentless {
+        if let Some(f) = out.folders.get_mut(i) {
+            f.parent = now.folder(f.id).and_then(|c| c.parent).filter(|p| folders.contains(p));
+        }
+    }
+    let lies_nowhere = |m: &Message| relevant(m, g) && !folders.contains(&m.folder);
+    // A message as it is now lies in a folder there is now: while every folder there is now is
+    // here too, only the others can lie in none (one walk of a few hundred thousand messages
+    // fewer at each undo).
+    let homeless: Vec<Id> = if now.folders.iter().all(|f| folders.contains(&f.id)) {
+        out.messages.changes(&now.messages).into_iter().filter_map(|(_, _, m)| m).filter(|m| lies_nowhere(m)).map(|m| m.id).collect()
+    } else {
+        out.messages.values().filter(|m| lies_nowhere(m)).map(|m| m.id).collect()
+    };
+    for id in homeless {
+        let Some(m) = out.messages.get(&id) else { continue };
+        let home = now
+            .message(id)
+            .map(|c| c.folder)
+            .filter(|f| folders.contains(f))
+            .or_else(|| out.folder_of_kind(m.account, FolderKind::Inbox))
+            .filter(|f| folders.contains(f));
+        match home {
+            Some(home) => {
+                if let Some(m) = out.messages.get_mut(&id) {
+                    Arc::make_mut(m).folder = home;
+                }
+            }
+            // Nowhere at all (its account is gone): as before the undo.
+            None => match now.messages.get(&id) {
+                Some(c) => {
+                    out.messages.insert(id, c.clone());
+                }
+                None => {
+                    out.messages.remove(&id);
+                }
+            },
+        }
+    }
+}
+
+/// The queue of what the server is to be told: as it is now, less the copies taken away, with a
+/// copy brought back that was never made there.
+fn queue(out: &mut Mailbox, now: &Mailbox, g: &BTreeSet<Id>) {
+    let then = std::mem::take(&mut out.queued);
+    let mut queued: Vec<Queued> = then.iter().filter(|q| !g.contains(&q.account())).cloned().collect();
+    queued.extend(now.queued.iter().filter(|q| g.contains(&q.account())).cloned());
+    queued.retain(|q| match q {
+        Queued::CopyMessage { copy, .. } => out.messages.contains_key(copy),
+        // Made from the message where it lies: only while it lies there, not on a server yet (#70).
+        Queued::PlaceMessage { account, message, .. } => out.messages.get(message).is_some_and(|m| m.account == *account && m.server.is_none()),
+        _ => true,
+    });
+    for q in then.iter().filter(|q| g.contains(&q.account())) {
+        if let Queued::CopyMessage { copy, .. } = q
+            && out.messages.get(copy).is_some_and(|m| m.server.is_none())
+            && !now.messages.contains_key(copy)
+            && !queued.iter().any(|o| matches!(o, Queued::CopyMessage { copy: other, .. } if other == copy))
+        {
+            queued.push(q.clone());
+        }
+    }
+    out.queued = queued;
+}
+
+#[cfg(test)]
+#[path = "undo_tests.rs"]
+mod tests;
+
+#[cfg(test)]
+#[path = "undo_later_mail_tests.rs"]
+mod later_mail_tests;

@@ -1,0 +1,16 @@
+[package]
+name = "courier-ical"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+description = "Courier iCalendar (RFC 5545) reader and writer: events, to-dos, recurrence rules"
+
+[lints]
+workspace = true
+
+[dependencies]
+courier-time = { workspace = true }
+courier-model = { workspace = true }
+
+[dev-dependencies]
+proptest = { workspace = true }

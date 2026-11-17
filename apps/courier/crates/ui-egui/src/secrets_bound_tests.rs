@@ -1,0 +1,426 @@
+// SPDX-FileCopyrightText: Courier contributors
+// SPDX-License-Identifier: MIT OR Apache-2.0
+//! Remembered passwords and sign-ins are filed under the servers they go to (C1 PR-b).
+
+use std::collections::HashMap;
+use std::sync::{Arc, Mutex, mpsc};
+
+use courier_engine::Session;
+use courier_model::sync::{SyncRequest, SyncResult};
+use serde_json::json;
+
+use super::*;
+use crate::{SecretStore, Services};
+
+const NOW: i64 = 1_791_993_600;
+
+#[derive(Clone, Default)]
+struct Store(Arc<Mutex<HashMap<String, String>>>);
+
+impl SecretStore for Store {
+    fn get(&self, key: &str) -> Option<String> {
+        self.0.lock().unwrap().get(key).cloned()
+    }
+    fn set(&self, key: &str, secret: &str) -> Result<(), courier_host::SecretError> {
+        self.0.lock().unwrap().insert(key.to_string(), secret.to_string());
+        Ok(())
+    }
+    fn delete(&self, key: &str) {
+        self.0.lock().unwrap().remove(key);
+    }
+}
+
+/// What each Send/Receive was asked to do: (the IMAP host, the password it carried).
+type Seen = Arc<Mutex<Vec<(String, String)>>>;
+
+fn app(store: &Store, seen: &Seen) -> MailApp {
+    let mut a = MailApp::new(Session::at(courier_engine::sample::mailbox(NOW, 0), NOW, 0), Services::default());
+    a.autosave = false;
+    let seen = seen.clone();
+    a.services.sync = Some(Box::new(move |req: SyncRequest| {
+        let host = req.account.incoming.as_ref().map(|s| s.host.clone()).unwrap_or_default();
+        seen.lock().unwrap().push((host, req.password.clone()));
+        let (tx, rx) = mpsc::channel();
+        tx.send(SyncResult { account: req.account.id, ..Default::default() }).unwrap();
+        rx
+    }));
+    a.services.secrets = Some(std::sync::Arc::new(store.clone()));
+    a
+}
+
+const OLD: &str = "password:avery@mail.example|imap=imap.mail.example:993|smtp=smtp.mail.example:465";
+const NEW: &str = "password:avery@mail.example|imap=imap.attacker.example:993|smtp=smtp.mail.example:465";
+
+fn add(a: &mut MailApp) -> u64 {
+    let r = a.execute(
+        "account.add",
+        json!({"email": "Avery@Mail.example", "incoming": {"host": "imap.mail.example", "port": 993}, "outgoing": {"host": "smtp.mail.example", "port": 465}}),
+    );
+    r.unwrap()["id"].as_u64().unwrap()
+}
+
+#[test]
+fn the_key_names_the_address_and_the_servers() {
+    let (store, seen) = (Store::default(), Seen::default());
+    let mut a = app(&store, &seen);
+    let id = add(&mut a);
+    let account = a.session.mailbox.account(id).unwrap();
+    assert_eq!(MailApp::secret_key("password", account), OLD);
+    let microsoft = courier_model::Account {
+        email: "Me@Example.org".into(),
+        kind: courier_model::AccountKind::Microsoft,
+        incoming: Some(courier_model::Server { host: "ignored".into(), port: 1, security: Default::default() }),
+        ..Default::default()
+    };
+    assert_eq!(MailApp::secret_key("refresh", &microsoft), "refresh:me@example.org|graph");
+    // AU2-V8: a mailbox file's IMAP account that says it is shared does not get the owner's Graph token.
+    let shared = courier_model::Account {
+        kind: courier_model::AccountKind::Imap,
+        shared_of: Some(1),
+        incoming: Some(courier_model::Server { host: "imap.elsewhere.example".into(), port: 993, security: Default::default() }),
+        ..microsoft.clone()
+    };
+    assert_ne!(MailApp::secret_key("refresh", &shared), MailApp::secret_key("refresh", &microsoft));
+    assert!(MailApp::secret_key("refresh", &shared).contains("imap=imap.elsewhere.example:993"));
+    let shared_microsoft = courier_model::Account { shared_of: Some(1), ..microsoft.clone() };
+    assert_eq!(MailApp::secret_key("refresh", &shared_microsoft), MailApp::secret_key("refresh", &microsoft));
+}
+
+#[test]
+fn a_secret_is_not_found_after_a_server_changes_and_the_old_one_goes() {
+    let (store, seen) = (Store::default(), Seen::default());
+    let mut a = app(&store, &seen);
+    let id = add(&mut a);
+    store.set(OLD, "pw").unwrap();
+    a.secrets_asked = None;
+    crate::secret_read_tests::settle(&mut a);
+    a.passwords.insert(id, "pw".into());
+    assert_eq!(a.remembered("password", a.account_at("avery@mail.example").map_or(0, |x| x.id)).as_deref(), Some("pw"));
+
+    a.execute("account.edit", json!({"id": id, "incoming": {"host": "imap.attacker.example", "port": 993}})).unwrap();
+
+    assert_eq!(a.remembered("password", a.account_at("avery@mail.example").map_or(0, |x| x.id)), None);
+    assert!(store.get(OLD).is_none() && store.get(NEW).is_none());
+    assert!(!a.passwords.contains_key(&id));
+}
+
+#[test]
+fn undo_of_a_server_change_drops_what_was_typed_for_the_new_one() {
+    let (store, seen) = (Store::default(), Seen::default());
+    let mut a = app(&store, &seen);
+    let id = add(&mut a);
+    a.execute("account.edit", json!({"id": id, "incoming": {"host": "imap.other.example", "port": 993}})).unwrap();
+    a.passwords.insert(id, "typed for the other".into());
+    a.execute("edit.undo", json!({})).unwrap();
+    assert_eq!(a.session.mailbox.account(id).and_then(|x| x.incoming.as_ref()).map(|s| s.host.as_str()), Some("imap.mail.example"));
+    assert!(!a.passwords.contains_key(&id));
+}
+
+#[test]
+fn an_edit_that_leaves_the_servers_keeps_the_secret() {
+    let (store, seen) = (Store::default(), Seen::default());
+    let mut a = app(&store, &seen);
+    let id = add(&mut a);
+    store.set(OLD, "pw").unwrap();
+    a.execute("account.edit", json!({"id": id, "displayName": "Avery"})).unwrap();
+    assert_eq!(store.get(OLD).as_deref(), Some("pw"));
+}
+
+#[test]
+fn either_servers_host_or_port_invalidates_every_cached_sign_in() {
+    for change in [
+        json!({"incoming": {"host": "imap.other.example", "port": 993}}),
+        json!({"incoming": {"host": "imap.mail.example", "port": 1993}}),
+        json!({"outgoing": {"host": "smtp.other.example", "port": 465}}),
+        json!({"outgoing": {"host": "smtp.mail.example", "port": 1465}}),
+    ] {
+        let (store, seen) = (Store::default(), Seen::default());
+        let mut a = app(&store, &seen);
+        let id = add(&mut a);
+        let before = a.session.mailbox.account(id).unwrap().clone();
+        for kind in ["password", "refresh"] {
+            store.set(&MailApp::secret_key(kind, &before), "invented").unwrap();
+            store.set(&MailApp::legacy_secret_key(kind, &before.email), "invented").unwrap();
+        }
+        let other = a.execute("account.add", json!({"email": "other@example.org", "incoming": {"host": "imap.other.example", "port": 993}, "outgoing": {"host": "smtp.other.example", "port": 465}})).unwrap()["id"].as_u64().unwrap();
+        let other_account = a.session.mailbox.account(other).unwrap().clone();
+        let other_key = MailApp::secret_key("password", &other_account);
+        store.set(&other_key, "unrelated").unwrap();
+        a.passwords.insert(other, "unrelated".into());
+        a.tokens.insert(other, Default::default());
+        a.graph_tokens.insert(other, Default::default());
+        a.passwords.insert(id, "invented".into());
+        a.tokens.insert(id, Default::default());
+        a.graph_tokens.insert(id, Default::default());
+
+        let mut edit = change;
+        edit["id"] = json!(id);
+        a.execute("account.edit", edit).unwrap();
+
+        for kind in ["password", "refresh"] {
+            assert!(store.get(&MailApp::secret_key(kind, &before)).is_none());
+            assert!(store.get(&MailApp::legacy_secret_key(kind, &before.email)).is_none());
+        }
+        assert!(!a.passwords.contains_key(&id));
+        assert!(!a.tokens.contains_key(&id));
+        assert!(!a.graph_tokens.contains_key(&id));
+        assert_eq!(store.get(&other_key).as_deref(), Some("unrelated"));
+        assert_eq!(a.passwords.get(&other).map(String::as_str), Some("unrelated"));
+        assert!(a.tokens.contains_key(&other));
+        assert!(a.graph_tokens.contains_key(&other));
+        assert!(!a.can_sync_quietly(id));
+        // (The owner's Send/Receive asks the store again first.)
+        assert_eq!(a.execute("ui.sync", json!({"account": id})).unwrap()["pending"], "secrets");
+        crate::secret_read_tests::settle(&mut a);
+        assert_eq!(a.dialog.as_ref().map(|d| d.name()), Some("password"));
+        a.poll_sync();
+        assert!(seen.lock().unwrap().is_empty());
+    }
+}
+
+#[test]
+fn an_edit_that_fails_validation_keeps_the_remembered_password() {
+    let (store, seen) = (Store::default(), Seen::default());
+    let mut a = app(&store, &seen);
+    let id = add(&mut a);
+    store.set(OLD, "invented").unwrap();
+    a.passwords.insert(id, "invented".into());
+    a.tokens.insert(id, Default::default());
+    a.graph_tokens.insert(id, Default::default());
+    let before = a.session.mailbox.account(id).unwrap().clone();
+    assert!(
+        a.execute("account.edit", json!({"id": id, "email": "not an address", "incoming": {"host": "imap.other.example", "port": 993}})).is_err()
+    );
+    assert_eq!(a.session.mailbox.account(id).unwrap(), &before);
+    assert!(a.tokens.contains_key(&id));
+    assert!(a.graph_tokens.contains_key(&id));
+    assert_eq!(store.get(OLD).as_deref(), Some("invented"));
+    assert_eq!(a.passwords.get(&id).map(String::as_str), Some("invented"));
+}
+
+#[test]
+fn a_password_never_goes_to_another_host() {
+    let (store, seen) = (Store::default(), Seen::default());
+    let mut a = app(&store, &seen);
+    let id = add(&mut a);
+    store.set(OLD, "pw").unwrap();
+    a.secrets_asked = None;
+    crate::secret_read_tests::settle(&mut a);
+    // Before the change the remembered password is used, quietly, for the host it was given for.
+    assert!(a.can_sync_quietly(id));
+    a.execute("ui.sync", json!({"account": id})).unwrap();
+    a.poll_sync();
+    assert_eq!(seen.lock().unwrap().last().cloned(), Some(("imap.mail.example".to_string(), "pw".to_string())));
+    seen.lock().unwrap().clear();
+
+    a.execute("account.edit", json!({"id": id, "incoming": {"host": "imap.attacker.example", "port": 993}})).unwrap();
+    assert!(!a.can_sync_quietly(id));
+    let asked = a.execute("ui.sync", json!({"account": id})).unwrap();
+    assert_eq!(asked["pending"], "secrets");
+    crate::secret_read_tests::settle(&mut a);
+    assert_eq!(a.dialog.as_ref().map(|d| d.name()), Some("password"));
+    a.poll_sync();
+    assert!(seen.lock().unwrap().iter().all(|(_, password)| password.is_empty()), "{:?}", seen.lock().unwrap());
+}
+
+#[test]
+fn secrets_kept_the_old_way_move_once_to_the_servers_of_the_account() {
+    let (store, seen) = (Store::default(), Seen::default());
+    let mut a = app(&store, &seen);
+    add(&mut a);
+    store.set("password:avery@mail.example", "pw").unwrap();
+    store.set("refresh:avery@mail.example", "ref").unwrap();
+    store.set("password:other@mail.example", "not ours").unwrap();
+
+    a.session.clock.now = Some(NOW);
+    crate::secret_read_tests::settle(&mut a);
+
+    assert_eq!(store.get(OLD).as_deref(), Some("pw"));
+    assert_eq!(store.get("refresh:avery@mail.example|imap=imap.mail.example:993|smtp=smtp.mail.example:465").as_deref(), Some("ref"));
+    assert!(store.get("password:avery@mail.example").is_none() && store.get("refresh:avery@mail.example").is_none());
+    assert_eq!(store.get("password:other@mail.example").as_deref(), Some("not ours"));
+    assert!(a.ui.sign_ins_bound);
+    // Once: an entry that turns up under the old name afterwards is left alone.
+    store.set("password:avery@mail.example", "later").unwrap();
+    a.secrets_asked = None;
+    crate::secret_read_tests::settle(&mut a);
+    assert_eq!(store.get("password:avery@mail.example").as_deref(), Some("later"));
+}
+
+#[test]
+fn removing_an_account_forgets_both_names() {
+    let (store, seen) = (Store::default(), Seen::default());
+    let mut a = app(&store, &seen);
+    let id = add(&mut a);
+    store.set(OLD, "pw").unwrap();
+    store.set("password:avery@mail.example", "old").unwrap();
+    a.execute("account.remove", json!({"id": id})).unwrap();
+    assert!(store.get(OLD).is_none() && store.get("password:avery@mail.example").is_none());
+}
+
+#[test]
+fn google_reconnect_does_not_accept_a_different_address_hidden_in_username() {
+    let (store, seen) = (Store::default(), Seen::default());
+    let mut app = app(&store, &seen);
+    let id = add_google_account(&mut app, "one@example.org");
+    // A mailbox file could carry a separate or stale IMAP username. That must not let its
+    // OAuth reconnect switch accounts even when Google's identity matches the username.
+    app.execute("account.edit", json!({"id": id, "username": "two@example.org"})).unwrap();
+    let stranger = google_tokens("two@example.org", "stranger-access", "stranger-refresh");
+    assert!(app.signed_in_as_other(id, &stranger));
+    app.adopt_tokens(id, stranger);
+    assert!(!app.tokens.contains_key(&id));
+    let key = MailApp::secret_key("refresh", app.session.mailbox.account(id).unwrap());
+    assert!(store.get(&key).is_none());
+}
+
+#[test]
+fn converting_an_app_password_account_discards_old_password_and_refresh_credentials() {
+    let (store, seen) = (Store::default(), Seen::default());
+    let mut app = app(&store, &seen);
+    let id = add_google_account(&mut app, "one@example.org");
+    // Start with the old password authentication, as a Gmail account discovered previously.
+    app.execute("account.edit", json!({"id": id, "auth": "password"})).unwrap();
+    let owner = app.session.mailbox.account(id).unwrap().clone();
+    let password_key = MailApp::secret_key("password", &owner);
+    let refresh_key = MailApp::secret_key("refresh", &owner);
+    store.set(&password_key, "old-app-password").unwrap();
+    store.set(&refresh_key, "old-refresh").unwrap();
+    app.passwords.insert(id, "old-app-password".into());
+    app.execute("account.edit", json!({"id": id, "auth": "oauth2", "provider": "google"})).unwrap();
+    assert!(store.get(&password_key).is_none() && store.get(&refresh_key).is_none());
+    assert!(!app.passwords.contains_key(&id) && !app.tokens.contains_key(&id));
+    assert_eq!(app.session.mailbox.account(id).unwrap().oauth.as_ref().map(|o| o.provider), Some(courier_model::OAuthProvider::Google));
+}
+
+fn add_google_account(app: &mut MailApp, email: &str) -> Id {
+    app.execute(
+        "account.add",
+        json!({
+            "email": email, "auth": "oauth2", "provider": "google",
+            "incoming": {"host": "imap.gmail.com", "port": 993, "security": "tls"},
+            "outgoing": {"host": "smtp.gmail.com", "port": 465, "security": "tls"}
+        }),
+    )
+    .unwrap()["id"]
+        .as_u64()
+        .unwrap()
+}
+
+fn google_tokens(email: &str, access: &str, refresh: &str) -> courier_model::sync::Tokens {
+    courier_model::sync::Tokens {
+        email: email.into(),
+        access: access.into(),
+        refresh: refresh.into(),
+        expires_at: courier_time::now() + 3600,
+        ..Default::default()
+    }
+}
+
+#[test]
+fn google_accounts_keep_refresh_tokens_independently_and_remove_only_their_own() {
+    let (store, seen) = (Store::default(), Seen::default());
+    let mut a = app(&store, &seen);
+    let (first, second) = (add_google_account(&mut a, "one@example.org"), add_google_account(&mut a, "two@example.org"));
+    let (first_key, second_key) = (
+        MailApp::secret_key("refresh", a.session.mailbox.account(first).unwrap()),
+        MailApp::secret_key("refresh", a.session.mailbox.account(second).unwrap()),
+    );
+    assert_ne!(first_key, second_key);
+    a.adopt_tokens(first, google_tokens("one@example.org", "access-first-private", "refresh-first-private"));
+    a.adopt_tokens(second, google_tokens("two@example.org", "access-second-private", "refresh-second-private"));
+    assert_eq!(store.get(&first_key).as_deref(), Some("refresh-first-private"));
+    assert_eq!(store.get(&second_key).as_deref(), Some("refresh-second-private"));
+    for saved in [serde_json::to_string(&a.session.mailbox).unwrap(), serde_json::to_string(&a.ui).unwrap()] {
+        for token in ["access-first-private", "refresh-first-private", "access-second-private", "refresh-second-private"] {
+            assert!(!saved.contains(token), "saved state contains an OAuth token");
+        }
+    }
+
+    a.execute("account.remove", json!({"id": first})).unwrap();
+    assert!(store.get(&first_key).is_none() && !a.tokens.contains_key(&first));
+    assert_eq!(store.get(&second_key).as_deref(), Some("refresh-second-private"));
+    assert_eq!(a.tokens.get(&second).map(|t| t.email.as_str()), Some("two@example.org"));
+}
+
+#[test]
+fn google_sign_in_without_remembering_is_memory_only_and_switching_off_forgets_it() {
+    let (store, seen) = (Store::default(), Seen::default());
+    let mut a = app(&store, &seen);
+    let first = add_google_account(&mut a, "one@example.org");
+    let key = MailApp::secret_key("refresh", a.session.mailbox.account(first).unwrap());
+    a.execute("ui.rememberSignIn", json!({"value": false})).unwrap();
+    a.adopt_tokens(first, google_tokens("one@example.org", "access-in-memory", "refresh-in-memory"));
+    assert!(a.tokens.contains_key(&first) && store.get(&key).is_none());
+    assert!(a.remembered("refresh", a.account_at("one@example.org").map_or(0, |x| x.id)).is_none());
+
+    a.execute("ui.rememberSignIn", json!({"value": true})).unwrap();
+    a.adopt_tokens(first, google_tokens("one@example.org", "access-replaced", "refresh-remembered"));
+    assert_eq!(store.get(&key).as_deref(), Some("refresh-remembered"));
+    a.execute("ui.rememberSignIn", json!({"value": false})).unwrap();
+    assert!(store.get(&key).is_none());
+    assert_eq!(a.tokens.get(&first).map(|t| t.refresh.as_str()), Some("refresh-remembered"));
+}
+
+#[test]
+fn late_google_sign_in_cannot_restore_a_removed_account_or_its_credential() {
+    use std::sync::atomic::{AtomicBool, Ordering};
+
+    let (store, seen) = (Store::default(), Seen::default());
+    let mut a = app(&store, &seen);
+    let first = add_google_account(&mut a, "one@example.org");
+    let key = MailApp::secret_key("refresh", a.session.mailbox.account(first).unwrap());
+    let observed = Arc::new(Mutex::new(None::<Arc<AtomicBool>>));
+    let pending = Arc::new(Mutex::new(None::<mpsc::Sender<Result<courier_model::sync::Tokens, String>>>));
+    let (observed_flag, pending_sender) = (observed.clone(), pending.clone());
+    a.services.sign_in = Some(Box::new(move |req: crate::SignInRequest| {
+        *observed_flag.lock().unwrap() = Some(req.cancel.clone());
+        let (tx, rx) = mpsc::channel();
+        *pending_sender.lock().unwrap() = Some(tx);
+        rx
+    }));
+    let account = a.session.mailbox.account(first).unwrap().clone();
+    a.begin_sign_in(first, account.oauth.unwrap(), "one@example.org", String::new(), false, false).unwrap();
+    assert!(a.signing_in());
+    a.execute("account.remove", json!({"id": first})).unwrap();
+    assert!(!a.signing_in());
+    assert!(observed.lock().unwrap().as_ref().unwrap().load(Ordering::Relaxed));
+    assert!(pending.lock().unwrap().take().unwrap().send(Ok(google_tokens("one@example.org", "late-access", "late-refresh"))).is_err());
+    a.poll_sign_in();
+    assert!(!a.tokens.contains_key(&first) && store.get(&key).is_none());
+
+    // Defend even when some code path removed the account directly without cancelling the
+    // in-flight host receiver: accepting that answer must not resurrect an orphan token.
+    let second = add_google_account(&mut a, "two@example.org");
+    let owner = a.session.mailbox.account(second).unwrap().clone();
+    a.begin_sign_in(second, owner.oauth.unwrap(), "two@example.org", String::new(), false, false).unwrap();
+    a.session.run("account.remove", &json!({"id": second})).unwrap();
+    pending.lock().unwrap().take().unwrap().send(Ok(google_tokens("two@example.org", "late-second-access", "late-second-refresh"))).unwrap();
+    a.poll_sign_in();
+    assert!(!a.tokens.contains_key(&second));
+    assert!(!store.0.lock().unwrap().values().any(|secret| secret.contains("late-second")));
+}
+
+#[test]
+fn an_exchange_servers_password_is_for_that_address_and_that_user_name() {
+    let (store, seen) = (Store::default(), Seen::default());
+    let mut a = app(&store, &seen);
+    let url = "https://exchange.example.org/EWS/Exchange.asmx";
+    let added =
+        a.execute("account.add", json!({"email": "ada@example.org", "kind": "exchange", "ews": {"url": url, "username": "CORP\\ada"}})).unwrap();
+    let id = added["id"].as_u64().unwrap();
+    let key = |a: &MailApp| MailApp::secret_key("password", a.session.mailbox.account(id).unwrap());
+    let before = key(&a);
+    // The same server and name: kept.
+    a.passwords.insert(id, "pw".into());
+    a.execute("account.edit", json!({"id": id, "displayName": "Ada"})).unwrap();
+    assert!(a.passwords.contains_key(&id));
+    // Another user name on the same address: the password typed for the first is not sent as the second's.
+    a.execute("account.edit", json!({"id": id, "ews": {"url": url, "username": "CORP\\bob"}})).unwrap();
+    assert_ne!(key(&a), before);
+    assert!(!a.passwords.contains_key(&id));
+    // Another server with the same user name, likewise.
+    a.passwords.insert(id, "pw".into());
+    a.execute("account.edit", json!({"id": id, "ews": {"url": "https://other.example.org/EWS/Exchange.asmx", "username": "CORP\\bob"}})).unwrap();
+    assert!(!a.passwords.contains_key(&id));
+}

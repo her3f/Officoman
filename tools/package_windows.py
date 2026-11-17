@@ -23,7 +23,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent.parent
 DIST = ROOT / "dist"
 
-NAMES = {"nib": "Nib", "tally": "Tally", "podium": "Podium", "sheaf": "Sheaf"}
+NAMES = {"nib": "Nib", "tally": "Tally", "podium": "Podium", "sheaf": "Sheaf", "courier": "Courier"}
 
 
 def version_of(app_dir: Path) -> str:

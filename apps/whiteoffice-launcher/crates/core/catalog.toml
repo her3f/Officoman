@@ -64,3 +64,19 @@ publisher = "White Office"
 msi_publisher = "White Office"
 former_bundles = []
 site = "https://whiteoffice.whitebearom.com/apps/sheaf.html"
+
+[[apps]]
+id = "courier"
+name = "Courier"
+tagline = "Mail"
+color = [176, 62, 88]
+ink_light = [126, 44, 63]
+ink_dark = [226, 119, 142]
+repo = "her3f/officoman"
+former_ids = []
+former_names = []
+kind = "official"
+publisher = "White Office"
+msi_publisher = "White Office"
+former_bundles = []
+site = "https://whiteoffice.whitebearom.com/apps/courier.html"

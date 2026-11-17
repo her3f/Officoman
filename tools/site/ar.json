@@ -146,5 +146,18 @@
   "— universal (Apple silicon and Intel). Unpack and run. Unsigned, so Gatekeeper asks once: right-click → Open.": "— إصدار موحّد لأجهزة Apple silicon وIntel. فكّ الضغط وشغّل التطبيق. الإصدار غير موقّع، لذا قد يطلب Gatekeeper تأكيد الفتح: انقر بزر الفأرة الأيمن ثم اختر «فتح».",
   "— unpack and run. Needs the usual X11/Wayland, GL and ALSA libraries.": "— فكّ الضغط وشغّل التطبيق. يتطلّب مكتبات X11/Wayland وGL وALSA المعتادة.",
   "No builds yet.": "لا تتوفر إصدارات جاهزة بعد.",
-  "Run the packaging scripts and this page fills itself in.": "ستظهر التنزيلات هنا بعد تشغيل أدوات إنشاء الحزم."
+  "Run the packaging scripts and this page fills itself in.": "ستظهر التنزيلات هنا بعد تشغيل أدوات إنشاء الحزم.",
+  "Every message, where you expect it.": "كل رسالة في مكانها الذي تتوقعه.",
+  "Mail": "البريد",
+  "Mail, calendar, contacts and tasks in one native program: send and receive, keep folders in step, and read mail without handing it to a web page.": "البريد والتقويم وجهات الاتصال والمهام في برنامج واحد أصلي: أرسل واستقبل، وأبقِ المجلدات متزامنة، واقرأ بريدك دون تسليمه لصفحة ويب.",
+  "IMAP, SMTP, JMAP and Microsoft Graph; threads, search, rules and signatures.": "IMAP وSMTP وJMAP وMicrosoft Graph؛ محادثات وبحث وقواعد وتوقيعات.",
+  "Day, week and month views with shared calendars and meeting replies.": "عرض يومي وأسبوعي وشهري مع تقويمات مشتركة والرد على الدعوات.",
+  "Address books with vCard import and export.": "دفاتر عناوين مع استيراد وتصدير vCard.",
+  "To-do lists that stay in step with the account.": "قوائم مهام تبقى متزامنة مع الحساب.",
+  "Message HTML is read by our own capped engine: no script, no tracking pixel.": "يُقرأ HTML الرسائل بمحركنا المحدود: دون سكربتات ودون بكسل تتبع.",
+  ".eml and .mbox read and write · .pst import · .ics and .vcf": "قراءة وكتابة .eml و.mbox · استيراد .pst · .ics و.vcf",
+  "Calendar": "التقويم",
+  "Contacts": "جهات الاتصال",
+  "Tasks": "المهام",
+  "Privacy": "الخصوصية"
 }

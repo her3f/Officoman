@@ -41,7 +41,7 @@ def validate(site: Path) -> list[str]:
     pages = {p.resolve(): Page(p.read_text(encoding='utf-8')) for p in site.rglob('*.html')}
     errors = []
     routes = {'index.html', 'download.html', 'apps/index.html',
-              'apps/nib.html', 'apps/tally.html', 'apps/podium.html', 'apps/sheaf.html'}
+              'apps/nib.html', 'apps/tally.html', 'apps/podium.html', 'apps/sheaf.html', 'apps/courier.html'}
     expected = routes | {'ar/' + route for route in routes}
     actual = {p.relative_to(site).as_posix() for p in pages}
     for path in sorted(expected - actual):

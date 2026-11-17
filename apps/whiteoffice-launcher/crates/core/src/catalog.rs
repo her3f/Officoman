@@ -193,6 +193,7 @@ pub fn app_icon_png(id: &str) -> Option<&'static [u8]> {
         "tally" => include_bytes!("../../../assets/app-icons/tally.png"),
         "podium" => include_bytes!("../../../assets/app-icons/podium.png"),
         "sheaf" => include_bytes!("../../../assets/app-icons/sheaf.png"),
+        "courier" => include_bytes!("../../../assets/app-icons/courier.png"),
         _ => return None,
     })
 }

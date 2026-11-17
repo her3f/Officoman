@@ -1,0 +1,527 @@
+// SPDX-FileCopyrightText: Courier contributors
+// SPDX-License-Identifier: MIT OR Apache-2.0
+//! Where well-known mail providers keep their servers and how their owners sign in, worked out
+//! from an address's domain or from the domain's mail exchangers.
+//!
+//! Plain data: nothing is looked up here. A host with sockets asks the DNS for the exchangers and
+//! passes the answer in, which is how an address at a company's own domain is recognised as
+//! (say) Microsoft 365. The server names are the ones each provider publishes. The hosts the
+//! domain names for Autodiscover tell an Exchange server from an IMAP one the same way
+//! ([`by_autodiscover`]).
+
+use crate::{OAuthProvider, Security, Server};
+
+/// What an account at a provider usually takes.
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub struct Preset {
+    /// The provider's name (`Microsoft 365`); empty for a guess.
+    pub service: &'static str,
+    /// Set when the owner signs in on the provider's own page instead of with a password.
+    pub oauth: Option<OAuthProvider>,
+    pub incoming: Server,
+    pub outgoing: Server,
+    /// Something the owner should know before connecting; may be empty.
+    pub note: &'static str,
+}
+
+const APP_PASSWORD: &str = "This provider wants an app password (made in the account's security settings), not the everyday one.";
+const MICROSOFT: &str = "Microsoft accounts sign in on Microsoft's own page; no password is typed here.";
+
+fn server(host: &str, port: u16, security: Security) -> Server {
+    Server { host: host.to_string(), port, security }
+}
+
+fn with_password(service: &'static str, imap: &str, smtp: (&str, u16, Security), note: &'static str) -> Preset {
+    Preset { service, oauth: None, incoming: server(imap, 993, Security::Tls), outgoing: server(smtp.0, smtp.1, smtp.2), note }
+}
+
+/// Outlook.com (`consumer`) or Microsoft 365 work and school mail.
+pub fn microsoft(consumer: bool) -> Preset {
+    // Outlook.com sends through its own host; work and school mail through Office 365's.
+    let (service, smtp) = if consumer { ("Outlook.com", "smtp-mail.outlook.com") } else { ("Microsoft 365", "smtp.office365.com") };
+    Preset {
+        service,
+        oauth: Some(OAuthProvider::Microsoft),
+        incoming: server("outlook.office365.com", 993, Security::Tls),
+        outgoing: server(smtp, 587, Security::StartTls),
+        note: MICROSOFT,
+    }
+}
+
+/// Gmail or Google Workspace, when the owner explicitly chooses Google OAuth (#232).
+/// Discovery still supplies compatible IMAP/SMTP settings; account setup recommends
+/// Google sign-in first when a desktop OAuth registration is available.
+pub fn google(consumer: bool) -> Preset {
+    let name = if consumer { "Gmail" } else { "Google Workspace" };
+    Preset {
+        service: name,
+        oauth: Some(OAuthProvider::Google),
+        incoming: server("imap.gmail.com", 993, Security::Tls),
+        outgoing: server("smtp.gmail.com", 465, Security::Tls),
+        note: "Google sign-in opens the provider's page; Courier does not ask for your Google password.",
+    }
+}
+
+/// Whether `host` is the IMAP server of Microsoft's own mail (Exchange Online, Outlook.com).
+pub fn is_microsoft_imap_host(host: &str) -> bool {
+    let host = host.trim().trim_end_matches('.').to_ascii_lowercase();
+    matches!(host.as_str(), "outlook.office365.com" | "outlook.office.com" | "imap-mail.outlook.com")
+}
+
+/// The `Authentication-Results` authserv-ids (RFC 8601) that a provider's own servers write,
+/// by the IMAP host of an account there; empty where none is known for certain.
+///
+/// Only what the provider publishes: Google documents `mx.google.com` as the authserv-id of the
+/// header Gmail adds (Gmail help, "Trace an email with its full headers"), and Gmail and Google
+/// Workspace share `imap.gmail.com`. IONOS's servers write `kundenserver.de`, the domain of its
+/// own mail servers (IONOS help, "IP addresses of the IONOS mail servers": `mout.kundenserver.de`
+/// and the rest; seen as the id on a tester's mail, #1311), for every country's IMAP host. Other
+/// providers are left out until their ids are known: for them (and for an unknown host) the
+/// caller falls back to the IMAP host's own domain, or asks the owner.
+pub fn authserv_ids(imap_host: &str) -> &'static [&'static str] {
+    match imap_host.trim().trim_end_matches('.').to_ascii_lowercase().as_str() {
+        "imap.gmail.com" => &["mx.google.com"],
+        "imap.ionos.co.uk" | "imap.ionos.de" | "imap.ionos.com" | "imap.ionos.es" | "imap.ionos.fr" | "imap.ionos.it" => &["kundenserver.de"],
+        _ => &[],
+    }
+}
+
+/// A host name fit to look up or connect to: letters, digits, dots and dashes, with a dot in it.
+pub fn is_domain(domain: &str) -> bool {
+    !domain.is_empty()
+        && domain.len() <= 253
+        && domain.contains('.')
+        && domain.split('.').all(|label| !label.is_empty() && label.len() <= 63 && label.chars().all(|c| c.is_ascii_alphanumeric() || c == '-'))
+}
+
+/// The second level under a country's domain that is a suffix of its own (`co.uk`, `com.au`).
+const COUNTRY_SECOND_LEVELS: &[&str] = &["co", "com", "net", "org", "gov", "edu", "ac", "or", "ne", "go", "me"];
+
+/// Hosting platforms that give each customer a name under their own (`contoso.sharepoint.com`).
+const HOSTING_PLATFORMS: &[&str] = &[
+    "onmicrosoft.com",
+    "sharepoint.com",
+    "azurewebsites.net",
+    "cloudapp.net",
+    "github.io",
+    "gitlab.io",
+    "blogspot.com",
+    "wordpress.com",
+    "herokuapp.com",
+    "netlify.app",
+    "vercel.app",
+    "pages.dev",
+    "web.app",
+    "firebaseapp.com",
+    "appspot.com",
+    // Help desks and shops that send their customers' mail from a name of their own.
+    "zendesk.com",
+    "freshdesk.com",
+    "atlassian.net",
+    "service-now.com",
+    "myshopify.com",
+];
+
+/// Whether `domain` (in lower case) is a suffix anybody may have a name of their own under: a
+/// country's second level (`co.uk`) or a hosting platform (`github.io`). A name under it is
+/// somebody's; the suffix is nobody's.
+// shortcut: the common ones, not the Public Suffix List; take that list if sites or servers come out wrong.
+pub fn is_public_suffix(domain: &str) -> bool {
+    HOSTING_PLATFORMS.contains(&domain)
+        || domain
+            .split_once('.')
+            .is_some_and(|(second, top)| top.len() == 2 && top.bytes().all(|b| b.is_ascii_lowercase()) && COUNTRY_SECOND_LEVELS.contains(&second))
+}
+
+/// Whether `domain` (in lower case) is a hosting platform's or a name its customers have under
+/// it: what it serves there, its icon among the rest, is the platform's as much as theirs.
+pub fn on_hosting_platform(domain: &str) -> bool {
+    HOSTING_PLATFORMS.iter().any(|platform| domain.strip_suffix(platform).is_some_and(|head| head.is_empty() || head.ends_with('.')))
+}
+
+/// Mail anybody can have an address at, besides the providers [`by_domain`] knows; and Apple's
+/// relay for hidden addresses (`privaterelay.appleid.com`).
+const MAIL_PROVIDERS: &[&str] = &[
+    "proton.me",
+    "protonmail.com",
+    "pm.me",
+    "tutanota.com",
+    "tuta.io",
+    "posteo.de",
+    "mailbox.org",
+    "hey.com",
+    "duck.com",
+    "appleid.com",
+    "web.de",
+    "t-online.de",
+    "freenet.de",
+    "orange.fr",
+    "free.fr",
+    "laposte.net",
+    "libero.it",
+    "seznam.cz",
+    "wp.pl",
+    "mail.ru",
+    "yandex.ru",
+    "yandex.com",
+    "qq.com",
+    "163.com",
+    "126.com",
+    "naver.com",
+    "comcast.net",
+    "att.net",
+    "verizon.net",
+    "btinternet.com",
+    "email.com",
+];
+
+/// Whether `domain` (in lower case) is a mail provider's, where anybody can have an address:
+/// its icon says nothing of the sender.
+// shortcut: the providers of most addresses, not every one; add one when its logo turns up as a sender's picture.
+pub fn is_mail_provider(domain: &str) -> bool {
+    MAIL_PROVIDERS.contains(&domain) || by_domain(domain).is_some()
+}
+
+/// Mail Microsoft hosts for anyone: Outlook.com and its older names, in every country
+/// (`outlook.com`, `hotmail.co.uk`, `live.com.au`; not `live.somecompany.example`).
+fn is_microsoft_consumer(domain: &str) -> bool {
+    let mut labels = domain.split('.');
+    let first = labels.next().unwrap_or_default();
+    let rest: Vec<&str> = labels.collect();
+    matches!(first, "outlook" | "hotmail" | "live" | "msn") && (1..=2).contains(&rest.len()) && rest.iter().all(|l| (2..=3).contains(&l.len()))
+}
+
+/// From the address's domain alone (`gmail.com`). `None` for a domain that isn't a provider's own.
+pub fn by_domain(domain: &str) -> Option<Preset> {
+    let domain = domain.trim().to_ascii_lowercase();
+    if !is_domain(&domain) {
+        return None;
+    }
+    if is_microsoft_consumer(&domain) {
+        return Some(microsoft(true));
+    }
+    let (tls, starttls) = (Security::Tls, Security::StartTls);
+    Some(match domain.as_str() {
+        "gmail.com" | "googlemail.com" => with_password("Gmail", "imap.gmail.com", ("smtp.gmail.com", 465, tls), APP_PASSWORD),
+        "icloud.com" | "me.com" | "mac.com" => with_password("iCloud", "imap.mail.me.com", ("smtp.mail.me.com", 587, starttls), APP_PASSWORD),
+        "fastmail.com" | "fastmail.fm" => with_password("Fastmail", "imap.fastmail.com", ("smtp.fastmail.com", 465, tls), APP_PASSWORD),
+        "aol.com" => with_password("AOL", "imap.aol.com", ("smtp.aol.com", 465, tls), APP_PASSWORD),
+        "zoho.com" | "zohomail.com" => with_password("Zoho", "imap.zoho.com", ("smtp.zoho.com", 465, tls), ""),
+        "gmx.com" | "gmx.us" => with_password("GMX", "imap.gmx.com", ("mail.gmx.com", 587, starttls), ""),
+        "gmx.net" | "gmx.de" | "gmx.at" | "gmx.ch" => with_password("GMX", "imap.gmx.net", ("mail.gmx.net", 587, starttls), ""),
+        "mail.com" => with_password("mail.com", "imap.mail.com", ("smtp.mail.com", 587, starttls), ""),
+        d if d == "ymail.com" || d == "rocketmail.com" || d.starts_with("yahoo.") => {
+            with_password("Yahoo", "imap.mail.yahoo.com", ("smtp.mail.yahoo.com", 465, tls), APP_PASSWORD)
+        }
+        _ => return None,
+    })
+}
+
+/// From one of the domain's mail exchangers (`example-org.mail.protection.outlook.com`): who
+/// hosts the mail of a domain that isn't the provider's own.
+pub fn by_mx(host: &str) -> Option<Preset> {
+    let host = host.trim().trim_end_matches('.').to_ascii_lowercase();
+    if !is_domain(&host) {
+        return None;
+    }
+    // The host itself or anything under it, never a look-alike (`evilgoogle.com`).
+    let under = |parent: &str| host == parent || host.ends_with(&format!(".{parent}"));
+    let (tls, starttls) = (Security::Tls, Security::StartTls);
+    // Outlook.com's legacy custom domains keep their personalized Hotmail MX record:
+    // https://support.microsoft.com/en-us/outlook/configure-a-custom-email-domain-account-as-an-exchange-account-in-outlook
+    if under("olc.protection.outlook.com") || under("pamx1.hotmail.com") {
+        return Some(microsoft(true));
+    }
+    if under("mail.protection.outlook.com") || under("mx.microsoft") {
+        return Some(microsoft(false));
+    }
+    if under("google.com") || under("googlemail.com") {
+        return Some(with_password("Google Workspace", "imap.gmail.com", ("smtp.gmail.com", 465, tls), APP_PASSWORD));
+    }
+    if under("yahoodns.net") {
+        return Some(with_password("Yahoo", "imap.mail.yahoo.com", ("smtp.mail.yahoo.com", 465, tls), APP_PASSWORD));
+    }
+    if under("mail.icloud.com") {
+        return Some(with_password("iCloud", "imap.mail.me.com", ("smtp.mail.me.com", 587, starttls), APP_PASSWORD));
+    }
+    if under("messagingengine.com") {
+        return Some(with_password("Fastmail", "imap.fastmail.com", ("smtp.fastmail.com", 465, tls), APP_PASSWORD));
+    }
+    if under("zoho.com") {
+        return Some(with_password("Zoho", "imap.zoho.com", ("smtp.zoho.com", 465, tls), ""));
+    }
+    None
+}
+
+/// What a domain's DNS says about its Autodiscover, from the hosts it names for it (the targets
+/// of its `_autodiscover._tcp` SRV record and the alias of `autodiscover.<domain>`), before any
+/// of them is asked anything.
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum Autodiscover {
+    /// No host, or only hosts that answer Autodiscover for mail on IMAP servers.
+    Nothing,
+    /// Microsoft 365: the mailbox is a Microsoft account, signed in on Microsoft's page.
+    Microsoft,
+    /// An Exchange server somebody runs for the domain (the organisation itself, or a hoster).
+    Exchange,
+}
+
+/// Hosts (and everything under them) whose Autodiscover hands out the settings of IMAP servers
+/// for Outlook, not an Exchange server's: cPanel names its own in the SRV record of every domain
+/// it hosts.
+const IMAP_AUTODISCOVER: &[&str] = &["cpanel.net"];
+
+/// Whose the Autodiscover the hosts in `hosts` serve is. Microsoft's anywhere in the list wins:
+/// the mail is in Microsoft 365, and nothing is sent to the others either.
+pub fn by_autodiscover(hosts: &[String]) -> Autodiscover {
+    let hosts: Vec<String> =
+        hosts.iter().take(16).map(|host| host.trim().trim_end_matches('.').to_ascii_lowercase()).filter(|host| is_domain(host)).collect();
+    if hosts.iter().any(|host| crate::is_exchange_online(host)) {
+        return Autodiscover::Microsoft;
+    }
+    let exchange = |host: &String| !IMAP_AUTODISCOVER.iter().any(|imap| crate::is_within(host, imap));
+    if hosts.iter().any(exchange) { Autodiscover::Exchange } else { Autodiscover::Nothing }
+}
+
+/// Where a known provider keeps an account's calendars and contacts (CalDAV and CardDAV, Q6 of
+/// the server-calendars spec): addresses a host uses without looking anything up, and the hosts
+/// the password may go to for that provider's accounts (and no other account's).
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub struct DavPreset {
+    /// The provider's name.
+    pub service: &'static str,
+    /// The CalDAV server's address.
+    pub caldav: &'static str,
+    /// The CardDAV server's address.
+    pub carddav: &'static str,
+    /// Host names that a numbered host of the provider ends in: `p<digits>-` and one of these
+    /// (iCloud puts each account on a numbered host of its own, which the server's answer names).
+    shards: &'static [&'static str],
+}
+
+impl DavPreset {
+    /// Whether `host` (lower case, no port) is one of the provider's own DAV hosts: the two
+    /// addresses' hosts, or a numbered one (`p07-caldav.icloud.com`).
+    pub fn trusts(&self, host: &str) -> bool {
+        let host = host.trim_end_matches('.').to_ascii_lowercase();
+        let named = |address: &str| address.strip_prefix("https://").and_then(|rest| rest.split('/').next()).is_some_and(|own| own == host);
+        named(self.caldav)
+            || named(self.carddav)
+            || self.shards.iter().any(|tail| {
+                host.strip_suffix(tail)
+                    .and_then(|front| front.strip_prefix('p'))
+                    .and_then(|front| front.strip_suffix('-'))
+                    .is_some_and(|digits| !digits.is_empty() && digits.len() <= 4 && digits.bytes().all(|b| b.is_ascii_digit()))
+            })
+    }
+}
+
+const ICLOUD_DAV: DavPreset = DavPreset {
+    service: "iCloud",
+    caldav: "https://caldav.icloud.com/",
+    carddav: "https://contacts.icloud.com/",
+    shards: &["caldav.icloud.com", "contacts.icloud.com"],
+};
+const FASTMAIL_DAV: DavPreset =
+    DavPreset { service: "Fastmail", caldav: "https://caldav.fastmail.com/", carddav: "https://carddav.fastmail.com/", shards: &[] };
+
+/// The calendar and contacts servers of the provider whose address's domain this is (`icloud.com`,
+/// `fastmail.com`), or whose IMAP server (`imap.fastmail.com`) holds the account; `None` for any
+/// other domain. Only iCloud and Fastmail: the others wait until their public documents are checked.
+pub fn dav_by_domain(domain: &str) -> Option<DavPreset> {
+    match domain.trim().trim_end_matches('.').to_ascii_lowercase().as_str() {
+        "icloud.com" | "me.com" | "mac.com" => Some(ICLOUD_DAV),
+        "fastmail.com" | "fastmail.fm" => Some(FASTMAIL_DAV),
+        _ => None,
+    }
+}
+
+/// [`dav_by_domain`] for an account whose mail is on `imap_host` (a custom domain at a provider).
+pub fn dav_by_imap_host(imap_host: &str) -> Option<DavPreset> {
+    match imap_host.trim().trim_end_matches('.').to_ascii_lowercase().as_str() {
+        "imap.mail.me.com" => Some(ICLOUD_DAV),
+        "imap.fastmail.com" => Some(FASTMAIL_DAV),
+        _ => None,
+    }
+}
+
+/// From the provider's name, for an owner who says whose the account is (`microsoft365`,
+/// `outlook.com`, `google`, `yahoo`, `icloud`, `fastmail`).
+pub fn by_name(name: &str) -> Option<Preset> {
+    let name: String = name.trim().to_ascii_lowercase().chars().filter(|c| c.is_ascii_alphanumeric()).collect();
+    match name.as_str() {
+        "microsoft" | "microsoft365" | "office365" | "m365" | "exchange" => Some(microsoft(false)),
+        "outlook" | "outlookcom" | "hotmail" | "live" => Some(microsoft(true)),
+        "google" | "gmail" | "googleworkspace" => by_domain("gmail.com"),
+        "yahoo" => by_domain("yahoo.com"),
+        "icloud" | "apple" => by_domain("icloud.com"),
+        "fastmail" => by_domain("fastmail.com"),
+        "aol" => by_domain("aol.com"),
+        "zoho" => by_domain("zoho.com"),
+        _ => None,
+    }
+}
+
+/// Where a host with sockets found a server for a domain nobody here knows (#1063): what the
+/// owner is told it came from, and what `account.preset` answers as `via`.
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum Via {
+    /// The domain's own DNS: an `_imaps._tcp`, `_imap._tcp`, `_submissions._tcp` or
+    /// `_submission._tcp` SRV record (RFC 6186).
+    Srv,
+    /// What the domain publishes for mail programs: `https://autoconfig.<domain>/…` or
+    /// `https://<domain>/.well-known/autoconfig/…` (Thunderbird's autoconfig document, #1112).
+    Autoconfig,
+    /// Mozilla's ISP database (`autoconfig.thunderbird.net`), asked about the domain, or about
+    /// the domain of its mail exchanger (#1112).
+    Ispdb,
+}
+
+impl Via {
+    pub fn code(self) -> &'static str {
+        match self {
+            Via::Srv => "srv",
+            Via::Autoconfig => "autoconfig",
+            Via::Ispdb => "ispdb",
+        }
+    }
+
+    pub fn parse(code: &str) -> Option<Via> {
+        match code.trim() {
+            "srv" => Some(Via::Srv),
+            "autoconfig" => Some(Via::Autoconfig),
+            "ispdb" => Some(Via::Ispdb),
+            _ => None,
+        }
+    }
+}
+
+/// A server a host found, and where.
+#[derive(Clone, PartialEq, Eq)]
+pub struct FoundServer {
+    pub server: Server,
+    pub via: Via,
+}
+
+/// The host is the organisation's own: not for a log.
+impl std::fmt::Debug for FoundServer {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("FoundServer")
+            .field("port", &self.server.port)
+            .field("security", &self.server.security)
+            .field("via", &self.via)
+            .finish_non_exhaustive()
+    }
+}
+
+/// What a host with sockets found out about a domain nobody here knows, once the owner pressed
+/// Connect: its mail exchangers (by which [`by_mx`] may know whose it is), and, when they say
+/// nothing, the servers the domain's own records or a database name, for the owner to confirm.
+/// Nothing here was looked up by the model: `courier_net::discover` fills it in.
+#[derive(Clone, Default, PartialEq, Eq)]
+pub struct Discovered {
+    /// The domain's mail exchangers, best first; empty when it has none or they couldn't be had.
+    pub exchangers: Vec<String>,
+    pub incoming: Option<FoundServer>,
+    pub outgoing: Option<FoundServer>,
+    /// How the owner signs in, as the servers' source wrote it: the address or one of its
+    /// parts, `%EMAILADDRESS%`, `%EMAILLOCALPART%` or `%EMAILDOMAIN%`; empty for the address.
+    pub username: String,
+}
+
+/// The hosts are the organisation's own: not for a log.
+impl std::fmt::Debug for Discovered {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("Discovered")
+            .field("exchangers", &self.exchangers.len())
+            .field("incoming", &self.incoming)
+            .field("outgoing", &self.outgoing)
+            .finish_non_exhaustive()
+    }
+}
+
+impl Discovered {
+    /// The mail exchangers alone: nothing else was found, or asked.
+    pub fn from_exchangers(exchangers: Vec<String>) -> Discovered {
+        Discovered { exchangers, ..Default::default() }
+    }
+}
+
+/// The usual names at a domain nobody here has heard of, for the owner to correct.
+pub fn guess(domain: &str) -> Preset {
+    let domain = domain.trim().to_ascii_lowercase();
+    Preset {
+        service: "",
+        oauth: None,
+        incoming: server(&format!("imap.{domain}"), 993, Security::Tls),
+        outgoing: server(&format!("smtp.{domain}"), 587, Security::StartTls),
+        note: "",
+    }
+}
+
+#[cfg(test)]
+mod custom_domain_tests;
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn a_providers_own_domains() {
+        for domain in ["outlook.com", "Hotmail.co.uk", "live.com.au", "msn.com", " outlook.de "] {
+            let p = by_domain(domain).unwrap();
+            assert_eq!(
+                (p.service, p.oauth, p.outgoing.host.as_str()),
+                ("Outlook.com", Some(OAuthProvider::Microsoft), "smtp-mail.outlook.com"),
+                "{domain}"
+            );
+        }
+        assert_eq!(by_domain("gmail.com").unwrap().incoming, server("imap.gmail.com", 993, Security::Tls));
+        assert_eq!(by_domain("yahoo.co.uk").unwrap().service, "Yahoo");
+        assert_eq!(by_domain("gmx.net").unwrap().outgoing, server("mail.gmx.net", 587, Security::StartTls));
+        // Someone else's domain that merely starts like one of them, and things that aren't domains.
+        for domain in ["live.somecompany.example", "outlook.example.org", "hotmail", "lumen.example", "", "a b.com", "evil/../x.com"] {
+            assert_eq!(by_domain(domain), None, "{domain}");
+        }
+    }
+
+    #[test]
+    fn a_companys_domain_is_known_by_who_takes_its_mail() {
+        let work = by_mx("example-org.mail.protection.outlook.com.").unwrap();
+        assert_eq!((work.service, work.oauth), ("Microsoft 365", Some(OAuthProvider::Microsoft)));
+        assert_eq!(
+            (work.incoming.host.as_str(), work.outgoing.host.as_str(), work.outgoing.port),
+            ("outlook.office365.com", "smtp.office365.com", 587)
+        );
+        assert_eq!(by_mx("example-org.h-v1.mx.microsoft").unwrap().service, "Microsoft 365");
+        assert_eq!(by_mx("OUTLOOK-COM.olc.protection.outlook.com").unwrap().service, "Outlook.com");
+        assert_eq!(by_mx("aspmx.l.google.com").unwrap().service, "Google Workspace");
+        assert_eq!(by_mx("in1-smtp.messagingengine.com").unwrap().service, "Fastmail");
+        assert_eq!(by_mx("mx01.mail.icloud.com").unwrap().service, "iCloud");
+        // A look-alike is not the provider, nor is a host that isn't one.
+        for host in ["evilgoogle.com", "mail.protection.outlook.com.evil.example", "mx.lumen.example", "", "a b", "x/../mx.microsoft"] {
+            assert_eq!(by_mx(host), None, "{host}");
+        }
+    }
+
+    #[test]
+    fn a_provider_by_name() {
+        assert_eq!(by_name(" Microsoft 365 ").unwrap().service, "Microsoft 365");
+        assert_eq!(by_name("Outlook.com").unwrap().service, "Outlook.com");
+        assert_eq!(by_name("google").unwrap().incoming.host, "imap.gmail.com");
+        assert_eq!(by_name("iCloud").unwrap().service, "iCloud");
+        assert_eq!(by_name("nobody"), None);
+        assert_eq!(by_name(""), None);
+    }
+
+    #[test]
+    fn a_guess_uses_the_usual_names() {
+        let p = guess("Lumen.Example");
+        assert_eq!((p.service, p.incoming.host.as_str(), p.outgoing.host.as_str()), ("", "imap.lumen.example", "smtp.lumen.example"));
+        assert!(is_domain("mail.lumen.example") && !is_domain("localhost") && !is_domain(&format!("{}.example", "a".repeat(64))));
+    }
+}
+
+#[cfg(test)]
+#[path = "provider_tests.rs"]
+mod provider_tests;

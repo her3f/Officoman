@@ -1,0 +1,20 @@
+[package]
+name = "courier-mime"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+description = "Courier Internet messages: RFC 5322 / MIME reader and writer (.eml), mbox"
+
+[lints]
+workspace = true
+
+[dependencies]
+courier-time = { workspace = true }
+courier-ber = { workspace = true }
+courier-html = { workspace = true }
+courier-charset = { workspace = true }
+thiserror = { workspace = true }
+
+[dev-dependencies]
+proptest = { workspace = true }
+serde_json = { workspace = true }

@@ -1,0 +1,190 @@
+// SPDX-FileCopyrightText: Courier contributors
+// SPDX-License-Identifier: MIT OR Apache-2.0
+//! Interface text. Every string the window shows goes through [`t`] (the `tl!` macro) or, for a
+//! count, [`tn`] (`tln!`), keyed by its English text and looked up in the catalogue of the
+//! window's language (`courier-i18n`). The window's language is set once a frame from the
+//! owner's choice ([`set_current`]); the engine is told it through `Session::interface_language`.
+
+use std::sync::atomic::{AtomicU8, Ordering};
+
+pub use courier_i18n::{AUTO, Lang, fmt};
+
+static CURRENT: AtomicU8 = AtomicU8::new(0);
+
+/// The region the window's dates are written for (`GB`), with the language ([`dated`], #978).
+static REGION: std::sync::Mutex<Option<String>> = std::sync::Mutex::new(None);
+
+/// The region the window's dates are written for from now on (`courier_i18n::date::region_of`
+/// the system's regional format).
+pub fn set_region(region: Option<&str>) {
+    let _held = hold_language();
+    store_region(region);
+}
+
+/// What the window says dates in: its language, the way of its region.
+pub fn dated() -> courier_i18n::date::Dated {
+    let _held = hold_language();
+    let region = REGION.lock().unwrap_or_else(std::sync::PoisonError::into_inner);
+    courier_i18n::date::Dated::new(load_current(), region.as_deref())
+}
+
+fn store_region(region: Option<&str>) {
+    let mut held = REGION.lock().unwrap_or_else(std::sync::PoisonError::into_inner);
+    if held.as_deref() != region {
+        *held = region.map(str::to_string);
+    }
+}
+
+#[cfg(test)]
+fn load_region() -> Option<String> {
+    REGION.lock().unwrap_or_else(std::sync::PoisonError::into_inner).clone()
+}
+
+/// The window's language from now on.
+pub fn set_current(lang: Lang) {
+    let _held = hold_language();
+    store_current(lang);
+}
+
+/// The window's language.
+pub fn current() -> Lang {
+    let _held = hold_language();
+    load_current()
+}
+
+fn store_current(lang: Lang) {
+    let i = Lang::ALL.iter().position(|l| *l == lang).unwrap_or(0);
+    CURRENT.store(u8::try_from(i).unwrap_or(0), Ordering::Relaxed);
+}
+
+fn load_current() -> Lang {
+    Lang::ALL.get(usize::from(CURRENT.load(Ordering::Relaxed))).copied().unwrap_or_default()
+}
+
+/// In tests the language is one value for the whole process. A test that changes it holds this
+/// lock for the whole change, so a test running alongside waits instead of reading the other
+/// language, and the previous language is put back when the guard goes, including when an
+/// assertion fails.
+#[cfg(test)]
+pub(crate) struct RestoreLanguage {
+    previous: Lang,
+    region: Option<String>,
+    _hold: LanguageHold,
+}
+
+#[cfg(test)]
+impl RestoreLanguage {
+    pub(crate) fn hold() -> Self {
+        let hold = LanguageHold::acquire();
+        Self { previous: load_current(), region: load_region(), _hold: hold }
+    }
+}
+
+#[cfg(test)]
+impl Drop for RestoreLanguage {
+    fn drop(&mut self) {
+        store_current(self.previous);
+        store_region(self.region.as_deref());
+    }
+}
+
+#[cfg(test)]
+std::thread_local! {
+    static LANGUAGE_HELD: std::cell::Cell<bool> = const { std::cell::Cell::new(false) };
+}
+
+#[cfg(test)]
+struct LanguageHold {
+    /// Held for the whole change. Read nowhere: the lock is the point.
+    _guard: std::sync::MutexGuard<'static, ()>,
+}
+
+#[cfg(test)]
+impl LanguageHold {
+    fn acquire() -> Self {
+        static LOCK: std::sync::Mutex<()> = std::sync::Mutex::new(());
+        let guard = LOCK.lock().unwrap_or_else(std::sync::PoisonError::into_inner);
+        LANGUAGE_HELD.with(|held| held.set(true));
+        Self { _guard: guard }
+    }
+}
+
+#[cfg(test)]
+impl Drop for LanguageHold {
+    fn drop(&mut self) {
+        LANGUAGE_HELD.with(|held| held.set(false));
+    }
+}
+
+#[cfg(test)]
+fn hold_language() -> Option<LanguageHold> {
+    if LANGUAGE_HELD.with(|held| held.get()) { None } else { Some(LanguageHold::acquire()) }
+}
+
+#[cfg(not(test))]
+struct LanguageHold;
+
+#[cfg(not(test))]
+fn hold_language() -> LanguageHold {
+    LanguageHold
+}
+
+/// `s` in the interface language.
+pub fn t(s: &str) -> &str {
+    current().t(s)
+}
+
+/// `s` in `context` (`msgctxt`), in the interface language.
+pub fn tc<'a>(context: &str, s: &'a str) -> &'a str {
+    current().tc(context, s)
+}
+
+/// The form for a count of `n` of `one` / `other` (English singular and plural), in the interface
+/// language, with `{n}` filled in (other placeholders are left to [`fmt`]).
+pub fn tn(n: u64, one: &str, other: &str) -> String {
+    fmt(current().tn(n, one, other), &[("n", &n.to_string())])
+}
+
+/// A number of things, for [`tn`]: any integer (a negative one counts as none).
+pub trait Count {
+    fn count(self) -> u64;
+}
+
+macro_rules! count {
+    ($($t:ty),*) => {$(
+        impl Count for $t {
+            fn count(self) -> u64 {
+                u64::try_from(self).unwrap_or(0)
+            }
+        }
+    )*};
+}
+count!(u8, u16, u32, u64, usize, i32, i64, isize);
+
+/// What didn't happen and then why, as one sentence: `heading` ("Your automatic replies weren't
+/// changed") and `reason` ("you are working offline.") are each translated by themselves, so a
+/// heading is written once for all its reasons (#912), and the pattern that joins them is
+/// translated too, so a language puts its own spacing and punctuation between them (French
+/// `{heading} : {reason}`). Its context is what a translator sees beside it.
+pub fn with_reason(heading: &str, reason: &str) -> String {
+    fmt(crate::tlc!("what didn't happen, then why", "{heading}: {reason}"), &[("heading", heading), ("reason", reason)])
+}
+
+/// A command's location (`Home › Respond`) in the interface language, part by part.
+pub fn location(loc: &str) -> String {
+    courier_i18n::location(current(), loc)
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn english_by_default() {
+        // (The window's language is shared by the tests running alongside: only English here.)
+        assert_eq!(t("Reply"), "Reply");
+        assert_eq!(tn(1, "{n} message", "{n} messages"), "1 message");
+        assert_eq!(tn(3, "{n} message", "{n} messages"), "3 messages");
+        assert_eq!(location("Home › Respond"), "Home › Respond");
+    }
+}

@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+  <title>Courier</title>
+  <link data-trunk rel="icon" href="../../assets/app-icon/hicolor/64x64/apps/io.github.her3f.courier.png" />
+  <!-- Fetched by the page only when the interface language is Georgian (src/web.rs `load_face`). -->
+  <link data-trunk rel="copy-file" href="../../assets/fonts/NotoSansGeorgian-Regular.ttf" />
+  <link data-trunk rel="copy-file" href="../../assets/fonts/OFL-NotoSansGeorgian.txt" />
+  <link data-trunk rel="rust" data-bin="courier-web" data-wasm-opt="z" data-weak-refs />
+  <style>
+    :root { color-scheme: light dark; }
+    html, body { margin: 0; padding: 0; width: 100%; height: 100%; overflow: hidden; background: #e6e6e6; }
+    #courier_canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+    #courier_loading { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center;
+      color: #555; font: 14px system-ui, sans-serif; pointer-events: none; }
+    /* Before the app paints: the page already follows the system's light or dark appearance. */
+    @media (prefers-color-scheme: dark) {
+      html, body { background: #1f1f1f; }
+      #courier_loading { color: #aaa; }
+    }
+  </style>
+</head>
+<body>
+  <canvas id="courier_canvas"></canvas>
+  <div id="courier_loading">Loading Courier&hellip;</div>
+</body>
+</html>

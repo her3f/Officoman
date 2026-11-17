@@ -1,0 +1,19 @@
+[package]
+name = "courier-mime-model"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+description = "Courier's messages as Internet messages: courier-mime's reader and writer for the mailbox model, and rich text to HTML and back"
+
+[lints]
+workspace = true
+
+[dependencies]
+courier-mime = { workspace = true }
+courier-model = { workspace = true }
+courier-html = { workspace = true }
+courier-time = { workspace = true }
+
+[dev-dependencies]
+proptest = { workspace = true }
+serde_json = { workspace = true }

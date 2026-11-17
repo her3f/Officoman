@@ -93,6 +93,27 @@ APPS = [
         ],
         "formats": "PDF read and write — no account, no telemetry",
     },
+    {
+        "slug": "courier",
+        "name": "Courier",
+        "role": "Mail",
+        "accent": "#B03E58",
+        "tagline": "Every message, where you expect it.",
+        "lede": (
+            "Mail, calendar, contacts and tasks in one native program: send and receive, "
+            "keep folders in step, and read mail without handing it to a web page."
+        ),
+        "upstream": "Courier",
+        "features": [
+            ("Mail", "IMAP, SMTP, JMAP and Microsoft Graph; threads, search, rules and signatures."),
+            ("Calendar", "Day, week and month views with shared calendars and meeting replies."),
+            ("Contacts", "Address books with vCard import and export."),
+            ("Tasks", "To-do lists that stay in step with the account."),
+            ("Privacy", "Message HTML is read by our own capped engine: no script, no tracking pixel."),
+            ("Everywhere", "Native on macOS, Windows, Linux and FreeBSD, and in the browser."),
+        ],
+        "formats": ".eml and .mbox read and write · .pst import · .ics and .vcf",
+    },
 ]
 
 if __name__ == "__main__":

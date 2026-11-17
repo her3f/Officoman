@@ -1,0 +1,241 @@
+# Fuzz targets for the code that reads what arrives from outside: messages, mbox files, HTML,
+# iCalendar, vCard, .pst files, OpenPGP signatures and keys, S/MIME Digital signatures, mailbox files, character sets, IMAP/SMTP servers, JMAP servers, gpg-agent and language catalogues. Not part of the
+# main workspace (it needs nightly): `cargo +nightly fuzz run <target>` from the repository root;
+# `cargo fuzz list` names them.
+[package]
+name = "courier-fuzz"
+version = "0.0.0"
+publish = false
+edition = "2024"
+license = "MIT OR Apache-2.0"
+
+[package.metadata]
+cargo-fuzz = true
+
+[dependencies]
+courier-assuan = { path = "../crates/assuan" }
+courier-dav = { path = "../crates/dav" }
+# Mailbox files in every form (`mailbox_file`), with the small limits of its tests.
+courier-engine = { path = "../crates/engine", features = ["test-support"] }
+libfuzzer-sys = "0.4"
+courier-charset = { path = "../crates/charset" }
+courier-i18n = { path = "../crates/i18n" }
+courier-html = { path = "../crates/html" }
+courier-ical = { path = "../crates/ical" }
+courier-jmap = { path = "../crates/jmap" }
+courier-ews = { path = "../crates/ews" }
+courier-link = { path = "../crates/link" }
+courier-mime = { path = "../crates/mime" }
+courier-mime-model = { path = "../crates/mime-model" }
+courier-model = { path = "../crates/model" }
+courier-openpgp = { path = "../crates/openpgp" }
+courier-proto = { path = "../crates/proto" }
+courier-pst = { path = "../crates/pst" }
+courier-smime = { path = "../crates/smime" }
+courier-vcard = { path = "../crates/vcard" }
+
+# Its own workspace, so the main one's builds, lints and cargo-deny leave it alone.
+[workspace]
+
+[[bin]]
+name = "mime"
+path = "fuzz_targets/mime.rs"
+test = false
+doc = false
+bench = false
+
+[[bin]]
+name = "html"
+path = "fuzz_targets/html.rs"
+test = false
+doc = false
+bench = false
+
+[[bin]]
+name = "sheet"
+path = "fuzz_targets/sheet.rs"
+test = false
+doc = false
+bench = false
+
+[[bin]]
+name = "ical"
+path = "fuzz_targets/ical.rs"
+test = false
+doc = false
+bench = false
+
+[[bin]]
+name = "vcard"
+path = "fuzz_targets/vcard.rs"
+test = false
+doc = false
+bench = false
+
+[[bin]]
+name = "openpgp"
+path = "fuzz_targets/openpgp.rs"
+test = false
+doc = false
+bench = false
+
+[[bin]]
+name = "charset"
+path = "fuzz_targets/charset.rs"
+test = false
+doc = false
+bench = false
+
+[[bin]]
+name = "imap"
+path = "fuzz_targets/imap.rs"
+test = false
+doc = false
+bench = false
+
+[[bin]]
+name = "smtp"
+path = "fuzz_targets/smtp.rs"
+test = false
+doc = false
+bench = false
+
+[[bin]]
+name = "po"
+path = "fuzz_targets/po.rs"
+test = false
+doc = false
+bench = false
+
+[[bin]]
+name = "jmap_address"
+path = "fuzz_targets/jmap_address.rs"
+test = false
+doc = false
+bench = false
+
+[[bin]]
+name = "jmap_discovery"
+path = "fuzz_targets/jmap_discovery.rs"
+test = false
+doc = false
+bench = false
+
+[[bin]]
+name = "jmap_session"
+path = "fuzz_targets/jmap_session.rs"
+test = false
+doc = false
+bench = false
+
+[[bin]]
+name = "jmap_response"
+path = "fuzz_targets/jmap_response.rs"
+test = false
+doc = false
+bench = false
+
+[[bin]]
+name = "ews"
+path = "fuzz_targets/ews.rs"
+test = false
+doc = false
+bench = false
+
+[[bin]]
+name = "link"
+path = "fuzz_targets/link.rs"
+test = false
+doc = false
+bench = false
+
+[[bin]]
+name = "ews_autodiscover"
+path = "fuzz_targets/ews_autodiscover.rs"
+test = false
+doc = false
+bench = false
+
+[[bin]]
+name = "ews_ntlm"
+path = "fuzz_targets/ews_ntlm.rs"
+test = false
+doc = false
+bench = false
+
+[[bin]]
+name = "dav_xml"
+path = "fuzz_targets/dav_xml.rs"
+test = false
+doc = false
+bench = false
+
+[[bin]]
+name = "dav_answers"
+path = "fuzz_targets/dav_answers.rs"
+test = false
+doc = false
+bench = false
+
+[[bin]]
+name = "dav_discovery"
+path = "fuzz_targets/dav_discovery.rs"
+test = false
+doc = false
+bench = false
+
+[[bin]]
+name = "dav_document"
+path = "fuzz_targets/dav_document.rs"
+test = false
+doc = false
+bench = false
+
+[[bin]]
+name = "pst"
+path = "fuzz_targets/pst.rs"
+test = false
+doc = false
+bench = false
+
+[[bin]]
+name = "rtf"
+path = "fuzz_targets/rtf.rs"
+test = false
+doc = false
+bench = false
+
+[[bin]]
+name = "mailbox_file"
+path = "fuzz_targets/mailbox_file.rs"
+test = false
+doc = false
+bench = false
+
+[[bin]]
+name = "smime"
+path = "fuzz_targets/smime.rs"
+test = false
+doc = false
+bench = false
+
+[[bin]]
+name = "pkcs12"
+path = "fuzz_targets/pkcs12.rs"
+test = false
+doc = false
+bench = false
+
+[[bin]]
+name = "assuan"
+path = "fuzz_targets/assuan.rs"
+test = false
+doc = false
+bench = false
+
+[[bin]]
+name = "header_block"
+path = "fuzz_targets/header_block.rs"
+test = false
+doc = false
+bench = false

@@ -1,0 +1,110 @@
+// SPDX-FileCopyrightText: Courier contributors
+// SPDX-License-Identifier: MIT OR Apache-2.0
+//! Native file dialogs (Open, Import, Attach, Save As, Export) that don't freeze the window.
+//!
+//! The blocking `rfd::FileDialog` ran on the UI thread: on Linux the xdg-desktop-portal call
+//! blocked the event loop until the dialog closed, and with no parent window the dialog could open
+//! behind Courier, which then sat there frozen. Now the app's request ([`Services::file_dialog`])
+//! is queued; the frame (which has the window) builds an `rfd::AsyncFileDialog` parented to the
+//! window, and a background thread waits for the answer, hands it to the app and wakes the UI.
+//!
+//! [`Services::file_dialog`]: courier_ui_egui::Services::file_dialog
+
+use std::future::Future;
+use std::pin::Pin;
+use std::sync::mpsc::{Receiver, Sender, channel};
+
+use courier_ui_egui::FileDialogRequest;
+
+/// A dialog the app asked for, with the channel its answer goes back through.
+type Request = (FileDialogRequest, Sender<Option<Vec<String>>>);
+
+/// The `Services::file_dialog` hook.
+pub type Hook = Box<dyn Fn(FileDialogRequest) -> Receiver<Option<Vec<String>>>>;
+
+/// A picker's answer, waited for off the UI thread: the files picked, none when cancelled.
+type Picking = Pin<Box<dyn Future<Output = Option<Vec<rfd::FileHandle>>> + Send>>;
+
+/// Shows the dialogs the app queued; lives in the eframe app, which has the window.
+pub struct Launcher {
+    queue: Receiver<Request>,
+    ctx: egui::Context,
+}
+
+/// The hook for [`Services::file_dialog`](courier_ui_egui::Services::file_dialog) and the
+/// launcher that shows what it queues.
+pub fn hook(ctx: &egui::Context) -> (Hook, Launcher) {
+    let (queue_tx, queue) = channel::<Request>();
+    let hook: Hook = Box::new(move |req| {
+        let (answer, rx) = channel();
+        // If the launcher is gone, the dropped answer reads as "cancelled" in the app.
+        let _ = queue_tx.send((req, answer));
+        rx
+    });
+    (hook, Launcher { queue, ctx: ctx.clone() })
+}
+
+impl Launcher {
+    /// Show the queued dialogs with the window as their parent, so the portal (or the system)
+    /// keeps them on top of it. Call after every pass that may ask for one.
+    pub fn show(&self, parent: &eframe::Frame) {
+        while let Ok((req, answer)) = self.queue.try_recv() {
+            // Built here, on the UI thread: macOS shows the panel as a sheet on the window now.
+            let dialog = rfd::AsyncFileDialog::new().set_parent(parent);
+            let one = |f: Option<rfd::FileHandle>| f.map(|f| vec![f]);
+            let picking: Picking = match req {
+                // Files to attach, several at once (Ctrl or Shift and click).
+                FileDialogRequest::Open { ref purpose } if req.picks_many() => Box::pin(open_filters(dialog, purpose).pick_files()),
+                FileDialogRequest::Open { purpose } => {
+                    let picking = open_filters(dialog, &purpose).pick_file();
+                    Box::pin(async move { one(picking.await) })
+                }
+                FileDialogRequest::Folder => {
+                    let picking = dialog.pick_folder();
+                    Box::pin(async move { one(picking.await) })
+                }
+                FileDialogRequest::Save { name } => {
+                    let picking = dialog.set_file_name(name).save_file();
+                    Box::pin(async move { one(picking.await) })
+                }
+            };
+            let ctx = self.ctx.clone();
+            let waiting = std::thread::Builder::new().name("file dialog".into()).spawn(move || {
+                let picked = crate::block_on::block_on(picking)
+                    .map(|files| files.iter().map(|f| f.path().to_string_lossy().to_string()).collect::<Vec<_>>())
+                    .filter(|paths| !paths.is_empty());
+                let _ = answer.send(picked);
+                ctx.request_repaint();
+            });
+            // The answer's sender went with the closure, so the app sees the dialog as cancelled.
+            if let Err(e) = waiting {
+                log::error!("couldn't wait for the file dialog: {e}");
+            }
+        }
+    }
+}
+
+/// The file types Open offers, by what the file is for: a mailbox to open, something to import,
+/// or anything at all to attach.
+fn open_filters(d: rfd::AsyncFileDialog, purpose: &str) -> rfd::AsyncFileDialog {
+    match purpose {
+        "mailbox" => d.add_filter("Courier mailbox", &["courier", "json"]).add_filter("All files", &["*"]),
+        "import" => d
+            .add_filter("Mail, calendar and contact files", &["eml", "mbox", "mbx", "ics", "ical", "vcf", "vcard"])
+            .add_filter("Messages", &["eml", "mbox", "mbx"])
+            .add_filter("Calendars", &["ics", "ical"])
+            .add_filter("Contacts", &["vcf", "vcard"])
+            .add_filter("All files", &["*"]),
+        "pst" => d.add_filter(".pst files", &["pst"]).add_filter("All files", &["*"]),
+        "picture" => d.add_filter("Pictures (PNG, JPEG, GIF)", &["png", "jpg", "jpeg", "gif"]),
+        "bodyPicture" => d.add_filter("Pictures (PNG, JPEG, GIF, WebP)", &["png", "jpg", "jpeg", "gif", "webp"]),
+        "privateKeySmime" => d.add_filter("Certificate files (.p12, .pfx)", &["p12", "pfx"]).add_filter("All files", &["*"]),
+        "privateKeyOpenpgp" => {
+            d.add_filter("OpenPGP secret keys (.asc, .gpg, .key, .pgp)", &["asc", "gpg", "key", "pgp"]).add_filter("All files", &["*"])
+        }
+        "publicKey" | "cardKey" => d
+            .add_filter("Public keys (.cer, .crt, .der, .pem, .asc, .gpg, .pgp)", &["cer", "crt", "der", "pem", "asc", "gpg", "pgp"])
+            .add_filter("All files", &["*"]),
+        _ => d,
+    }
+}

@@ -1,0 +1,120 @@
+// SPDX-FileCopyrightText: Courier contributors
+// SPDX-License-Identifier: MIT OR Apache-2.0
+//! Courier's MCP server (Model Context Protocol, JSON-RPC 2.0 over stdio).
+//!
+//! Two backends: [`Headless`] runs an in-process session on a mailbox (no window);
+//! [`backend::Remote`] talks to a running Courier app through its control channel
+//! (`courier --control PORT`), so agents can also click, type and screenshot the real UI.
+//!
+//! Agents get only what the owner allows (`courier_engine::agent`): every command has a class,
+//! no file is named by an agent unless the owner gave a folder for it ([`files`]), and what needs
+//! the owner is refused headless (unless allowed with `--allow`) or asked about in the window.
+#![deny(clippy::unwrap_used, clippy::expect_used, clippy::panic, clippy::unimplemented, clippy::todo, clippy::unreachable)]
+
+pub mod backend;
+pub mod files;
+pub mod server;
+pub mod tools;
+
+pub use backend::{Backend, Remote};
+pub use courier_engine::agent::Class;
+pub use server::Server;
+
+use courier_engine::Session;
+use courier_engine::agent::{self, Verdict};
+use serde_json::{Value, json};
+
+/// Methods that need the desktop app.
+pub const NEEDS_APP: &str = "needs the desktop app: start `courier --control 7991` and run `courier-cli mcp --connect 127.0.0.1:7991`";
+
+/// An in-process session, driven by an agent: every command goes through the gate, and what
+/// needs the owner runs only when it is in `allow` (`--allow`).
+pub struct Headless {
+    pub session: Session,
+    pub allow: Vec<Class>,
+}
+
+impl Default for Headless {
+    fn default() -> Self {
+        Headless { session: Session::empty(), allow: Vec::new() }
+    }
+}
+
+impl Headless {
+    pub fn new(session: Session, allow: Vec<Class>) -> Self {
+        Headless { session, allow }
+    }
+
+    fn run(&mut self, id: &str, params: &Value) -> Result<Value, String> {
+        // What the window would lose (`unsaved`) is the window's to say (#494); headless there is
+        // none, and nothing is the owner's.
+        let mut params = params.clone();
+        if let Some(fields) = params.as_object_mut() {
+            fields.remove("unsaved");
+        }
+        let params = &params;
+        match agent::check(&self.session, id, params, &self.allow) {
+            Verdict::Run => {
+                self.session.agent = Some(self.allow.clone());
+                let r = self.session.run(id, params).map_err(|e| e.to_string());
+                self.session.agent = None;
+                r
+            }
+            Verdict::Ask(class, what) => {
+                let access = agent::classify(&self.session, id, params);
+                let asked = matches!(access, agent::Access::Asked(_));
+                // Every class the call needs, so that one `--allow` covers it (#473).
+                let first = match access {
+                    agent::Access::Owner(c) | agent::Access::Asked(c) => c,
+                    _ => class,
+                };
+                let mut classes = vec![first];
+                classes.extend(agent::also(&self.session, id, params, first));
+                Err(agent::needs_owner_for(id, &classes, asked, &what))
+            }
+            Verdict::Refuse(why) => Err(why),
+        }
+    }
+}
+
+impl Backend for Headless {
+    fn call(&mut self, method: &str, params: Value) -> Result<Value, String> {
+        match method {
+            "engine.execute" | "command" => {
+                let id = params.get("command").and_then(Value::as_str).ok_or("missing `command`")?.to_string();
+                let p = params.get("params").cloned().filter(|v| !v.is_null()).unwrap_or(json!({}));
+                self.run(&id, &p)
+            }
+            "engine.commands" => Ok(self.session.registry.describe()),
+            "mailbox.inspect" => self.session.run("file.info", &json!({})).map_err(|e| e.to_string()),
+            "ui.parity" => Ok(courier_engine::catalog::parity(&self.session.registry)),
+            // Headless, the mailbox is open from the start.
+            "app.status" => Ok(json!({"mailbox": "open", "opening": null})),
+            m if m.starts_with("ui.") || m.starts_with("app.") => Err(format!("`{m}` {NEEDS_APP}")),
+            other => self.run(other, &params),
+        }
+    }
+    fn has_ui(&self) -> bool {
+        false
+    }
+    fn describe(&self) -> String {
+        "headless session (no window)".into()
+    }
+}
+
+#[cfg(test)]
+mod files_tests;
+#[cfg(test)]
+mod framing_tests;
+#[cfg(test)]
+mod gate_tests;
+#[cfg(test)]
+mod hidden_text_tests;
+#[cfg(test)]
+mod send_warnings_tests;
+#[cfg(test)]
+mod server_tests;
+#[cfg(test)]
+mod shared_window_tests;
+#[cfg(test)]
+mod tests;

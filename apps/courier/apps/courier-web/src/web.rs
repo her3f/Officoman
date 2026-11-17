@@ -1,0 +1,446 @@
+// SPDX-FileCopyrightText: Courier contributors
+// SPDX-License-Identifier: MIT OR Apache-2.0
+//! The browser shell: web `Services` (file picker, downloads, storage, JMAP), drag-and-drop and
+//! the eframe web runner.
+
+use std::rc::Rc;
+
+use courier_engine::Session;
+use courier_model::Mailbox;
+use courier_ui_egui::opening::{Arrival, Trouble};
+use courier_ui_egui::{Delivered, Inbox, MailApp, Services, UiState, Unread};
+use wasm_bindgen::JsCast as _;
+
+use crate::page;
+
+const MAILBOX_EXTS: &[&str] = &["courier", "json"];
+const IMPORT_EXTS: &[&str] = &["eml", "mbox", "mbx", "ics", "ical", "vcf", "vcard"];
+const CANVAS_ID: &str = "courier_canvas";
+const LOADING_ID: &str = "courier_loading";
+/// Where the mailbox and the interface settings live in the browser's storage.
+const MAILBOX_KEY: &str = "courier.mailbox.v1";
+const UI_KEY: &str = "courier.ui.v1";
+
+pub fn start() {
+    eframe::WebLogger::init(log::LevelFilter::Info).ok();
+    wasm_bindgen_futures::spawn_local(async {
+        let Some(document) = web_sys::window().and_then(|w| w.document()) else {
+            log::error!("no document");
+            return;
+        };
+        let Some(canvas) = document.get_element_by_id(CANVAS_ID).and_then(|e| e.dyn_into::<web_sys::HtmlCanvasElement>().ok()) else {
+            log::error!("missing <canvas id=\"{CANVAS_ID}\">");
+            return;
+        };
+        // The JMAP accounts of the page that serves Courier, when it names some (`jmap.rs`).
+        let hook = crate::jmap::Hook::read().map(Rc::new);
+        let mut options = eframe::WebOptions::default();
+        if query().contains("webgl")
+            && let eframe::egui_wgpu::WgpuSetup::CreateNew(create) = &mut options.wgpu_options.wgpu_setup
+        {
+            create.instance_descriptor.backends = eframe::wgpu::Backends::GL;
+        }
+        let result = eframe::WebRunner::new()
+            .start(
+                canvas,
+                options,
+                Box::new(move |cc| {
+                    if let Some(rs) = &cc.wgpu_render_state {
+                        log::info!("courier-web: wgpu backend {:?}", rs.adapter.get_info().backend);
+                    }
+                    let inbox: Inbox = Inbox::default();
+                    let named = hook.as_ref().is_some_and(|hook| hook.names_accounts());
+                    let prefs = stored(UI_KEY).and_then(|text| serde_json::from_str::<UiState>(&text).ok());
+                    // The window is there at once, and the mailbox is read from the browser's
+                    // storage after its first frame (#519): the same opening screen as on the
+                    // desktop, which says "Opening…" alone, for the storage says nothing of how far
+                    // it has got.
+                    let (tx, rx) = std::sync::mpsc::channel();
+                    let (ctx, wake, first_prefs, build_inbox) = (cc.egui_ctx.clone(), cc.egui_ctx.clone(), prefs.clone(), inbox.clone());
+                    let build: courier_ui_egui::opening::Build = Box::new(move |arrival| {
+                        let mut services = services(build_inbox, ctx.clone());
+                        crate::jmap::install(&mut services, &ctx, hook.clone());
+                        let mut session = Session::new(arrival.mailbox);
+                        // The browser trusts no certification authority for mail (#30): handed in as
+                        // none, so that its signers say so, not that they are still being read.
+                        session.set_trust_anchors(Vec::<Vec<u8>>::new());
+                        // The steps every opening takes (#793).
+                        courier_engine::cmd::file::after_opening(&mut session);
+                        let mut app = MailApp::new(session, services);
+                        match prefs {
+                            Some(ui) => app.apply_prefs(ui),
+                            None => app.fresh_prefs(),
+                        }
+                        if let Some(hook) = &hook {
+                            hook.add_accounts(&mut app);
+                        }
+                        app
+                    });
+                    wasm_bindgen_futures::spawn_local(async move {
+                        after_a_frame().await;
+                        let _ = tx.send(first_mailbox(named));
+                        wake.request_repaint();
+                    });
+                    let opening = courier_ui_egui::opening::Opening::new(rx, Default::default(), build);
+                    let locale = web_sys::window().and_then(|w| w.navigator().language());
+                    let app = MailApp::opening(opening, first_prefs, locale);
+                    let saved_ui = serde_json::to_string(&app.prefs()).unwrap_or_default();
+                    Ok(Box::new(WebShell { app, inbox, saved_ui, checked: 0.0 }))
+                }),
+            )
+            .await;
+        if let Some(el) = document.get_element_by_id(LOADING_ID) {
+            match result {
+                Ok(()) => el.remove(),
+                Err(e) => el.set_inner_html(&format!("<p>Courier failed to start: {e:?}</p><p>A browser with WebGPU or WebGL2 is required.</p>")),
+            }
+        }
+    });
+}
+
+fn query() -> String {
+    web_sys::window().and_then(|w| w.location().search().ok()).unwrap_or_default()
+}
+
+fn storage() -> Option<web_sys::Storage> {
+    web_sys::window()?.local_storage().ok()?
+}
+
+fn stored(key: &str) -> Option<String> {
+    storage()?.get_item(key).ok()?
+}
+
+fn sample() -> Mailbox {
+    let now = courier_time::now();
+    courier_engine::sample::mailbox(now, courier_time::local_offset_minutes(now))
+}
+
+/// The mailbox to start with: what the URL asks for, else the one kept in this browser, else the
+/// sample (an empty mail program in a browser tab has nothing to show), or an empty one when the
+/// page names accounts of its own (`named`), which are added to it. One kept here that can't be
+/// read says why before the window carries on with the sample or an empty one, as it always did.
+fn first_mailbox(named: bool) -> Arrival {
+    let q = query();
+    if page::has_flag(&q, "empty") {
+        return Arrival::opened(Mailbox::with_local_account("", ""), None);
+    }
+    if page::has_flag(&q, "sample") {
+        return Arrival::opened(sample(), None);
+    }
+    let fresh = || if named { Mailbox::with_local_account("", "") } else { sample() };
+    match stored(MAILBOX_KEY).map(|text| courier_engine::io::read_mailbox(text.as_bytes())) {
+        Some(Ok(mailbox)) => Arrival::opened(mailbox, None),
+        Some(Err(e)) => {
+            log::error!("the stored mailbox couldn't be read: {e}");
+            Arrival { trouble: Some(Trouble::Unreadable(e.to_string())), ..Arrival::opened(fresh(), None) }
+        }
+        None => Arrival::opened(fresh(), None),
+    }
+}
+
+/// Resolved once the browser has had a moment to show the page (a frame, as a rule).
+async fn after_a_frame() {
+    let tick = js_sys::Promise::new(&mut |resolve, _| {
+        if let Some(window) = web_sys::window() {
+            let _ = window.set_timeout_with_callback_and_timeout_and_arguments_0(&resolve, 30);
+        }
+    });
+    let _ = wasm_bindgen_futures::JsFuture::from(tick).await;
+}
+
+/// Wraps the app to read dropped files asynchronously (browsers can't read them synchronously),
+/// feed them through the inbox, and keep the interface settings in the browser's storage.
+struct WebShell {
+    app: MailApp,
+    inbox: Inbox,
+    /// The interface settings as last stored.
+    saved_ui: String,
+    checked: f64,
+}
+
+impl eframe::App for WebShell {
+    fn logic(&mut self, ctx: &egui::Context, _frame: &mut eframe::Frame) {
+        let dropped = ctx.input_mut(|i| std::mem::take(&mut i.raw.dropped_files));
+        for f in dropped {
+            let inbox = self.inbox.clone();
+            let ctx = ctx.clone();
+            wasm_bindgen_futures::spawn_local(async move {
+                let name = f.path().file_name().map(|n| n.to_string_lossy().to_string()).unwrap_or_else(|| "dropped".into());
+                match f.bytes_async().await {
+                    Ok(bytes) => {
+                        inbox.lock().unwrap_or_else(|e| e.into_inner()).push(Delivered::dropped(name, bytes));
+                        ctx.request_repaint();
+                    }
+                    Err(e) => log::error!("couldn't read dropped file {name}: {e}"),
+                }
+            });
+        }
+        self.app.logic(ctx);
+        open_links(ctx);
+        // Interface settings: stored when they change, checked every couple of seconds.
+        let now = courier_ui_egui::now_ms();
+        if now - self.checked > 2000.0 {
+            self.checked = now;
+            if let Ok(text) = serde_json::to_string(&self.app.prefs())
+                && text != self.saved_ui
+            {
+                if let Some(s) = storage() {
+                    let _ = s.set_item(UI_KEY, &text);
+                }
+                self.saved_ui = text;
+            }
+        }
+    }
+
+    fn raw_input_hook(&mut self, _ctx: &egui::Context, raw: &mut egui::RawInput) {
+        self.app.raw_input_hook(raw);
+    }
+
+    fn ui(&mut self, ui: &mut egui::Ui, _frame: &mut eframe::Frame) {
+        self.app.ui(ui);
+        open_links(ui.ctx());
+    }
+}
+
+/// Open the links the window followed in this frame, in place of eframe, which would open them
+/// with a handle on this page left in the new one (`window.opener`): in a new tab with
+/// `noopener,noreferrer`, and only `http`, `https`, `mailto` and `tel` (`page::web_link`).
+fn open_links(ctx: &egui::Context) {
+    let links = ctx.output_mut(|o| {
+        let mut links = Vec::new();
+        o.commands.retain(|c| match c {
+            egui::OutputCommand::OpenUrl(open) => {
+                links.push((open.url.clone(), open.new_tab));
+                false
+            }
+            _ => true,
+        });
+        links
+    });
+    let Some(window) = web_sys::window() else { return };
+    for (url, new_tab) in links {
+        let Some(url) = page::web_link(&url) else { continue };
+        let _ = if new_tab {
+            window.open_with_url_and_target_and_features(&url, "_blank", "noopener,noreferrer")
+        } else {
+            window.open_with_url_and_target(&url, "_self")
+        };
+    }
+}
+
+fn services(inbox: Inbox, ctx: egui::Context) -> Services {
+    let language_ctx = ctx.clone();
+    // What the picker delivers comes in apart from what is dropped: it is for what the picker
+    // was opened for, and a dropped file never is.
+    let picked = Inbox::default();
+    let open_inbox = picked.clone();
+    // Each pick is numbered, so that two for one message are never one batch.
+    let picks = std::cell::Cell::new(0u64);
+    Services {
+        open_async: Some(Box::new(move |purpose: &str, asking: Option<u64>| {
+            let inbox = open_inbox.clone();
+            let ctx = ctx.clone();
+            let picked_for = purpose.to_string();
+            let pick = picks.get().wrapping_add(1);
+            picks.set(pick);
+            let dialog = match purpose {
+                "mailbox" => rfd::AsyncFileDialog::new().add_filter("Courier mailbox", MAILBOX_EXTS),
+                "import" => rfd::AsyncFileDialog::new().add_filter("Mail, calendar and contact files", IMPORT_EXTS),
+                // Anything can be attached.
+                _ => rfd::AsyncFileDialog::new(),
+            };
+            // Files to attach may be picked several at once; anything else is one file.
+            let many = purpose == "attach";
+            wasm_bindgen_futures::spawn_local(async move {
+                let picked = if many { dialog.pick_files().await } else { dialog.pick_file().await.map(|f| vec![f]) };
+                let Some(files) = picked else {
+                    return;
+                };
+                // Each file as it was picked for: a picker's answer is never taken for another's.
+                // Of files to attach, what is read is decided from their sizes before any is
+                // read: a page can't hold a pick of large files, and the message being written
+                // would go down with it (never crash). A file over the most a message carries,
+                // one past the most files of a pick, and every one from the first that would
+                // take the pick past the most bytes together are delivered unread, saying why.
+                // The one file of any other pick (a mailbox, a file to import) is read whole,
+                // whatever its size: those caps are an attachment's, not a mailbox's.
+                let plan = if many {
+                    let sizes: Vec<u64> = files.iter().map(|f| f.inner().size() as u64).collect();
+                    courier_ui_egui::files::reads_of_pick(&sizes)
+                } else {
+                    vec![None; files.len()]
+                };
+                let mut read = Vec::with_capacity(files.len());
+                for (file, unread) in files.iter().zip(plan) {
+                    let name = file.file_name();
+                    if let Some(why) = unread {
+                        read.push(Delivered::unread(name, why, &picked_for, asking, pick));
+                        continue;
+                    }
+                    read.push(match read_file(file.inner()).await {
+                        Ok(bytes) => Delivered::picked(name, bytes, &picked_for, asking, pick),
+                        Err(e) => {
+                            log::error!("couldn't read picked file {name}: {e}");
+                            Delivered::unread(name.clone(), Unread::Failed(e), &picked_for, asking, pick)
+                        }
+                    });
+                }
+                inbox.lock().unwrap_or_else(|e| e.into_inner()).extend(read);
+                ctx.request_repaint();
+            });
+        })),
+        download: Some(Box::new(download)),
+        picked: Some(picked),
+        inbox: Some(inbox),
+        persist: Some(Box::new(persist)),
+        // The browser's language, for an interface language left on Automatic; and the page says
+        // which language it is in (`<html lang>`), for screen readers and the browser's own tools.
+        system_locale: web_sys::window().and_then(|w| w.navigator().language()),
+        // The same language's region (`en-GB`) is the one English dates are written for (#978).
+        system_time_locale: web_sys::window().and_then(|w| w.navigator().language()),
+        on_language: Some(Box::new(move |code: &str| {
+            let root = web_sys::window().and_then(|w| w.document()).and_then(|d| d.document_element());
+            if let Some(root) = root {
+                let _ = root.set_attribute("lang", code);
+            }
+            if let Some(file) = page::face_for(code) {
+                load_face(&language_ctx, file);
+            }
+        })),
+        ..Default::default()
+    }
+}
+
+/// Fetch the face `file` (next to the page) once, and put it behind the window's fonts: for the
+/// script of an interface language the browser has no system face for (`page::face_for`, #1010).
+/// Nothing is fetched for any other language, so the page stays as small as it was. Until it
+/// arrives, the text is drawn with empty boxes for the letters it lacks. A failure is logged and
+/// not retried until `on_language` next fires, which is when the language changes (away from
+/// Georgian and back); nothing retries by itself.
+fn load_face(ctx: &egui::Context, file: &'static str) {
+    thread_local!(static REQUESTED: std::cell::Cell<bool> = const { std::cell::Cell::new(false) });
+    if REQUESTED.replace(true) {
+        return;
+    }
+    let ctx = ctx.clone();
+    wasm_bindgen_futures::spawn_local(async move {
+        match fetch_face(file).await {
+            Ok(bytes) => {
+                // Possible lost update: `reading/fonts.rs::install` also reads the definitions and
+                // sets them back; if both land before egui applies fonts, the later one wins and
+                // drops the other's faces.
+                let fonts = ctx.fonts(|f| f.definitions().clone());
+                match courier_ui_egui::theme::with_extra_face(fonts, "NotoSansGeorgian", bytes) {
+                    Some(fonts) => {
+                        ctx.set_fonts(fonts);
+                        ctx.request_repaint();
+                    }
+                    None => {
+                        log::error!("{file} is not a font");
+                        REQUESTED.set(false);
+                    }
+                }
+            }
+            Err(e) => {
+                log::error!("couldn't fetch {file}: {e}");
+                REQUESTED.set(false);
+            }
+        }
+    });
+}
+
+/// The bytes of `file`, fetched from beside `index.html`; an error names what failed (no window,
+/// the request, an HTTP status other than success, a body over 1 MB, or reading the body).
+async fn fetch_face(file: &str) -> Result<Vec<u8>, String> {
+    let js = |e: wasm_bindgen::JsValue| format!("{e:?}");
+    let window = web_sys::window().ok_or("no window")?;
+    let response: web_sys::Response =
+        wasm_bindgen_futures::JsFuture::from(window.fetch_with_str(file)).await.map_err(js)?.dyn_into().map_err(|_| "not a response")?;
+    if !response.ok() {
+        return Err(format!("HTTP {}", response.status()));
+    }
+    let declared = response.headers().get("content-length").map_err(js)?.and_then(|v| v.parse::<u64>().ok());
+    if declared.is_some_and(|n| !page::face_size_ok(n)) {
+        return Err("larger than the face cap".into());
+    }
+    // Read in chunks and stop at the cap: a body without Content-Length is never held whole.
+    let reader: web_sys::ReadableStreamDefaultReader =
+        response.body().ok_or("no body")?.get_reader().dyn_into().map_err(|_| "not a stream reader")?;
+    let mut bytes = Vec::new();
+    loop {
+        let chunk = wasm_bindgen_futures::JsFuture::from(reader.read()).await.map_err(js)?;
+        if js_sys::Reflect::get(&chunk, &"done".into()).map_err(js)?.as_bool().unwrap_or(true) {
+            break;
+        }
+        let part: js_sys::Uint8Array = js_sys::Reflect::get(&chunk, &"value".into()).map_err(js)?.dyn_into().map_err(|_| "not bytes")?;
+        if !page::face_size_ok((bytes.len() + part.length() as usize) as u64) {
+            let _ = reader.cancel();
+            return Err("larger than the face cap".into());
+        }
+        bytes.extend_from_slice(&part.to_vec());
+    }
+    Ok(bytes)
+}
+
+/// A picked file's bytes, as the browser gives them: a read that fails (the file moved or changed
+/// since it was picked) is an error, never a stop of the page.
+async fn read_file(file: &web_sys::File) -> Result<Vec<u8>, String> {
+    let buffer = wasm_bindgen_futures::JsFuture::from(file.array_buffer()).await.map_err(|e| format!("{e:?}"))?;
+    Ok(js_sys::Uint8Array::new(&buffer).to_vec())
+}
+
+/// Keep the mailbox in the browser's storage. A full store is the usual failure: say so plainly.
+fn persist(bytes: &[u8]) -> Result<(), String> {
+    // A look around (`?sample`, `?empty`) never overwrites the mailbox kept in this browser.
+    if page::is_ephemeral(&query()) {
+        return Ok(());
+    }
+    let text = std::str::from_utf8(bytes).map_err(|e| e.to_string())?;
+    let store = storage().ok_or("this browser has no storage for the page (private window?)")?;
+    store
+        .set_item(MAILBOX_KEY, text)
+        .map_err(|_| "this browser's storage for the page is full; save the mailbox as a file (File › Open & Export)".to_string())
+}
+
+/// Trigger a browser download of `bytes` named after the last component of `path`.
+fn download(path: &str, bytes: &[u8]) -> Result<(), String> {
+    let js = |e: wasm_bindgen::JsValue| format!("{e:?}");
+    let name = std::path::Path::new(path).file_name().map(|n| n.to_string_lossy().to_string()).unwrap_or_else(|| "download".into());
+    let window = web_sys::window().ok_or("no window")?;
+    let document = window.document().ok_or("no document")?;
+    let parts = js_sys::Array::of1(&js_sys::Uint8Array::from(bytes));
+    let opts = web_sys::BlobPropertyBag::new();
+    opts.set_type(mime_for(&name));
+    let blob = web_sys::Blob::new_with_u8_array_sequence_and_options(&parts, &opts).map_err(js)?;
+    let url = web_sys::Url::create_object_url_with_blob(&blob).map_err(js)?;
+    let a: web_sys::HtmlAnchorElement = document.create_element("a").map_err(js)?.dyn_into().map_err(|_| "not an anchor")?;
+    a.set_href(&url);
+    a.set_download(&name);
+    a.style().set_property("display", "none").map_err(js)?;
+    let body = document.body().ok_or("no body")?;
+    body.append_child(&a).map_err(js)?;
+    a.click();
+    a.remove();
+    // Revoke after the click has been dispatched; the download keeps its own reference.
+    let revoke = wasm_bindgen::closure::Closure::once_into_js(move || {
+        web_sys::Url::revoke_object_url(&url).ok();
+    });
+    window.set_timeout_with_callback_and_timeout_and_arguments_0(revoke.unchecked_ref(), 10_000).map_err(js)?;
+    Ok(())
+}
+
+fn mime_for(name: &str) -> &'static str {
+    match name.rsplit('.').next().map(str::to_ascii_lowercase).as_deref() {
+        Some("eml") => "message/rfc822",
+        Some("mbox") => "application/mbox",
+        Some("ics") => "text/calendar",
+        Some("vcf") => "text/vcard",
+        Some("courier" | "json") => "application/json",
+        Some("txt") => "text/plain",
+        Some("csv") => "text/csv",
+        Some("png") => "image/png",
+        Some("jpg" | "jpeg") => "image/jpeg",
+        Some("pdf") => "application/pdf",
+        _ => "application/octet-stream",
+    }
+}

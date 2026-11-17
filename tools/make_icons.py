@@ -31,6 +31,7 @@ APPS_META = {
     "tally":  {"colour": (31, 122, 107)},   # teal
     "podium": {"colour": (180, 80, 46)},    # rust
     "sheaf":  {"colour": (107, 78, 158)},   # violet
+    "courier": {"colour": (176, 62, 88)},   # crimson
 }
 
 
@@ -96,6 +97,12 @@ def glyph(slug: str, d: ImageDraw.ImageDraw, s: float) -> None:
                 [P(x0, 0.27), P(x0 + 0.18, 0.73)],
                 radius=r, outline=white, width=w2,
             )
+
+    elif slug == "courier":          # an envelope with its flap
+        d.rounded_rectangle([P(0.23, 0.30), P(0.77, 0.70)],
+                            radius=r, outline=white, width=w)
+        d.line([P(0.23, 0.30), P(0.50, 0.53)], fill=white, width=w)
+        d.line([P(0.77, 0.30), P(0.50, 0.53)], fill=white, width=w)
 
 
 def render(slug: str) -> Image.Image:

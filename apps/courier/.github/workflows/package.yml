@@ -1,0 +1,663 @@
+name: Package
+
+# Builds every release file with the scripts in packaging/ and uploads them as workflow artifacts
+# named release-* (release.yml gathers them into one GitHub release). Called by release.yml; it
+# doesn't run on its own. Everything here runs on GitHub's standard runners, so it works in any
+# public repository, a fork included.
+#
+# File names follow the Craft apps' releases, which is what lets White Office Launcher find them:
+#   courier-<ver>-windows-{x64,x86,arm64}.msi, courier-<ver>-windows-{x64,x86,arm64}-portable.zip
+#   courier-<ver>-macos-universal.dmg, courier-cli-<ver>-macos-universal.zip
+#   courier-<ver>-linux-{x86_64,aarch64}.{AppImage,AppImage.zsync,deb,rpm,tar.gz,flatpak}
+#   courier-<ver>-freebsd-x86_64.tar.gz, courier-web-<ver>.zip
+#
+# Building and signing are separate jobs. A job that compiles (cargo, and every build script and
+# macro of every dependency) or runs what was compiled has no signing secret, no Azure sign-in, no
+# keychain and no `release` environment. The Windows and macOS jobs that sign (in the `release`
+# environment, for a pushed version tag) check out the scripts afresh, take the binaries a build
+# job handed on and check them against the digest that job gave (packaging/ci/handoff.sh), and
+# then sign and package them with pinned tools; they never run cargo, rustup or a built program.
+# The built programs are run in smoke-test jobs that hold no secret. `cargo xtask workflows`
+# checks this shape on every change.
+#
+# Every release-* artifact carries a list of its files' SHA-256 (release-*.sha256), and the job
+# that made it gives that list's digest as an output of this workflow, so release.yml checks what
+# it downloads before it makes the checksums.
+
+on:
+  workflow_call:
+    inputs:
+      freebsd:
+        description: "Also build the FreeBSD tarball (in a VM; slow)"
+        type: boolean
+        required: false
+        default: true
+      sign:
+        description: "Sign the Windows and macOS builds, in the protected `release` environment (pushed version tags only)"
+        type: boolean
+        required: false
+        default: false
+    secrets:
+      APPLE_CERTIFICATE:
+        required: false
+      APPLE_CERTIFICATE_PASSWORD:
+        required: false
+      KEYCHAIN_PASSWORD:
+        required: false
+      APPLE_ID:
+        required: false
+      APPLE_PASSWORD:
+        required: false
+      APPLE_TEAM_ID:
+        required: false
+      WINDOWS_CERTIFICATE:
+        required: false
+      WINDOWS_CERTIFICATE_PASSWORD:
+        required: false
+      AZURE_TENANT_ID:
+        required: false
+      AZURE_CLIENT_ID:
+        required: false
+      AZURE_SIGNING_ENDPOINT:
+        required: false
+      AZURE_SIGNING_ACCOUNT:
+        required: false
+      AZURE_CERT_PROFILE:
+        required: false
+      # The project's Google Desktop OAuth client (#232), compiled into the app. Not signing
+      # credentials: a desktop client's id and secret ship inside the binary, so a dependency's
+      # build script seeing them reveals nothing the program doesn't. Without them (a dry run),
+      # Google accounts fall back to an app password.
+      COURIER_GOOGLE_CLIENT_ID:
+        required: false
+      COURIER_GOOGLE_CLIENT_SECRET:
+        required: false
+    # The digest of each release-* artifact's list of files (packaging/ci/handoff.sh).
+    outputs:
+      windows_x64:
+        value: ${{ jobs.windows.outputs.x64 }}
+      windows_x86:
+        value: ${{ jobs.windows.outputs.x86 }}
+      windows_arm64:
+        value: ${{ jobs.windows.outputs.arm64 }}
+      macos:
+        value: ${{ jobs.macos.outputs.digest }}
+      linux_x86_64:
+        value: ${{ jobs.linux.outputs.x86_64 }}
+      linux_aarch64:
+        value: ${{ jobs.linux.outputs.aarch64 }}
+      flatpak_x86_64:
+        value: ${{ jobs.flatpak.outputs.x86_64 }}
+      flatpak_aarch64:
+        value: ${{ jobs.flatpak.outputs.aarch64 }}
+      freebsd_x86_64:
+        value: ${{ jobs.freebsd.outputs.digest }}
+      web:
+        value: ${{ jobs.web.outputs.digest }}
+
+permissions:
+  contents: read
+
+env:
+  CARGO_TERM_COLOR: always
+  CARGO_INCREMENTAL: 0
+  RUST_BACKTRACE: 1
+  WIX_VERSION: "5.0.2"
+  NFPM_VERSION: "2.47.0"
+
+jobs:
+  # Compiles the two Windows programs. No signing secret, no environment.
+  windows-build:
+    name: Windows ${{ matrix.arch }} (build)
+    runs-on: windows-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - { arch: x64, target: x86_64-pc-windows-msvc }
+          - { arch: x86, target: i686-pc-windows-msvc }
+          - { arch: arm64, target: aarch64-pc-windows-msvc }
+    # One output per architecture: the legs of a matrix share the job's outputs.
+    outputs:
+      x64: ${{ steps.seal.outputs.x64 }}
+      x86: ${{ steps.seal.outputs.x86 }}
+      arm64: ${{ steps.seal.outputs.arm64 }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: dtolnay/rust-toolchain@683b588c487a69d01f6c6ddf40f036ff682cc2c8 # master (no releases; pinned by hash) # zizmor: ignore[ref-version-mismatch]
+        with:
+          toolchain: 1.98.1
+          targets: ${{ matrix.target }}
+      - name: Build
+        shell: pwsh
+        env:
+          COURIER_GOOGLE_CLIENT_ID: ${{ secrets.COURIER_GOOGLE_CLIENT_ID }}
+          COURIER_GOOGLE_CLIENT_SECRET: ${{ secrets.COURIER_GOOGLE_CLIENT_SECRET }}
+        run: ./packaging/windows/package.ps1 -Arch ${{ matrix.arch }} -BuildOnly
+      - name: Hand the programs on by digest
+        id: seal
+        shell: bash
+        env:
+          ARCH: ${{ matrix.arch }}
+          TARGET: ${{ matrix.target }}
+        run: |
+          mkdir -p "handoff/$TARGET/release"
+          cp "target/$TARGET/release/courier.exe" "target/$TARGET/release/courier-cli.exe" "handoff/$TARGET/release/"
+          digest=$(bash packaging/ci/handoff.sh seal handoff "build-windows-$ARCH")
+          echo "$ARCH=$digest" >>"$GITHUB_OUTPUT"
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: build-windows-${{ matrix.arch }}
+          path: handoff/
+          if-no-files-found: error
+          retention-days: 7
+
+  # Signs and packages what windows-build made. Never runs cargo or a built program.
+  windows:
+    name: Windows ${{ matrix.arch }}
+    needs: [windows-build]
+    runs-on: windows-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - { arch: x64, target: x86_64-pc-windows-msvc }
+          - { arch: x86, target: i686-pc-windows-msvc }
+          - { arch: arm64, target: aarch64-pc-windows-msvc }
+    # Signing runs in the protected `release` environment, which holds the signing secrets and
+    # accepts version tags only; an unsigned build names no environment and gets no secrets.
+    environment: ${{ inputs.sign && 'release' || '' }}
+    permissions:
+      contents: read
+      id-token: write # the Azure sign-in only (OIDC), in the `release` environment
+    outputs:
+      x64: ${{ steps.seal.outputs.x64 }}
+      x86: ${{ steps.seal.outputs.x86 }}
+      arm64: ${{ steps.seal.outputs.arm64 }}
+    steps:
+      - name: Signing only for a pushed version tag
+        if: inputs.sign && !(github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v'))
+        shell: bash
+        run: |
+          echo "::error::signing was asked for on $GITHUB_REF ($GITHUB_EVENT_NAME); only a pushed version tag is signed"
+          exit 1
+      # The scripts come from the tagged commit, not from the build job.
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          name: build-windows-${{ matrix.arch }}
+          path: prebuilt
+      - name: The programs are the ones windows-build made
+        shell: bash
+        env:
+          ARCH: ${{ matrix.arch }}
+          DIGEST: ${{ needs.windows-build.outputs[matrix.arch] }}
+        run: bash packaging/ci/handoff.sh check prebuilt "build-windows-$ARCH=$DIGEST"
+      # WiX 5.0.2 and its two extensions are NuGet packages. Each is downloaded by exact version
+      # and checked against the SHA-256 pinned here before anything is installed; the tool is
+      # installed from the checked file. (None of the three has dependencies.)
+      - name: Install WiX and its dialog and shell extensions
+        shell: pwsh
+        run: |
+          $pins = @{
+            'wix'                    = 'f30ef0c74e2a986126539c5780be93ac24e8136eaf723b1937b26272703ae173'
+            'wixtoolset.ui.wixext'   = '5ef2c707614b9f70b6bbadd2d4abcb4124efee215e9b16bfbc80113079a604c7'
+            'wixtoolset.util.wixext' = 'dda1cc1b4d3b2305b1246f167c6af6fcded5000be84b3bbff3dda4f442bf4740'
+          }
+          if ($env:WIX_VERSION -ne '5.0.2') { throw "the pinned hashes are for WiX 5.0.2, not $env:WIX_VERSION" }
+          $dir = Join-Path $env:RUNNER_TEMP 'wix-nupkg'
+          New-Item -ItemType Directory -Force -Path $dir | Out-Null
+          foreach ($id in $pins.Keys) {
+            $file = Join-Path $dir "$id.$env:WIX_VERSION.nupkg"
+            Invoke-WebRequest -Uri "https://api.nuget.org/v3-flatcontainer/$id/$env:WIX_VERSION/$id.$env:WIX_VERSION.nupkg" -OutFile $file
+            $got = (Get-FileHash -Algorithm SHA256 -Path $file).Hash.ToLowerInvariant()
+            if ($got -ne $pins[$id]) { throw "$id $env:WIX_VERSION does not match its pinned sha256 (got $got)" }
+          }
+          dotnet tool install --global wix --version $env:WIX_VERSION --add-source $dir
+          if ($LASTEXITCODE -ne 0) { throw 'dotnet tool install wix failed' }
+          wix extension add -g "WixToolset.UI.wixext/$env:WIX_VERSION" "WixToolset.Util.wixext/$env:WIX_VERSION"
+          if ($LASTEXITCODE -ne 0) { throw 'wix extension add failed' }
+      # Azure Artifact Signing signs in with GitHub's OIDC token: the app registration's federated
+      # credential accepts it only from the `release` environment, and there is no client secret.
+      # Without AZURE_CLIENT_ID (Azure not set up) the build stays unsigned and sign.ps1 says so.
+      - name: Azure signing set up?
+        id: azure
+        if: inputs.sign
+        shell: bash
+        env:
+          AZURE_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
+        run: echo "configured=${AZURE_CLIENT_ID:+true}" >> "$GITHUB_OUTPUT"
+      - name: Sign in to Azure (OIDC)
+        if: steps.azure.outputs.configured == 'true'
+        uses: azure/login@a641126d1b8aa4d1fa005f4f92df94a3a4c4c906 # v3.1.0
+        with:
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          allow-no-subscriptions: true
+      # signtool is the Windows SDK's; the Artifact Signing client it loads is a NuGet package
+      # pinned by version and SHA-256 in sign.ps1. Unsigned (a dry run), no secret is named.
+      - name: Sign and package (MSI and portable zip)
+        shell: pwsh
+        env:
+          CARGO_TARGET_DIR: ${{ github.workspace }}/prebuilt
+          WINDOWS_CERTIFICATE: ${{ inputs.sign && secrets.WINDOWS_CERTIFICATE || '' }}
+          WINDOWS_CERTIFICATE_PASSWORD: ${{ inputs.sign && secrets.WINDOWS_CERTIFICATE_PASSWORD || '' }}
+          AZURE_SIGNING_ENDPOINT: ${{ inputs.sign && secrets.AZURE_SIGNING_ENDPOINT || '' }}
+          AZURE_SIGNING_ACCOUNT: ${{ inputs.sign && secrets.AZURE_SIGNING_ACCOUNT || '' }}
+          AZURE_CERT_PROFILE: ${{ inputs.sign && secrets.AZURE_CERT_PROFILE || '' }}
+        run: ./packaging/windows/package.ps1 -Arch ${{ matrix.arch }} -SkipBuild -NoRun
+      - name: Hand the release files on by digest
+        id: seal
+        shell: bash
+        env:
+          ARCH: ${{ matrix.arch }}
+        run: |
+          digest=$(bash packaging/ci/handoff.sh seal dist/release "release-windows-$ARCH")
+          echo "$ARCH=$digest" >>"$GITHUB_OUTPUT"
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: release-windows-${{ matrix.arch }}
+          path: dist/release/*
+          if-no-files-found: error
+          retention-days: 30
+
+  # The signed files for real, in a job without secrets: the CLI answering, and on x64 the
+  # installer: files in place, the program listed, and nothing left after uninstalling. An ARM64
+  # build can't run on this runner; .github/workflows/windows-arm64.yml runs one on ARM64.
+  windows-smoke:
+    name: Windows ${{ matrix.arch }} (check)
+    needs: [windows]
+    runs-on: windows-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        arch: [x64, x86]
+    steps:
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          name: release-windows-${{ matrix.arch }}
+          path: dist/release
+      - name: Run the portable CLI
+        shell: pwsh
+        run: |
+          $zip = (Get-Item dist/release/*-portable.zip).FullName
+          $dir = Join-Path $env:RUNNER_TEMP 'portable'
+          Expand-Archive -Path $zip -DestinationPath $dir -Force
+          $cli = (Get-ChildItem -Path $dir -Recurse -Filter courier-cli.exe | Select-Object -First 1).FullName
+          if (-not $cli) { throw 'no courier-cli.exe in the portable zip' }
+          & $cli --version
+          if ($LASTEXITCODE -ne 0) { throw "courier-cli --version failed ($LASTEXITCODE)" }
+      - name: Install, check and uninstall the MSI
+        if: matrix.arch == 'x64'
+        shell: pwsh
+        run: |
+          $msi = (Get-Item dist/release/*.msi).FullName
+          $p = Start-Process msiexec.exe -ArgumentList @('/i', "`"$msi`"", '/qn', '/norestart', '/l*v', "$env:RUNNER_TEMP\install.log") -Wait -PassThru
+          if ($p.ExitCode -ne 0) { Get-Content "$env:RUNNER_TEMP\install.log" -Tail 60; throw "install failed ($($p.ExitCode))" }
+          $dir = Join-Path $env:ProgramFiles 'Courier'
+          foreach ($f in 'courier.exe', 'courier-cli.exe') { if (-not (Test-Path (Join-Path $dir $f))) { throw "$f missing in $dir" } }
+          & (Join-Path $dir 'courier-cli.exe') --version
+          $entry = Get-ItemProperty 'HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\*' | Where-Object { $_.DisplayName -eq 'Courier' }
+          if (-not $entry) { throw 'no installed-programs entry named Courier' }
+          $entry | Format-List DisplayName, DisplayVersion, Publisher, PSChildName
+          if (-not (Get-ItemProperty 'HKLM:\SOFTWARE\RegisteredApplications').Courier) { throw 'Courier is not offered as a mail program' }
+          $p = Start-Process msiexec.exe -ArgumentList @('/x', $entry.PSChildName, '/qn', '/norestart') -Wait -PassThru
+          if ($p.ExitCode -ne 0) { throw "uninstall failed ($($p.ExitCode))" }
+          if (Test-Path (Join-Path $dir 'courier.exe')) { throw 'uninstall left courier.exe behind' }
+
+  # Compiles the two macOS programs for both architectures. No signing secret, no environment.
+  macos-build:
+    name: macOS universal (build)
+    runs-on: macos-latest
+    outputs:
+      digest: ${{ steps.seal.outputs.digest }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: dtolnay/rust-toolchain@683b588c487a69d01f6c6ddf40f036ff682cc2c8 # master (no releases; pinned by hash) # zizmor: ignore[ref-version-mismatch]
+        with:
+          toolchain: 1.98.1
+          targets: aarch64-apple-darwin, x86_64-apple-darwin
+      - name: Build
+        env:
+          COURIER_GOOGLE_CLIENT_ID: ${{ secrets.COURIER_GOOGLE_CLIENT_ID }}
+          COURIER_GOOGLE_CLIENT_SECRET: ${{ secrets.COURIER_GOOGLE_CLIENT_SECRET }}
+        run: bash packaging/macos/package.sh --arch universal --build-only
+      - name: Hand the programs on by digest
+        id: seal
+        run: |
+          for t in aarch64-apple-darwin x86_64-apple-darwin; do
+            mkdir -p "handoff/$t/release"
+            cp "target/$t/release/courier" "target/$t/release/courier-cli" "handoff/$t/release/"
+          done
+          digest=$(bash packaging/ci/handoff.sh seal handoff build-macos)
+          echo "digest=$digest" >>"$GITHUB_OUTPUT"
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: build-macos
+          path: handoff/
+          if-no-files-found: error
+          retention-days: 7
+
+  # Signs, notarizes and packages what macos-build made. Never runs cargo or a built program.
+  macos:
+    name: macOS universal
+    needs: [macos-build]
+    runs-on: macos-latest
+    # As for Windows: signing secrets only in the `release` environment, for a version tag.
+    environment: ${{ inputs.sign && 'release' || '' }}
+    outputs:
+      digest: ${{ steps.seal.outputs.digest }}
+    steps:
+      - name: Signing only for a pushed version tag
+        if: inputs.sign && !(github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v'))
+        run: |
+          echo "::error::signing was asked for on $GITHUB_REF ($GITHUB_EVENT_NAME); only a pushed version tag is signed"
+          exit 1
+      # The scripts come from the tagged commit, not from the build job.
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          name: build-macos
+          path: prebuilt
+      - name: The programs are the ones macos-build made
+        env:
+          DIGEST: ${{ needs.macos-build.outputs.digest }}
+        run: |
+          bash packaging/ci/handoff.sh check prebuilt "build-macos=$DIGEST"
+          # Artifacts don't keep the executable bit.
+          chmod 755 prebuilt/*/release/*
+      # With the signing secrets set, the app is signed with the Developer ID and notarized;
+      # without them (an unsigned build, or none in the environment) it is ad-hoc signed and the
+      # script says so. codesign, notarytool and hdiutil are the system's.
+      - name: Import the signing certificate
+        if: inputs.sign
+        env:
+          APPLE_CERTIFICATE: ${{ secrets.APPLE_CERTIFICATE }}
+          APPLE_CERTIFICATE_PASSWORD: ${{ secrets.APPLE_CERTIFICATE_PASSWORD }}
+          KEYCHAIN_PASSWORD: ${{ secrets.KEYCHAIN_PASSWORD }}
+        run: |
+          if [ -n "${APPLE_CERTIFICATE:-}" ]; then bash packaging/macos/import-cert.sh; else echo "no signing certificate: ad-hoc signing"; fi
+      - name: Sign and package (.app in a .dmg, CLI zip)
+        env:
+          CARGO_TARGET_DIR: ${{ github.workspace }}/prebuilt
+          APPLE_ID: ${{ inputs.sign && secrets.APPLE_ID || '' }}
+          APPLE_PASSWORD: ${{ inputs.sign && secrets.APPLE_PASSWORD || '' }}
+          APPLE_TEAM_ID: ${{ inputs.sign && secrets.APPLE_TEAM_ID || '' }}
+        run: bash packaging/macos/package.sh --arch universal --skip-build --no-run
+      - name: Hand the release files on by digest
+        id: seal
+        run: |
+          digest=$(bash packaging/ci/handoff.sh seal dist/release release-macos)
+          echo "digest=$digest" >>"$GITHUB_OUTPUT"
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: release-macos
+          path: dist/release/*
+          if-no-files-found: error
+          retention-days: 30
+      - name: Remove the signing keychain
+        if: always() && inputs.sign
+        run: |
+          if [ -n "${MACOS_KEYCHAIN:-}" ]; then security delete-keychain "$MACOS_KEYCHAIN" || true; fi
+
+  # The signed files as somebody gets them, in a job without secrets.
+  macos-smoke:
+    name: macOS universal (check)
+    needs: [macos]
+    runs-on: macos-latest
+    steps:
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          name: release-macos
+          path: dist/release
+      - name: Check the .dmg
+        run: |
+          dmg=$(ls dist/release/*-macos-universal.dmg)
+          mnt=$(mktemp -d)
+          hdiutil attach "$dmg" -nobrowse -readonly -mountpoint "$mnt"
+          app="$mnt/Courier.app"
+          # The app as somebody gets it: the signature holds for the copy in the image too. When
+          # it doesn't, say what the image attached to which file.
+          if ! codesign --verify --deep --strict --verbose=4 "$app"; then
+            echo "::group::What is attached to the files in the image"
+            xattr -lr "$app" || true
+            ls -laO@ "$mnt" "$app" "$app/Contents" "$app/Contents/MacOS" "$app/Contents/Resources" || true
+            echo "::endgroup::"
+            hdiutil detach "$mnt" || true
+            exit 1
+          fi
+          plutil -p "$app/Contents/Info.plist" | grep -E "CFBundleIdentifier|CFBundleIconFile|CFBundleShortVersionString"
+          lipo -info "$app/Contents/MacOS/Courier"
+          "$app/Contents/MacOS/Courier" --version
+          hdiutil detach "$mnt"
+      - name: Run the CLI from its zip
+        run: |
+          dir=$(mktemp -d)
+          ditto -x -k dist/release/courier-cli-*-macos-universal.zip "$dir"
+          cli=$(ls "$dir"/*/courier-cli)
+          codesign --verify --strict --verbose=2 "$cli"
+          "$cli" --version
+
+  linux:
+    name: Linux ${{ matrix.arch }}
+    # The oldest supported Ubuntu image: binaries built against its glibc (2.35) run on newer ones.
+    runs-on: ${{ matrix.runner }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - { arch: x86_64, runner: ubuntu-22.04, deb: amd64 }
+          - { arch: aarch64, runner: ubuntu-22.04-arm, deb: arm64 }
+    outputs:
+      x86_64: ${{ steps.seal.outputs.x86_64 }}
+      aarch64: ${{ steps.seal.outputs.aarch64 }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Install system libraries and packaging tools
+        env:
+          DEB_ARCH: ${{ matrix.deb }}
+        run: |
+          .github/scripts/apt-mirrors.sh
+          sudo apt-get install -y --no-install-recommends \
+            libxkbcommon-dev libwayland-dev libx11-dev libxrandr-dev libxi-dev libgl1-mesa-dev \
+            desktop-file-utils appstream zsync file xvfb libxkbcommon-x11-0 libegl1 mesa-vulkan-drivers
+          curl --proto =https --proto-redir =https --tlsv1.2 -fsSL -o "$RUNNER_TEMP/nfpm.deb" \
+            "https://github.com/goreleaser/nfpm/releases/download/v${NFPM_VERSION}/nfpm_${NFPM_VERSION}_${DEB_ARCH}.deb"
+          case "${NFPM_VERSION}:${DEB_ARCH}" in
+            2.47.0:amd64) expected=3f1cf344bd0b57373ca55636a78c08b0491f7293d609a456a9ac3b0b150fda97 ;;
+            2.47.0:arm64) expected=27419eb382695a7942be8ad52259f3ec1854fad001b3ae4baed34ce39a223b97 ;;
+            *) echo "::error::no checksum for nfpm ${NFPM_VERSION} ${DEB_ARCH}"; exit 1 ;;
+          esac
+          echo "$expected  $RUNNER_TEMP/nfpm.deb" | sha256sum -c -
+          sudo dpkg -i "$RUNNER_TEMP/nfpm.deb"
+      - uses: dtolnay/rust-toolchain@683b588c487a69d01f6c6ddf40f036ff682cc2c8 # master (no releases; pinned by hash) # zizmor: ignore[ref-version-mismatch]
+        with:
+          toolchain: 1.98.1
+      - name: Build and package (AppImage, deb, rpm, tar.gz)
+        env:
+          COURIER_GOOGLE_CLIENT_ID: ${{ secrets.COURIER_GOOGLE_CLIENT_ID }}
+          COURIER_GOOGLE_CLIENT_SECRET: ${{ secrets.COURIER_GOOGLE_CLIENT_SECRET }}
+        run: bash packaging/linux/package.sh
+      # The .deb for real: installed with its dependencies, the window started on a virtual
+      # display, and removed again.
+      - name: Install, start and remove the .deb
+        run: |
+          dpkg-deb --info dist/release/*.deb
+          sudo apt-get install -y ./dist/release/*.deb
+          courier-cli --version
+          desktop-file-validate /usr/share/applications/*courier.desktop
+          COURIER_NO_PREFS=1 timeout 20 xvfb-run -a courier --sample >"$RUNNER_TEMP/window.log" 2>&1 || code=$?
+          # Still running when the time was up (124) is what a window that started looks like.
+          if [ "${code:-0}" != 124 ]; then cat "$RUNNER_TEMP/window.log"; echo "::error::the window did not stay up (exit ${code:-0})"; exit 1; fi
+          sudo apt-get remove -y courier
+      - name: Hand the release files on by digest
+        id: seal
+        env:
+          ARCH: ${{ matrix.arch }}
+        run: |
+          digest=$(bash packaging/ci/handoff.sh seal dist/release "release-linux-$ARCH")
+          echo "$ARCH=$digest" >>"$GITHUB_OUTPUT"
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: release-linux-${{ matrix.arch }}
+          path: dist/release/*
+          if-no-files-found: error
+          retention-days: 30
+
+  flatpak:
+    name: Flatpak ${{ matrix.arch }}
+    needs: [linux]
+    runs-on: ${{ matrix.runner }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - { arch: x86_64, runner: ubuntu-24.04 }
+          - { arch: aarch64, runner: ubuntu-24.04-arm }
+    outputs:
+      x86_64: ${{ steps.seal.outputs.x86_64 }}
+      aarch64: ${{ steps.seal.outputs.aarch64 }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          name: release-linux-${{ matrix.arch }}
+          path: dist/linux
+      - name: Install flatpak-builder
+        run: |
+          .github/scripts/apt-mirrors.sh
+          sudo apt-get install -y --no-install-recommends flatpak flatpak-builder librsvg2-common
+          sudo sysctl -w kernel.apparmor_restrict_unprivileged_userns=0
+      - name: Build the Flatpak bundle
+        env:
+          ARCH: ${{ matrix.arch }}
+          DIST: ${{ github.workspace }}/dist/flatpak
+        run: |
+          set -- dist/linux/courier-*-linux-"$ARCH".tar.gz
+          if [ ! -f "$1" ]; then echo "::error::no tar.gz for $ARCH in dist/linux"; exit 1; fi
+          bash packaging/linux/flatpak-bundle.sh "$1"
+      - name: Hand the bundle on by digest
+        id: seal
+        env:
+          ARCH: ${{ matrix.arch }}
+        run: |
+          digest=$(bash packaging/ci/handoff.sh seal dist/flatpak "release-flatpak-$ARCH")
+          echo "$ARCH=$digest" >>"$GITHUB_OUTPUT"
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: release-flatpak-${{ matrix.arch }}
+          path: dist/flatpak/*
+          if-no-files-found: error
+          retention-days: 30
+
+  freebsd:
+    name: FreeBSD x86_64
+    if: inputs.freebsd
+    runs-on: ubuntu-24.04
+    timeout-minutes: 180
+    outputs:
+      digest: ${{ steps.seal.outputs.digest }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Build and package in a FreeBSD VM
+        # A FreeBSD build that fails doesn't hold back the other platforms: the release then has
+        # no FreeBSD tarball, and this step shows as failed.
+        continue-on-error: true
+        env:
+          COURIER_GOOGLE_CLIENT_ID: ${{ secrets.COURIER_GOOGLE_CLIENT_ID }}
+          COURIER_GOOGLE_CLIENT_SECRET: ${{ secrets.COURIER_GOOGLE_CLIENT_SECRET }}
+        uses: vmactions/freebsd-vm@c46abacb49f09938ca4e1702d15d836285d694cc # v1.5.9
+        with:
+          release: "15.1"
+          envs: "COURIER_GOOGLE_CLIENT_ID COURIER_GOOGLE_CLIENT_SECRET"
+          usesh: true
+          cpu: 4
+          mem: 12288
+          prepare: |
+            pkg install -y bash git curl pkgconf cmake python3 libxkbcommon wayland libX11 libXcursor libXrandr libXi libxcb mesa-libs vulkan-loader fontconfig freetype2
+            # rustup-init 1.29.1, pinned and checked before it runs:
+            # https://static.rust-lang.org/rustup/archive/1.29.1/x86_64-unknown-freebsd/rustup-init
+            curl --proto '=https' --tlsv1.2 -fsSL -o /tmp/rustup-init https://static.rust-lang.org/rustup/archive/1.29.1/x86_64-unknown-freebsd/rustup-init
+            [ "$(sha256 -q /tmp/rustup-init)" = af29791be32fd2f926865a983edc97f452078e6d1b4a6037d12ca2f8e67ffa3d ] || { echo "rustup-init does not match its pinned sha256"; exit 1; }
+            chmod +x /tmp/rustup-init
+            /tmp/rustup-init -y --profile minimal --default-toolchain 1.98.1
+          run: |
+            set -e
+            . "$HOME/.cargo/env"
+            git config --global --add safe.directory "*"
+            export CARGO_TARGET_DIR=/var/tmp/courier-target CARGO_BUILD_JOBS=4
+            bash packaging/freebsd/package.sh
+            rm -rf /var/tmp/courier-target
+      - name: Hand the tarball on by digest
+        id: seal
+        run: |
+          if [ -z "$(ls -A dist/release 2>/dev/null)" ]; then echo "no FreeBSD tarball to hand on"; exit 0; fi
+          digest=$(bash packaging/ci/handoff.sh seal dist/release release-freebsd-x86_64)
+          echo "digest=$digest" >>"$GITHUB_OUTPUT"
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: release-freebsd-x86_64
+          path: dist/release/*
+          if-no-files-found: warn
+          retention-days: 30
+
+  web:
+    name: Web (wasm)
+    runs-on: ubuntu-24.04
+    outputs:
+      digest: ${{ steps.seal.outputs.digest }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: dtolnay/rust-toolchain@683b588c487a69d01f6c6ddf40f036ff682cc2c8 # master (no releases; pinned by hash) # zizmor: ignore[ref-version-mismatch]
+        with:
+          toolchain: 1.98.1
+          targets: wasm32-unknown-unknown
+      # Pinned trunk and wasm-bindgen releases (prebuilt, checked by install-action against its
+      # own checksums). wasm-bindgen must be the version in Cargo.lock: trunk runs offline below,
+      # so a mismatch fails the build instead of trunk downloading one.
+      - uses: taiki-e/install-action@c509219cf42fba86913069efd0ade2458c59337b # v2.90.1
+        with:
+          tool: trunk@0.21.14,wasm-bindgen@0.2.129
+      # wasm-opt from binaryen version_123 (the one trunk 0.21.14 asks for), pinned and checked:
+      # https://github.com/WebAssembly/binaryen/releases/tag/version_123
+      - name: Install wasm-opt
+        run: |
+          url=https://github.com/WebAssembly/binaryen/releases/download/version_123/binaryen-version_123-x86_64-linux.tar.gz
+          curl --proto '=https' --tlsv1.2 -fsSL -o "$RUNNER_TEMP/binaryen.tar.gz" "$url"
+          echo "e959f2170af4c20c552e9de3a0253704d6a9d2766e8fdb88e4d6ac4bae9388fe  $RUNNER_TEMP/binaryen.tar.gz" | sha256sum -c -
+          tar -xzf "$RUNNER_TEMP/binaryen.tar.gz" -C "$RUNNER_TEMP"
+          echo "$RUNNER_TEMP/binaryen-version_123/bin" >>"$GITHUB_PATH"
+      - name: Fetch the crates
+        run: cargo fetch --locked
+      # Offline: trunk uses the tools installed above and downloads nothing itself.
+      - name: Build and zip the web app
+        env:
+          TRUNK_OFFLINE: "true"
+        run: bash packaging/web/package.sh
+      - name: Hand the zip on by digest
+        id: seal
+        run: |
+          digest=$(bash packaging/ci/handoff.sh seal dist/release release-web)
+          echo "digest=$digest" >>"$GITHUB_OUTPUT"
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: release-web
+          path: dist/release/*
+          if-no-files-found: error
+          retention-days: 30

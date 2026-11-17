@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<!-- Template: packaging/macos/package.sh substitutes @VERSION@ (full, e.g. 0.2.0-rc.1),
+     @SHORT_VERSION@ (numeric X.Y.Z) and @BUILD_SHA@. -->
+<plist version="1.0">
+<dict>
+  <key>CFBundleDevelopmentRegion</key>
+  <string>en</string>
+  <key>CFBundleDisplayName</key>
+  <string>Courier</string>
+  <key>CFBundleName</key>
+  <string>Courier</string>
+  <key>CFBundleExecutable</key>
+  <string>Courier</string>
+  <key>CFBundleIdentifier</key>
+  <string>io.github.her3f.courier</string>
+  <key>CFBundleInfoDictionaryVersion</key>
+  <string>6.0</string>
+  <key>CFBundlePackageType</key>
+  <string>APPL</string>
+  <key>CFBundleSignature</key>
+  <string>????</string>
+  <key>CFBundleShortVersionString</key>
+  <string>@SHORT_VERSION@</string>
+  <key>CFBundleVersion</key>
+  <string>@SHORT_VERSION@</string>
+  <key>CourierVersion</key>
+  <string>@VERSION@</string>
+  <key>CourierBuildCommit</key>
+  <string>@BUILD_SHA@</string>
+  <key>CFBundleIconFile</key>
+  <string>Courier</string>
+  <key>LSApplicationCategoryType</key>
+  <string>public.app-category.productivity</string>
+  <!-- Must match MACOSX_DEPLOYMENT_TARGET in package.sh. Big Sur is the first release on
+       Apple silicon and has the Metal feature set wgpu targets. -->
+  <key>LSMinimumSystemVersion</key>
+  <string>11.0</string>
+  <key>NSHighResolutionCapable</key>
+  <true/>
+  <key>NSSupportsAutomaticGraphicsSwitching</key>
+  <true/>
+  <key>NSRequiresAquaSystemAppearance</key>
+  <false/>
+  <key>NSHumanReadableCopyright</key>
+  <string>Copyright © the Courier authors. MIT OR Apache-2.0.</string>
+
+  <!-- Files Courier opens: messages, calendars, contact cards (the system's own type
+       declarations). LSHandlerRank Alternate: Courier is offered in Open With and in the
+       system's choice of program, and never becomes what opens them unless the owner chooses it.
+       A second start is the Finder's open-documents event to the running app (apple_events.rs).
+       No CFBundleURLTypes for mailto: yet: a link arrives as a GetURL Apple event, which the app
+       can't receive until fmv-macos-events hands it on (#505). -->
+  <key>CFBundleDocumentTypes</key>
+  <array>
+    <dict>
+      <key>CFBundleTypeName</key>
+      <string>Mail Message</string>
+      <key>CFBundleTypeRole</key>
+      <string>Viewer</string>
+      <key>LSHandlerRank</key>
+      <string>Alternate</string>
+      <key>LSItemContentTypes</key>
+      <array>
+        <string>com.apple.mail.email</string>
+        <string>public.email-message</string>
+      </array>
+    </dict>
+    <dict>
+      <key>CFBundleTypeName</key>
+      <string>Calendar File</string>
+      <key>CFBundleTypeRole</key>
+      <string>Viewer</string>
+      <key>LSHandlerRank</key>
+      <string>Alternate</string>
+      <key>LSItemContentTypes</key>
+      <array>
+        <string>com.apple.ical.ics</string>
+        <string>public.calendar-event</string>
+      </array>
+    </dict>
+    <dict>
+      <key>CFBundleTypeName</key>
+      <string>Contact Card</string>
+      <key>CFBundleTypeRole</key>
+      <string>Viewer</string>
+      <key>LSHandlerRank</key>
+      <string>Alternate</string>
+      <key>LSItemContentTypes</key>
+      <array>
+        <string>public.vcard</string>
+      </array>
+    </dict>
+  </array>
+</dict>
+</plist>

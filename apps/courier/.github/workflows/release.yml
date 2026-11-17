@@ -1,0 +1,339 @@
+name: Release
+
+# A pushed version tag vX.Y.Z builds and signs every platform (package.yml) and makes ONE draft
+# GitHub release, "Courier vX.Y.Z" on that tag, holding all the files plus SHA256SUMS.txt
+# (`sha256sum` format) and SHA256SUMS.txt.sig (Courier's own ed25519 signature over it, which
+# a copy of Courier checks before it takes an update): the layout of the Craft apps' releases,
+# so White Office Launcher and anything else that reads those releases finds Courier's files by
+# the same names. A maintainer reviews the draft and publishes it by hand. See docs/releasing.md.
+#
+# A tag builds and signs only when its commit is on main and CI passed there, or the commit merges
+# an up-to-date pull request whose CI passed on the same tree (the `version` job checks that
+# first; every other job needs it).
+#
+# The signing and publishing jobs run in the protected `release` environment, which holds the
+# signing secrets and is limited to version tags; only a pushed tag reaches them. They are not the
+# jobs that build: package.yml compiles in jobs that hold no secret and hands the binaries on by
+# digest, and no job with a signing secret, an Azure sign-in, a keychain or the `release`
+# environment runs cargo, rustup or a built program (`cargo xtask workflows` checks it). The
+# release files are checked against the digests their jobs gave before the checksums are made, and
+# the checksums are signed with the runner's OpenSSL (packaging/sign-sums.sh), not a program built
+# here.
+#
+# Run by hand (workflow_dispatch) it builds everything unsigned and keeps the files as workflow
+# artifacts: a dry run, on any branch, that is given no secrets and publishes nothing.
+#
+# This workflow is self-contained on purpose. The Craft apps inside the storytold organisation
+# call a shared one (storytold/craft-common-actions) that needs that organisation's runners and
+# release environment; if Courier's repository ever moves there, call that one instead.
+
+on:
+  push:
+    tags:
+      - "v[0-9]+.[0-9]+.[0-9]+"
+      - "v[0-9]+.[0-9]+.[0-9]+-*"
+  workflow_dispatch:
+    inputs:
+      freebsd:
+        description: "Also build the FreeBSD tarball (in a VM; slow)"
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  version:
+    name: Version
+    runs-on: ubuntu-24.04
+    # checks: read, for the CI result of the tagged commit.
+    permissions:
+      contents: read
+      checks: read
+    outputs:
+      version: ${{ steps.v.outputs.version }}
+      prerelease: ${{ steps.v.outputs.prerelease }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+          # All branches, to tell whether the tagged commit is on main.
+          fetch-depth: 0
+      # Everything that builds or signs `needs` this job, so a tag that fails here stops the run
+      # before any signing secret is in reach.
+      - name: A release tag is a commit of main that passed CI
+        if: github.ref_type == 'tag'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          if ! git merge-base --is-ancestor "$GITHUB_SHA" refs/remotes/origin/main; then
+            echo "::error::$GITHUB_REF_NAME points at $GITHUB_SHA, which is not on main: a release is tagged on a commit that was reviewed and merged"
+            exit 1
+          fi
+          passed() {
+            ok=$(gh api "repos/$GITHUB_REPOSITORY/commits/$1/check-runs?check_name=ci-ok&filter=latest&per_page=100" \
+              --jq '[.check_runs[] | select(.conclusion == "success" and .app.slug == "github-actions")] | length')
+            [ "${ok:-0}" -ge 1 ]
+          }
+          if passed "$GITHUB_SHA"; then
+            echo "$GITHUB_SHA is on main and its ci-ok passed"
+            exit 0
+          fi
+          # The merge commit of a pull request that was up to date with main holds exactly the
+          # tree its pull request's CI tested: main's tip was already in the branch, so the merge
+          # added nothing. Its ci-ok stands for the merge commit's, and a release need not wait for
+          # CI to run again on main.
+          read -r _ base head extra <<<"$(git rev-list --parents -n 1 "$GITHUB_SHA")"
+          if [ -n "${head:-}" ] && [ -z "${extra:-}" ] \
+            && git merge-base --is-ancestor "$base" "$head" \
+            && [ "$(git rev-parse "$GITHUB_SHA^{tree}")" = "$(git rev-parse "$head^{tree}")" ] \
+            && passed "$head"; then
+            echo "$GITHUB_SHA is on main and merges $head, whose ci-ok passed on the same tree"
+            exit 0
+          fi
+          echo "::error::no passing ci-ok check on $GITHUB_SHA, nor on a pull request it merged with the same tree: wait for CI on main to pass, or tag a commit that ran it (documentation-only commits do not run it)"
+          exit 1
+      - id: v
+        name: The tag is the version in Cargo.toml
+        run: |
+          . packaging/env.sh
+          if [ "$GITHUB_REF_TYPE" = tag ] && [ "v$VERSION" != "$GITHUB_REF_NAME" ]; then
+            echo "::error::tag $GITHUB_REF_NAME, but Cargo.toml says version $VERSION: run 'cargo xtask version set', commit, and tag that commit"
+            exit 1
+          fi
+          case "$VERSION" in *-*) pre=true ;; *) pre=false ;; esac
+          { echo "version=$VERSION"; echo "prerelease=$pre"; } >>"$GITHUB_OUTPUT"
+
+  # A run by hand: unsigned, no secrets, nothing published.
+  dry-run:
+    name: Package (dry run, unsigned)
+    needs: [version]
+    if: github.event_name == 'workflow_dispatch'
+    # zizmor's self-repository audit wants GitHub's new `$/` form; kept as `./` until a release has
+    # been cut with it, since this path runs on a tag alone.
+    uses: ./.github/workflows/package.yml # zizmor: ignore[self-repository]
+    # package.yml's Windows job asks for id-token, which a caller must grant; unsigned, it is unused.
+    permissions:
+      contents: read
+      id-token: write
+    with:
+      freebsd: ${{ inputs.freebsd == true }}
+      sign: false
+
+  # The dry run's checksums, made and "signed" as a release's are: no secret is given, so the
+  # signing step says "unsigned" and the run goes on. Kept as a workflow artifact.
+  dry-run-sums:
+    name: Checksums (dry run, unsigned)
+    needs: [dry-run]
+    if: github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          pattern: release-*
+          path: artifacts
+          merge-multiple: true
+      - name: The files are the ones their jobs made
+        env:
+          WINDOWS_X64: ${{ needs.dry-run.outputs.windows_x64 }}
+          WINDOWS_X86: ${{ needs.dry-run.outputs.windows_x86 }}
+          WINDOWS_ARM64: ${{ needs.dry-run.outputs.windows_arm64 }}
+          MACOS: ${{ needs.dry-run.outputs.macos }}
+          LINUX_X86_64: ${{ needs.dry-run.outputs.linux_x86_64 }}
+          LINUX_AARCH64: ${{ needs.dry-run.outputs.linux_aarch64 }}
+          FLATPAK_X86_64: ${{ needs.dry-run.outputs.flatpak_x86_64 }}
+          FLATPAK_AARCH64: ${{ needs.dry-run.outputs.flatpak_aarch64 }}
+          FREEBSD_X86_64: ${{ needs.dry-run.outputs.freebsd_x86_64 }}
+          WEB: ${{ needs.dry-run.outputs.web }}
+        run: |
+          bash packaging/ci/handoff.sh check artifacts \
+            "release-windows-x64=$WINDOWS_X64" "release-windows-x86=$WINDOWS_X86" "release-windows-arm64=$WINDOWS_ARM64" \
+            "release-macos=$MACOS" "release-linux-x86_64=$LINUX_X86_64" "release-linux-aarch64=$LINUX_AARCH64" \
+            "release-flatpak-x86_64=$FLATPAK_X86_64" "release-flatpak-aarch64=$FLATPAK_AARCH64" \
+            "release-freebsd-x86_64?=$FREEBSD_X86_64" "release-web=$WEB"
+      - name: Checksums
+        working-directory: artifacts
+        run: |
+          rm -f SHA256SUMS.txt SHA256SUMS.txt.sig
+          sha256sum -- * | tee SHA256SUMS.txt
+      - name: Sign the checksums (no key here)
+        run: packaging/sign-sums.sh artifacts
+      # The signing path itself, with a throwaway key in the release key's own format (made by
+      # `cargo xtask release-key new`): the runner's OpenSSL, as a tag's run uses it, must make
+      # the very signature `cargo xtask release-key sign` makes. This job holds no secret, so it
+      # may build; the job that holds the real key never does.
+      - uses: dtolnay/rust-toolchain@683b588c487a69d01f6c6ddf40f036ff682cc2c8 # master (no releases; pinned by hash) # zizmor: ignore[ref-version-mismatch]
+        with:
+          toolchain: 1.98.1
+      - name: OpenSSL signs as xtask does, with a throwaway key
+        run: |
+          keys="$RUNNER_TEMP/throwaway-keys"
+          scratch="$RUNNER_TEMP/throwaway-sums"
+          mkdir -p "$scratch/openssl" "$scratch/xtask"
+          cargo run --locked --quiet --package xtask -- release-key new "$keys"
+          cp artifacts/SHA256SUMS.txt "$scratch/openssl/"
+          cp artifacts/SHA256SUMS.txt "$scratch/xtask/"
+          key="$(cat "$keys/courier-release-key-in-use.pkcs8.b64")"
+          COURIER_RELEASE_KEY="$key" packaging/sign-sums.sh "$scratch/openssl"
+          COURIER_RELEASE_KEY="$key" cargo run --locked --quiet --package xtask -- release-key sign "$scratch/xtask/SHA256SUMS.txt"
+          if ! cmp "$scratch/openssl/SHA256SUMS.txt.sig" "$scratch/xtask/SHA256SUMS.txt.sig"; then
+            echo "::error::OpenSSL's signature isn't the one cargo xtask release-key sign makes"
+            exit 1
+          fi
+          echo "OpenSSL and xtask make the same signature"
+          rm -rf "$keys" "$scratch"
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: dry-run-sums
+          path: artifacts/SHA256SUMS.txt*
+          if-no-files-found: error
+
+  # The Android app end to end on an emulator against the Graph stand-in (MB3.15), for every
+  # release tag and dry run. It holds no secret and gates nothing yet: the Android app is not in a
+  # release. A failure shows on the run.
+  android-e2e:
+    name: Android end to end
+    needs: [version]
+    uses: ./.github/workflows/android-e2e.yml # zizmor: ignore[self-repository]
+    permissions:
+      contents: read
+
+  # A pushed version tag: signed, in the `release` environment (package.yml's signing jobs).
+  package:
+    name: Package
+    needs: [version]
+    if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v')
+    uses: ./.github/workflows/package.yml # zizmor: ignore[self-repository]
+    permissions:
+      contents: read
+      id-token: write # package.yml's Windows job signs in to Azure with OIDC
+    with:
+      freebsd: true
+      sign: true
+    # Only the secrets package.yml declares, by name. The signing ones live in the `release`
+    # environment; package.yml's jobs that sign name that environment, and only there do they have
+    # values. Those jobs build nothing: they sign what a build job without secrets handed on.
+    secrets:
+      APPLE_CERTIFICATE: ${{ secrets.APPLE_CERTIFICATE }}
+      APPLE_CERTIFICATE_PASSWORD: ${{ secrets.APPLE_CERTIFICATE_PASSWORD }}
+      KEYCHAIN_PASSWORD: ${{ secrets.KEYCHAIN_PASSWORD }}
+      APPLE_ID: ${{ secrets.APPLE_ID }}
+      APPLE_PASSWORD: ${{ secrets.APPLE_PASSWORD }}
+      APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+      WINDOWS_CERTIFICATE: ${{ secrets.WINDOWS_CERTIFICATE }}
+      WINDOWS_CERTIFICATE_PASSWORD: ${{ secrets.WINDOWS_CERTIFICATE_PASSWORD }}
+      AZURE_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
+      AZURE_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
+      AZURE_SIGNING_ENDPOINT: ${{ secrets.AZURE_SIGNING_ENDPOINT }}
+      AZURE_SIGNING_ACCOUNT: ${{ secrets.AZURE_SIGNING_ACCOUNT }}
+      AZURE_CERT_PROFILE: ${{ secrets.AZURE_CERT_PROFILE }}
+      COURIER_GOOGLE_CLIENT_ID: ${{ secrets.COURIER_GOOGLE_CLIENT_ID }}
+      COURIER_GOOGLE_CLIENT_SECRET: ${{ secrets.COURIER_GOOGLE_CLIENT_SECRET }}
+
+  publish:
+    name: Make the draft release
+    needs: [version, package]
+    # Pushed tags only; a run by hand stops at the artifacts.
+    if: "!cancelled() && needs.package.result == 'success' && github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v')"
+    runs-on: ubuntu-24.04
+    environment: release
+    permissions:
+      contents: write
+      # Build provenance: a signed attestation of which workflow run, at which commit, made
+      # each file (`gh attestation verify <file> -R <owner>/<repo>`).
+      id-token: write
+      attestations: write
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          pattern: release-*
+          path: artifacts
+          merge-multiple: true
+      - name: The files are the ones their jobs made
+        env:
+          WINDOWS_X64: ${{ needs.package.outputs.windows_x64 }}
+          WINDOWS_X86: ${{ needs.package.outputs.windows_x86 }}
+          WINDOWS_ARM64: ${{ needs.package.outputs.windows_arm64 }}
+          MACOS: ${{ needs.package.outputs.macos }}
+          LINUX_X86_64: ${{ needs.package.outputs.linux_x86_64 }}
+          LINUX_AARCH64: ${{ needs.package.outputs.linux_aarch64 }}
+          FLATPAK_X86_64: ${{ needs.package.outputs.flatpak_x86_64 }}
+          FLATPAK_AARCH64: ${{ needs.package.outputs.flatpak_aarch64 }}
+          FREEBSD_X86_64: ${{ needs.package.outputs.freebsd_x86_64 }}
+          WEB: ${{ needs.package.outputs.web }}
+        run: |
+          bash packaging/ci/handoff.sh check artifacts \
+            "release-windows-x64=$WINDOWS_X64" "release-windows-x86=$WINDOWS_X86" "release-windows-arm64=$WINDOWS_ARM64" \
+            "release-macos=$MACOS" "release-linux-x86_64=$LINUX_X86_64" "release-linux-aarch64=$LINUX_AARCH64" \
+            "release-flatpak-x86_64=$FLATPAK_X86_64" "release-flatpak-aarch64=$FLATPAK_AARCH64" \
+            "release-freebsd-x86_64?=$FREEBSD_X86_64" "release-web=$WEB"
+      - name: Checksums
+        working-directory: artifacts
+        run: |
+          rm -f SHA256SUMS.txt SHA256SUMS.txt.sig
+          sha256sum -- * | tee SHA256SUMS.txt
+      # Courier's own release signature over the checksums (SHA256SUMS.txt.sig): what a copy of
+      # Courier checks before it installs an update. Made by the runner's OpenSSL 3, checked
+      # against its package's file list first; nothing is compiled or downloaded in this job, and
+      # no program built from this repository runs with the key. Without the key the release is
+      # unsigned and says so.
+      - name: Sign the checksums
+        env:
+          COURIER_RELEASE_KEY: ${{ secrets.COURIER_RELEASE_KEY }}
+        run: packaging/sign-sums.sh artifacts
+      - name: Attest build provenance
+        id: attest
+        uses: actions/attest-build-provenance@4d101475d8b20a2381f78447822ac1eab6504dd8 # v4.2.2
+        with:
+          subject-path: artifacts/*
+      # The same attestation as a file beside the others (SLSA provenance, in-toto), for whoever
+      # checks a release without GitHub's command line. Not in SHA256SUMS.txt: it is made after it.
+      - name: Provenance file
+        env:
+          BUNDLE: ${{ steps.attest.outputs.bundle-path }}
+          VERSION: ${{ needs.version.outputs.version }}
+        run: cp -- "$BUNDLE" "artifacts/courier-$VERSION.intoto.jsonl"
+      # Always a draft: a maintainer checks it and publishes it by hand. A re-run replaces the files
+      # of the draft; a release that is already published is never changed here.
+      - name: Create the draft release, or replace the files of the draft a re-run made
+        working-directory: artifacts
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          VERSION: ${{ needs.version.outputs.version }}
+          PRERELEASE: ${{ needs.version.outputs.prerelease }}
+        run: |
+          tag="v$VERSION"
+          title="Courier v$VERSION"
+          pre=()
+          if [ "$PRERELEASE" = "true" ]; then pre=(--prerelease); fi
+          # The notes name the repository they are published in (a fork's point at the fork).
+          sed "s|GITHUB_REPOSITORY|$GITHUB_REPOSITORY|g" "$GITHUB_WORKSPACE/packaging/release-notes.md" >"$RUNNER_TEMP/notes.md"
+          if gh release view "$tag" >/dev/null 2>&1; then
+            if [ "$(gh release view "$tag" --json isDraft --jq .isDraft)" != "true" ]; then
+              echo "::error::release $tag is already published; the workflow only makes and refreshes drafts"
+              exit 1
+            fi
+            gh release view "$tag" --json assets --jq '.assets[].name' | while read -r asset; do
+              gh release delete-asset "$tag" "$asset" --yes
+            done
+            gh release upload "$tag" --clobber -- *
+          else
+            gh release create "$tag" --draft --title "$title" --target "$GITHUB_SHA" \
+              --notes-file "$RUNNER_TEMP/notes.md" "${pre[@]}" -- *
+          fi
+          {
+            echo "Draft release **$title** at \`${GITHUB_SHA::9}\`: check it, then publish it by hand."
+            echo
+            sed 's/^/    /' SHA256SUMS.txt
+          } >>"$GITHUB_STEP_SUMMARY"

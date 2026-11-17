@@ -1,0 +1,462 @@
+// SPDX-FileCopyrightText: Courier contributors
+// SPDX-License-Identifier: MIT OR Apache-2.0
+//! One Courier per mailbox.
+//!
+//! Two windows on one mailbox file would each save over the other's work. So the first to start
+//! takes a lock beside the mailbox and listens on a loopback port; one started later (a second
+//! click on the shortcut, a `mailto:` link, a file opened from the file manager) finds the lock
+//! taken, hands what it was started with to the first, which comes to the front, and exits.
+//!
+//! Beside the mailbox: `<mailbox>.lock`, held locked for as long as the first one runs (the
+//! system lets go of it however the program ends, so a crash leaves nothing to clean up), and
+//! `<mailbox>.instance`, the port and a random key (mode 0600 on Unix; elsewhere what the
+//! mailbox's folder allows, which is the user's own unless the mailbox was put somewhere shared),
+//! removed on exit.
+//!
+//! The hand-over is a trust boundary (`docs/threat-model.md`): only `127.0.0.1`, one line of
+//! JSON of at most [`MAX_LINE`] bytes that must carry the key (compared in constant time), at most
+//! [`MAX_ARGS`] things of at most [`MAX_ARG`] bytes each, and each of them checked as anything
+//! from outside is ([`checked`]): a `mailto:` link, or a file of a kind Courier opens (a
+//! message, a calendar or contact file, a folder of mail, a Courier mailbox) named by its whole
+//! path, that is there, is a file and can be read. Everything else is dropped and counted.
+//!
+//! Which runs take part: one started on a mailbox file takes part, `--control` or not (a second
+//! start on the same file never opens it again, so a run for a test that names the owner's mailbox
+//! hands over and exits); one on the sample mailbox, and one without preferences
+//! (`COURIER_NO_PREFS`) that names no `--mailbox`, keep nothing in a file and neither take a
+//! lock nor listen at the start, so they never meet the owner's window. A run without preferences
+//! that names a mailbox file is guarded for that file.
+//!
+//! Another mailbox in the same window (#517): a `.courier` file the window opens later (File ›
+//! Open, a recent one, a drop, one handed over here) or saves to has its lock taken first
+//! ([`Claimer::claim`]); when another Courier has it, the window refuses and its own mailbox
+//! stays open and locked. Once the window has the other file open ([`Guard::follow`], once a
+//! frame), that file is the one later starts are told of (its `.instance`, with the same port and
+//! key), and then the lock of the one before is let go of, so a start on that one opens it. After
+//! File › New, which keeps nothing in a file, nothing is held. A run that started without a lock
+//! (the sample) takes one the same way but doesn't listen: a later start on that file says it is
+//! open elsewhere.
+//! A lock left by a run that crashed was let go of by the system; its `.instance` file names a
+//! port nobody answers on and is replaced by the next first start.
+
+use std::fs::{File, OpenOptions, TryLockError};
+use std::io::{BufRead, BufReader, Read, Write};
+use std::net::{SocketAddr, TcpListener, TcpStream};
+use std::path::{Path, PathBuf};
+use std::sync::mpsc::{Receiver, Sender, channel};
+use std::sync::{Arc, Mutex};
+use std::time::{Duration, Instant};
+
+use courier_engine::io::Format;
+use serde_json::{Value, json};
+
+use crate::control_server::{keys_match, random_key, write_key_file};
+
+/// Longer lines are refused.
+pub(crate) const MAX_LINE: usize = 1 << 20;
+/// The most things one start can hand over, and the longest of them.
+pub(crate) const MAX_ARGS: usize = 256;
+pub(crate) const MAX_ARG: usize = 32 * 1024;
+/// The most message files one start can hand over (each is an import and a window).
+pub(crate) const MAX_MESSAGES: usize = 32;
+/// How long either side waits for the other on the connection.
+const ANSWER: Duration = Duration::from_secs(5);
+/// How long a later start keeps trying to reach the first (which may itself be starting).
+const REACH: Duration = Duration::from_secs(8);
+
+/// What starting found.
+pub enum Start {
+    /// Nobody else has this mailbox open: carry on, and keep the guard for as long as it is open.
+    First(Guard),
+    /// Another Courier has it open and took what this one was started with: exit.
+    Handed,
+    /// Another Courier has it open and could not be reached: say so and exit.
+    Unreachable(String),
+}
+
+/// What later starts handed over: the links and files that passed [`checked`], and how many
+/// things didn't.
+#[derive(Debug, Default, PartialEq, Eq)]
+pub struct Handed {
+    pub open: Vec<String>,
+    pub refused: usize,
+}
+
+/// The first instance's hold on a mailbox, and what later starts hand to it.
+pub struct Guard {
+    held: Arc<Mutex<Held>>,
+    rx: Receiver<Handed>,
+    wake: Arc<Mutex<Option<egui::Context>>>,
+}
+
+/// The locks a window holds: the mailbox it has open, and any it is about to open or save to.
+#[derive(Default)]
+struct Held {
+    /// The mailbox the window has open (its whole path), and its lock: held, not read, the lock
+    /// goes when the file is closed. No lock where the file system has none.
+    open: Option<(PathBuf, Option<File>)>,
+    /// Locks taken for another mailbox ([`Claimer::claim`]) that the window hasn't opened yet.
+    claimed: Vec<(PathBuf, Option<File>)>,
+    /// The `.instance` file later starts read, while there is one.
+    info: Option<PathBuf>,
+    /// What it says (the port and the key), where this window listens.
+    told: Option<String>,
+}
+
+/// Lets the window take the lock of another mailbox ([`Self::claim`]).
+#[derive(Clone)]
+pub struct Claimer(Arc<Mutex<Held>>);
+
+impl Claimer {
+    /// Take the lock of the mailbox file at `path` as well as what is held: `false` when another
+    /// Courier has it. A file whose lock can't be had for want of locks is guarded as at the
+    /// start: not at all.
+    pub fn claim(&self, path: &Path) -> bool {
+        let path = whole_path(path);
+        let mut held = self.0.lock().unwrap_or_else(|e| e.into_inner());
+        if held.open.as_ref().is_some_and(|(p, _)| *p == path) || held.claimed.iter().any(|(p, _)| *p == path) {
+            return true;
+        }
+        match lock(&path) {
+            Ok(file) => {
+                held.claimed.push((path, file));
+                true
+            }
+            Err(Taken) => false,
+        }
+    }
+}
+
+/// Another Courier holds the lock.
+struct Taken;
+
+/// `path` whole, as two spellings of one file are compared.
+fn whole_path(path: &Path) -> PathBuf {
+    std::path::absolute(path).unwrap_or_else(|_| path.to_path_buf())
+}
+
+/// The lock beside `mailbox`: `Ok(None)` when there is no lock to be had (no lock file, a file
+/// system without locks).
+fn lock(mailbox: &Path) -> Result<Option<File>, Taken> {
+    let lock_path = beside(mailbox, "lock");
+    let file = match OpenOptions::new().create(true).truncate(false).write(true).open(&lock_path) {
+        Ok(f) => f,
+        Err(e) => {
+            log::warn!("no lock file {} ({e}): not guarding against a second window", lock_path.display());
+            return Ok(None);
+        }
+    };
+    match file.try_lock() {
+        Ok(()) => Ok(Some(file)),
+        Err(TryLockError::WouldBlock) => Err(Taken),
+        Err(TryLockError::Error(e)) => {
+            log::warn!("{} can't be locked ({e}): not guarding against a second window", lock_path.display());
+            Ok(None)
+        }
+    }
+}
+
+impl Guard {
+    /// The window to wake when something is handed over.
+    pub fn wake(&self, ctx: &egui::Context) {
+        *self.wake.lock().unwrap_or_else(|e| e.into_inner()) = Some(ctx.clone());
+    }
+
+    /// What later starts were started with, since the last look; `Some` (even when empty) says
+    /// one of them asked for the window.
+    pub fn handed_over(&self) -> Option<Handed> {
+        let mut all: Option<Handed> = None;
+        while let Ok(handed) = self.rx.try_recv() {
+            let all = all.get_or_insert_default();
+            all.open.extend(handed.open);
+            all.refused = all.refused.saturating_add(handed.refused);
+        }
+        all
+    }
+
+    /// The window is closing: later starts have nobody to reach from here on.
+    pub fn close(&self) {
+        if let Some(info) = &self.held().info {
+            let _ = std::fs::remove_file(info);
+        }
+    }
+
+    fn held(&self) -> std::sync::MutexGuard<'_, Held> {
+        self.held.lock().unwrap_or_else(|e| e.into_inner())
+    }
+
+    /// For the window, to take the lock of another mailbox before it opens it or saves to it.
+    pub fn claimer(&self) -> Claimer {
+        Claimer(self.held.clone())
+    }
+
+    /// Once a frame: `now` is the mailbox file the window has open (`None`: one kept in no file).
+    /// When it is another than before, its lock (taken by [`Claimer::claim`], or now) becomes the
+    /// one held and later starts are told of it, and then the one before is let go of. Locks taken
+    /// for a mailbox the window didn't open (it couldn't be read, it was a copy, the owner changed
+    /// their mind) are let go of too.
+    pub fn follow(&self, now: Option<&Path>) {
+        let mut held = self.held();
+        let now = now.map(whole_path);
+        if held.open.as_ref().map(|(p, _)| p) == now.as_ref() {
+            held.claimed.clear();
+            return;
+        }
+        let taken = now.map(|path| match held.claimed.iter().position(|(p, _)| *p == path) {
+            Some(i) => {
+                let (_, file) = held.claimed.swap_remove(i);
+                (path, file)
+            }
+            // Not asked for first: taken now if it can be (the window has it open already).
+            None => {
+                let file = lock(&path).unwrap_or_else(|Taken| {
+                    log::warn!("another Courier holds the lock of the mailbox this window now has open");
+                    None
+                });
+                (path, file)
+            }
+        });
+        held.claimed.clear();
+        // Later starts on the new one reach this window, and on the old one nobody.
+        let info = match (&taken, &held.told) {
+            (Some((path, _)), Some(told)) => {
+                let info = beside(path, "instance");
+                match write_key_file(&info, told) {
+                    Ok(()) => Some(info),
+                    Err(e) => {
+                        log::error!("a second Courier won't be able to reach this one: {e}");
+                        None
+                    }
+                }
+            }
+            _ => None,
+        };
+        if let Some(old) = std::mem::replace(&mut held.info, info) {
+            let _ = std::fs::remove_file(old);
+        }
+        // Last, the lock of the one before goes.
+        held.open = taken;
+    }
+}
+
+/// A window with nothing held yet (the sample, a run without preferences that names no mailbox):
+/// it takes the lock of a mailbox file it opens later, and listens for nobody.
+pub fn none() -> Guard {
+    unguarded(None)
+}
+
+/// `<mailbox>.<what>`, beside the mailbox.
+pub(crate) fn beside(mailbox: &Path, what: &str) -> PathBuf {
+    let mut name = mailbox.file_name().unwrap_or_default().to_os_string();
+    name.push(".");
+    name.push(what);
+    mailbox.with_file_name(name)
+}
+
+/// Take the mailbox, or hand `args` (files, `mailto:` links) to the Courier that has it.
+pub fn start(mailbox: &Path, args: &[String]) -> Start {
+    start_within(mailbox, args, REACH)
+}
+
+pub(crate) fn start_within(mailbox: &Path, args: &[String], reach: Duration) -> Start {
+    let (lock_path, info_path) = (beside(mailbox, "lock"), beside(mailbox, "instance"));
+    if let Some(dir) = lock_path.parent() {
+        let _ = courier_engine::store::create_private_dir_all(dir);
+    }
+    let lock = match OpenOptions::new().create(true).truncate(false).write(true).open(&lock_path) {
+        Ok(f) => f,
+        // Nowhere to keep a lock: there is nothing to guard with, so start as if alone.
+        Err(e) => {
+            log::warn!("no lock file {} ({e}): not guarding against a second window", lock_path.display());
+            return Start::First(unguarded(Some(mailbox)));
+        }
+    };
+    match lock.try_lock() {
+        Ok(()) => Start::First(first(mailbox, lock, info_path)),
+        Err(TryLockError::WouldBlock) => hand_over(&info_path, args, reach),
+        // A file system without locks: start as if alone, as before there was a guard.
+        Err(TryLockError::Error(e)) => {
+            log::warn!("{} can't be locked ({e}): not guarding against a second window", lock_path.display());
+            Start::First(unguarded(Some(mailbox)))
+        }
+    }
+}
+
+/// A guard that holds no lock, of `mailbox` (when there is one) all the same, so that a window
+/// that moves from it to another file takes that one's lock.
+fn unguarded(mailbox: Option<&Path>) -> Guard {
+    let held = Held { open: mailbox.map(|m| (whole_path(m), None)), ..Default::default() };
+    Guard { held: Arc::new(Mutex::new(held)), rx: channel().1, wake: Default::default() }
+}
+
+/// Listen for later starts. Without a port, a key or the file that tells them, the lock is still
+/// held: a later start can't reach this one and says so instead of opening the mailbox twice.
+fn first(mailbox: &Path, lock: File, info_path: PathBuf) -> Guard {
+    let (tx, rx) = channel();
+    let wake: Arc<Mutex<Option<egui::Context>>> = Default::default();
+    let held = Held { open: Some((whole_path(mailbox), Some(lock))), ..Default::default() };
+    let guard = Guard { held: Arc::new(Mutex::new(held)), rx, wake: wake.clone() };
+    // A file left by a run that didn't end cleanly names a port nobody answers on.
+    let _ = std::fs::remove_file(&info_path);
+    let listening = TcpListener::bind(("127.0.0.1", 0)).and_then(|l| l.local_addr().map(|a| (l, a.port()))).map_err(|e| e.to_string());
+    let (listener, port, key) = match listening.and_then(|(l, port)| random_key().map(|key| (l, port, key))) {
+        Ok(ready) => ready,
+        Err(e) => {
+            log::error!("a second Courier won't be able to reach this one: {e}");
+            return guard;
+        }
+    };
+    let told = json!({"port": port, "key": key}).to_string();
+    // (Told again beside another mailbox the window opens later.)
+    guard.held().told = Some(told.clone());
+    if let Err(e) = write_key_file(&info_path, &told) {
+        log::error!("a second Courier won't be able to reach this one: {e}");
+        return guard;
+    }
+    guard.held().info = Some(info_path);
+    let key: Arc<str> = key.into();
+    std::thread::spawn(move || {
+        for stream in listener.incoming().flatten() {
+            let (tx, wake, key) = (tx.clone(), wake.clone(), key.clone());
+            std::thread::spawn(move || serve(stream, &tx, &wake, &key));
+        }
+    });
+    guard
+}
+
+/// One line, at most [`MAX_LINE`] long; `None` for anything else.
+pub(crate) fn read_line(stream: &TcpStream) -> Option<String> {
+    let mut buf = Vec::new();
+    let n = BufReader::new(stream).take(MAX_LINE as u64 + 1).read_until(b'\n', &mut buf).ok()?;
+    if n == 0 || buf.len() > MAX_LINE {
+        return None;
+    }
+    String::from_utf8(buf).ok()
+}
+
+/// A later start's one request: its key and what it was started with.
+fn serve(mut stream: TcpStream, tx: &Sender<Handed>, wake: &Mutex<Option<egui::Context>>, key: &str) {
+    let _ = stream.set_read_timeout(Some(ANSWER));
+    let _ = stream.set_write_timeout(Some(ANSWER));
+    let Some(request) = read_line(&stream).and_then(|line| serde_json::from_str::<Value>(&line).ok()) else { return };
+    if !keys_match(request.get("key").and_then(Value::as_str).unwrap_or(""), key) {
+        let _ = writeln!(stream, "{}", json!({"ok": false}));
+        return;
+    }
+    let handed = sorted(request.get("open"));
+    if handed.refused > 0 {
+        // (What was refused is not written down: a link can name people.)
+        log::warn!("a later start handed over {} things that aren't links or files Courier opens", handed.refused);
+    }
+    if tx.send(handed).is_err() {
+        let _ = writeln!(stream, "{}", json!({"ok": false}));
+        return;
+    }
+    if let Some(ctx) = wake.lock().unwrap_or_else(|e| e.into_inner()).as_ref() {
+        ctx.request_repaint();
+    }
+    let _ = writeln!(stream, "{}", json!({"ok": true}));
+}
+
+/// What a later start sent under `open`: at most [`MAX_ARGS`] things are looked at, and those
+/// that pass [`checked`] are kept. Anything that isn't a list is refused whole.
+pub(crate) fn sorted(open: Option<&Value>) -> Handed {
+    let mut handed = Handed::default();
+    let Some(list) = open else { return handed };
+    let Some(list) = list.as_array() else {
+        handed.refused = 1;
+        return handed;
+    };
+    handed.refused = list.len().saturating_sub(MAX_ARGS);
+    let mut messages = 0usize;
+    for item in list.iter().take(MAX_ARGS) {
+        match item.as_str().and_then(checked) {
+            // Each message file is an import and a window: no more than [`MAX_MESSAGES`] at once.
+            Some(ok) if is_message_file(&ok) && messages >= MAX_MESSAGES => handed.refused = handed.refused.saturating_add(1),
+            Some(ok) => {
+                messages = messages.saturating_add(usize::from(is_message_file(&ok)));
+                handed.open.push(ok);
+            }
+            None => handed.refused = handed.refused.saturating_add(1),
+        }
+    }
+    handed
+}
+
+/// Whether `what` names a message file (`.eml`), which opens in a window of its own.
+fn is_message_file(what: &str) -> bool {
+    Format::from_extension(what) == Some(Format::Eml) && !what.get(..7).is_some_and(|scheme| scheme.eq_ignore_ascii_case("mailto:"))
+}
+
+/// One thing a later start handed over, as the window is to open it, or `None` when it isn't
+/// something Courier opens from outside: a `mailto:` link (the compose command reads it as RFC
+/// 6068 says, and takes nothing but the recipients, the subject and the body from it), or the
+/// whole path of a file of a kind Courier opens (`file://` as desktops write one is read as
+/// its path) that is there, is a file (not a folder, a device or a pipe) and can be read.
+/// Nothing with a control character in it passes, nor anything over [`MAX_ARG`] bytes.
+pub(crate) fn checked(arg: &str) -> Option<String> {
+    if arg.is_empty() || arg.len() > MAX_ARG || arg.chars().any(char::is_control) {
+        return None;
+    }
+    if arg.get(..7).is_some_and(|scheme| scheme.eq_ignore_ascii_case("mailto:")) {
+        return Some(arg.to_string());
+    }
+    let path = courier_ui_egui::files::local_path(arg);
+    if path.chars().any(char::is_control) || !Path::new(&path).is_absolute() {
+        return None;
+    }
+    // A mailbox only by its own extension (`.json` is a mailbox to the import, not to a file
+    // manager).
+    let mailbox = path.rsplit_once('.').is_some_and(|(_, ext)| ext.eq_ignore_ascii_case(courier_engine::io::MAILBOX_EXT));
+    if Format::from_extension(&path)? == Format::Mailbox && !mailbox {
+        return None;
+    }
+    // Opened without waiting and checked through that handle: a pipe or a device where a file was
+    // named neither passes nor holds this thread. (The window reads it again the same way, so a
+    // file swapped after this check is refused there too.)
+    courier_engine::io::regular_file(Path::new(&path)).ok()?;
+    Some(path)
+}
+
+/// A file named on the command line is named from where this start was run: the first instance
+/// runs somewhere else, so it gets the whole path. Links are left as they are.
+fn whole(arg: &str) -> String {
+    if arg.contains("://") || arg.get(..7).is_some_and(|scheme| scheme.eq_ignore_ascii_case("mailto:")) {
+        return arg.to_string();
+    }
+    std::path::absolute(arg).map(|p| p.to_string_lossy().into_owned()).unwrap_or_else(|_| arg.to_string())
+}
+
+/// Give `args` to the instance `info_path` tells of, trying for as long as `reach`.
+pub(crate) fn hand_over(info_path: &Path, args: &[String], reach: Duration) -> Start {
+    let args: Vec<String> = args.iter().map(|a| whole(a)).collect();
+    let until = Instant::now() + reach;
+    let mut why;
+    loop {
+        match try_hand_over(info_path, &args) {
+            Ok(()) => return Start::Handed,
+            Err(e) => why = e,
+        }
+        if Instant::now() >= until {
+            return Start::Unreachable(why);
+        }
+        std::thread::sleep(Duration::from_millis(200));
+    }
+}
+
+fn try_hand_over(info_path: &Path, args: &[String]) -> Result<(), String> {
+    let info = std::fs::read(info_path).map_err(|e| format!("{}: {e}", info_path.display()))?;
+    let info: Value = serde_json::from_slice(&info).map_err(|e| format!("{}: {e}", info_path.display()))?;
+    let port = info.get("port").and_then(Value::as_u64).and_then(|p| u16::try_from(p).ok()).filter(|p| *p != 0).ok_or("no port")?;
+    let key = info.get("key").and_then(Value::as_str).ok_or("no key")?;
+    let mut stream = TcpStream::connect_timeout(&SocketAddr::from(([127, 0, 0, 1], port)), ANSWER).map_err(|e| format!("127.0.0.1:{port}: {e}"))?;
+    let _ = stream.set_read_timeout(Some(ANSWER));
+    let _ = stream.set_write_timeout(Some(ANSWER));
+    writeln!(stream, "{}", json!({"key": key, "open": args})).map_err(|e| e.to_string())?;
+    let answer = read_line(&stream).and_then(|line| serde_json::from_str::<Value>(&line).ok()).ok_or("no answer")?;
+    if answer.get("ok").and_then(Value::as_bool) == Some(true) { Ok(()) } else { Err("it refused".to_string()) }
+}
+
+#[cfg(test)]
+#[path = "single_instance_tests.rs"]
+mod single_instance_tests;
