@@ -1,3 +1,3 @@
 User-agent: *
 Allow: /
-Sitemap: https://whiteoffile.whitebearom.com/sitemap.xml
+Sitemap: https://whiteoffice.whitebearom.com/sitemap.xml

@@ -1,6 +1,6 @@
 # White Office Launcher app icon
 
-The app icon is the **White Office "A" mark in blue** (whiteoffile.whitebearom.com's favicon), exactly as supplied in
+The app icon is the **White Office "A" mark in blue** (whiteoffice.whitebearom.com's favicon), exactly as supplied in
 [`docs/brand/whiteoffice-mark.svg`](../../docs/brand/whiteoffice-mark.svg). Every file in this
 directory is rendered from it by `packaging/icons.sh`.
 

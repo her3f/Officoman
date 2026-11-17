@@ -94,7 +94,7 @@ sheaf-cli run    --script steps.json [--root DIR] [--report]
     "\
 sheaf-cli ui     --control FILE <method> [key=value …] [--out shot.png]
                                                            drive a running app started with --control FILE
-website: https://whiteoffile.whitebearom.com"
+website: https://whiteoffice.whitebearom.com"
 );
 
 fn main() -> ExitCode {

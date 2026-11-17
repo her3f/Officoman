@@ -343,7 +343,7 @@ filter	Installed	Nainstalováno
 @id	appearance.theme	Vzhled
 	Show White Office Launcher	Zobrazit White Office Launcher
 	Check for Updates	Zkontrolovat aktualizace
-	Visit whiteoffile.whitebearom.com	Navštívit whiteoffile.whitebearom.com
+	Visit whiteoffice.whitebearom.com	Navštívit whiteoffice.whitebearom.com
 	White Office on GitHub	White Office na GitHubu
 	Join the White Office Discord	Připojit se na White Office Discord
 @plural	White Office Launcher · {n} update available|White Office Launcher · {n} updates available	White Office Launcher · {n} dostupná aktualizace|White Office Launcher · {n} dostupné aktualizace|White Office Launcher · {n} dostupných aktualizací

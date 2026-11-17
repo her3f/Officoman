@@ -28,7 +28,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent.parent
 VENDOR = ROOT / "_vendor"
 APPS = ROOT / "apps"
-SITE = "https://whiteoffile.whitebearom.com"
+SITE = "https://whiteoffice.whitebearom.com"
 MONO = "https://github.com/her3f/officoman"
 
 # upstream dir -> (slug, TitleCase)
@@ -88,7 +88,7 @@ def build_rules() -> list[tuple[str, str]]:
         rules.append((f"https://getWhite Office.com/apps/{old}", f"{SITE}/apps/{new}.html"))
     rules += [
         ("https://getWhite Office.com", SITE),
-        ("getWhite Office.com", "whiteoffile.whitebearom.com"),
+        ("getWhite Office.com", "whiteoffice.whitebearom.com"),
         ("discord.gg/White Office", "github.com/her3f/officoman/discussions"),
         ("https://www.youtube.com/@OfficialWhite OfficeStudios", MONO),
         ("https://x.com/get_White Office", MONO),

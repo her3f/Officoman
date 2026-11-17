@@ -14,7 +14,7 @@ section: editors
 priority: optional
 maintainer: ${PODIUM_MAINTAINER}
 vendor: White Office
-homepage: https://whiteoffile.whitebearom.com/apps/podium.html
+homepage: https://whiteoffice.whitebearom.com/apps/podium.html
 license:  
 description: |-
   , native presentation app that works the way PowerPoint users

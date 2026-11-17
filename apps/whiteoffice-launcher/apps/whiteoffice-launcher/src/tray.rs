@@ -60,7 +60,7 @@ impl Tray {
         let show = MenuItem::new(i18n::t("Show White Office Launcher"), true, None);
         let check = MenuItem::new(i18n::t("Check for Updates"), true, None);
         use whiteoffice_launcher_core::catalog::WEBSITE_URL;
-        let website = MenuItem::new(i18n::t("Visit whiteoffile.whitebearom.com"), true, None);
+        let website = MenuItem::new(i18n::t("Visit whiteoffice.whitebearom.com"), true, None);
         let quit = MenuItem::new(i18n::t("Quit White Office Launcher"), true, None);
         let menu = Menu::new();
         menu.append_items(&[&show, &check, &PredefinedMenuItem::separator(), &website, &PredefinedMenuItem::separator(), &quit])
@@ -109,7 +109,7 @@ impl Tray {
         let labels = vec![
             (show, "Show White Office Launcher"),
             (check, "Check for Updates"),
-            (website, "Visit whiteoffile.whitebearom.com"),
+            (website, "Visit whiteoffice.whitebearom.com"),
             (quit, "Quit White Office Launcher"),
         ];
         Ok(Self { icon, show: show_id, check: check_id, quit: quit_id, rx, tooltip: String::new(), language: String::new(), labels })

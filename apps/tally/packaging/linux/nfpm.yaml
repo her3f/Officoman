@@ -14,7 +14,7 @@ section: misc
 priority: optional
 maintainer: ${TALLY_MAINTAINER}
 vendor: White Office
-homepage: https://whiteoffile.whitebearom.com/apps/tally.html
+homepage: https://whiteoffice.whitebearom.com/apps/tally.html
 license:  
 description: |-
   , native spreadsheet that works the way Excel users expect.

@@ -306,19 +306,19 @@ mod tests {
     }
 }
 
-/// Matches the OCI URL from https://whiteoffile.whitebearom.com/whiteoffice-oci.flatpakrepo,
+/// Matches the OCI URL from https://whiteoffice.whitebearom.com/whiteoffice-oci.flatpakrepo,
 /// independently of its local remote name (normally `whiteoffice-oci`).
 pub fn is_whiteoffice_remote(origin: &str, remotes: &str) -> bool {
     remotes.lines().any(|line| {
         let Some((name, url)) = line.split_once('\t') else { return false };
         let url = url.trim().trim_end_matches('/');
-        name.trim() == origin && url == "oci+https://whiteoffile.whitebearom.com"
+        name.trim() == origin && url == "oci+https://whiteoffice.whitebearom.com"
     })
 }
 
 /// Where Flatpak finds the White Office OCI images' signatures (whiteoffice-oci.flatpakrepo's
 /// `SignatureLookaside`), redirected to each release's `.oci.sig` asset.
-pub const WHITEOFFICE_SIGNATURE_LOOKASIDE: &str = "https://whiteoffile.whitebearom.com/signatures";
+pub const WHITEOFFICE_SIGNATURE_LOOKASIDE: &str = "https://whiteoffice.whitebearom.com/signatures";
 
 /// Did an update fail only because `origin`, an White Office OCI remote, has no signature lookaside
 /// (a signed bundle's origin, which `flatpak build-bundle` can't give one)?
@@ -331,19 +331,19 @@ mod remote_url_tests {
     use super::*;
     #[test]
     fn recognizes_custom_names_and_rejects_unrelated_urls() {
-        assert!(is_whiteoffice_remote("whiteoffice-oci", "whiteoffice-oci\toci+https://whiteoffile.whitebearom.com\n"));
-        assert!(is_whiteoffice_remote("custom", "custom\toci+https://whiteoffile.whitebearom.com/\n"));
+        assert!(is_whiteoffice_remote("whiteoffice-oci", "whiteoffice-oci\toci+https://whiteoffice.whitebearom.com\n"));
+        assert!(is_whiteoffice_remote("custom", "custom\toci+https://whiteoffice.whitebearom.com/\n"));
         for url in [
-            "oci+https://whiteoffile.whitebearom.com.evil",
-            "oci+https://whiteoffile.whitebearom.com/other",
-            "oci+http://whiteoffile.whitebearom.com",
-            "https://whiteoffile.whitebearom.com/linux",
-            "https://whiteoffile.whitebearom.com/whiteoffice-oci.flatpakrepo",
-            "https://whiteoffile.whitebearom.com",
+            "oci+https://whiteoffice.whitebearom.com.evil",
+            "oci+https://whiteoffice.whitebearom.com/other",
+            "oci+http://whiteoffice.whitebearom.com",
+            "https://whiteoffice.whitebearom.com/linux",
+            "https://whiteoffice.whitebearom.com/whiteoffice-oci.flatpakrepo",
+            "https://whiteoffice.whitebearom.com",
         ] {
             assert!(!is_whiteoffice_remote("custom", &format!("custom\t{url}")));
         }
-        assert!(!is_whiteoffice_remote("other", "custom\toci+https://whiteoffile.whitebearom.com"));
+        assert!(!is_whiteoffice_remote("other", "custom\toci+https://whiteoffice.whitebearom.com"));
     }
 
     #[test]
@@ -351,7 +351,7 @@ mod remote_url_tests {
         // Flatpak 1.18's error for a verified OCI remote with no lookaside.
         let stderr = "error: Failed to update io.github.her3f.photocraft: photocraft-origin: no valid signatures for \
                       ghcr.io/storytold/photocraft@sha256:968d75c9d16d5f7d089775f14a3b418d72a4c70d86986811ee2dd818da956b92";
-        let remotes = "photocraft-origin\toci+https://whiteoffile.whitebearom.com\nflathub\thttps://dl.flathub.org/repo/\n";
+        let remotes = "photocraft-origin\toci+https://whiteoffice.whitebearom.com\nflathub\thttps://dl.flathub.org/repo/\n";
         assert!(needs_signature_lookaside(stderr, "photocraft-origin", remotes));
         // Another remote, another origin's failure, or another error: leave the remote alone.
         assert!(!needs_signature_lookaside(stderr, "photocraft-origin", "photocraft-origin\thttps://example.org\n"));
@@ -385,8 +385,8 @@ mod remote_ownership_tests {
     fn only_confirmed_empty_urls_allow_bundle_replacement() {
         assert!(!remote_manages_flatpak("app-origin", "app-origin\t\n"));
         assert!(remote_manages_flatpak("renamed", "renamed\thttps://example.org/repo\n"));
-        assert!(remote_manages_flatpak("renamed", "renamed\toci+https://whiteoffile.whitebearom.com\n"));
-        assert!(!remote_manages_flatpak("app-origin", "app-origin\toci+https://whiteoffile.whitebearom.com\n"));
+        assert!(remote_manages_flatpak("renamed", "renamed\toci+https://whiteoffice.whitebearom.com\n"));
+        assert!(!remote_manages_flatpak("app-origin", "app-origin\toci+https://whiteoffice.whitebearom.com\n"));
         assert!(remote_manages_flatpak("missing", "other\t\n"));
         assert!(!remote_manages_flatpak("app-origin", "app-origin"));
     }

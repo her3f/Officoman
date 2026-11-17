@@ -19,7 +19,7 @@ pub(super) fn about(ui: &mut egui::Ui, d: &mut Dialog) {
             ui.label(format!("Version {}", env!("CARGO_PKG_VERSION")));
             ui.add_space(4.0);
             ui.label("A clean-room, , Rust-native spreadsheet. Part of WhiteOffice.");
-            ui.hyperlink_to("whiteoffile.whitebearom.com/apps/tally", "https://whiteoffile.whitebearom.com/apps/tally.html");
+            ui.hyperlink_to("whiteoffice.whitebearom.com/apps/tally", "https://whiteoffice.whitebearom.com/apps/tally.html");
         }
     }
 }

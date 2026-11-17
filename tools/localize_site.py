@@ -12,7 +12,7 @@ from pathlib import Path, PurePosixPath
 import re
 from urllib.parse import urlsplit
 
-SITE_URL = "https://whiteoffile.whitebearom.com"
+SITE_URL = "https://whiteoffice.whitebearom.com"
 TRANSLATIONS = {
     " ".join(key.split()): value
     for filename in ('ar.json', 'ar-ui.json')

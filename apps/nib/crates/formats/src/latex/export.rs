@@ -25,7 +25,7 @@ pub fn export(doc: &Document) -> String {
 
     let meta = &flow.meta;
     let mut o = String::new();
-    o.push_str("% Written by Nib (https://whiteoffile.whitebearom.com/apps/nib.html).\n");
+    o.push_str("% Written by Nib (https://whiteoffice.whitebearom.com/apps/nib.html).\n");
     o.push_str("\\documentclass{article}\n");
     o.push_str("\\usepackage[T1]{fontenc}\n");
     if w.uses.ulem {

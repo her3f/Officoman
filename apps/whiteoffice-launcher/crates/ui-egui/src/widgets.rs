@@ -1,4 +1,4 @@
-//! Small building blocks in whiteoffile.whitebearom.com's style: mono labels, square buttons, badges and
+//! Small building blocks in whiteoffice.whitebearom.com's style: mono labels, square buttons, badges and
 //! hairline cell groups.
 //!
 //! Upper-case text is drawn upper case but announced to screen readers as written.

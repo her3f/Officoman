@@ -77,7 +77,7 @@ pub fn social(service: &str) -> Option<ImageSource<'static>> {
     })
 }
 
-/// The White Office "A" mark in blue, as supplied: the launcher's app icon and whiteoffile.whitebearom.com's favicon.
+/// The White Office "A" mark in blue, as supplied: the launcher's app icon and whiteoffice.whitebearom.com's favicon.
 pub fn whiteoffice_mark() -> ImageSource<'static> {
     egui::include_image!("../../../docs/brand/whiteoffice-mark.svg")
 }

@@ -56,7 +56,7 @@ jobs:
 
       - name: Build
         env:
-          WHITEOFFICE_LAUNCHER_MIRROR: https://whiteoffile.whitebearom.com/dl/
+          WHITEOFFICE_LAUNCHER_MIRROR: https://whiteoffice.whitebearom.com/dl/
         run: cargo build --release -p whiteoffice-launcher
 
       - name: Ad-hoc sign (macOS)
@@ -168,6 +168,6 @@ jobs:
           name: "CI build ${{ github.run_number }} (macOS + Linux)"
           body: |
             Automatic build of the four apps for macOS and Linux.
-            Windows builds are produced locally and served from whiteoffile.whitebearom.com.
+            Windows builds are produced locally and served from whiteoffice.whitebearom.com.
           files: out/*.tar.gz
           fail_on_unmatched_files: true

@@ -2515,7 +2515,7 @@ fn all_opened(h: &mut Harness<'_, Option<LauncherUi>>, label: &str) -> Vec<Strin
 fn links_open_the_right_pages() {
     let (mut h, _) = harness(ViewMode::Grid, egui::Theme::Dark, true);
     h.run_steps(6);
-    assert_eq!(all_opened(&mut h, "Website"), vec!["https://whiteoffile.whitebearom.com".to_string()]);
+    assert_eq!(all_opened(&mut h, "Website"), vec!["https://whiteoffice.whitebearom.com".to_string()]);
     assert!(h.query_by_label("GitHub").is_none());
     assert!(h.query_by_label("Discord").is_none());
 }
@@ -2738,8 +2738,8 @@ fn feed_announcements_and_alerts_show_until_dismissed() {
     let sent = Rc::new(RefCell::new(Vec::new()));
     let mut evs = events();
     evs.push(Event::Notices {
-        announcements: vec![notice("a1", "CADCraft 1.0 is out", Some("https://whiteoffile.whitebearom.com/news"))],
-        alerts: vec![notice("x1", "Security update", Some("https://whiteoffile.whitebearom.com/security"))],
+        announcements: vec![notice("a1", "CADCraft 1.0 is out", Some("https://whiteoffice.whitebearom.com/news"))],
+        alerts: vec![notice("x1", "Security update", Some("https://whiteoffice.whitebearom.com/security"))],
     });
     let mut backend = Some(Fake {
         events: evs,

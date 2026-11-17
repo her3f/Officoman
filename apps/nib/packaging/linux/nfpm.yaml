@@ -14,7 +14,7 @@ section: graphics
 priority: optional
 maintainer: ${NIB_MAINTAINER}
 vendor: White Office
-homepage: https://whiteoffile.whitebearom.com/apps/nib.html
+homepage: https://whiteoffice.whitebearom.com/apps/nib.html
 license:  
 description: |-
   , native word processor that works the way Word users expect.

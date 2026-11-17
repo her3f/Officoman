@@ -16,7 +16,7 @@ section: graphics
 priority: optional
 maintainer: ${SHEAF_MAINTAINER}
 vendor: White Office
-homepage: https://whiteoffile.whitebearom.com/apps/sheaf.html
+homepage: https://whiteoffice.whitebearom.com/apps/sheaf.html
 license:  
 description: |-
   , native PDF workbench: read, comment, fill and sign forms,

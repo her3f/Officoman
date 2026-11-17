@@ -1,5 +1,5 @@
 //! The header, toolbar, footer, the grid of cards and the table, laid out like the apps page on
-//! whiteoffile.whitebearom.com: hairline cells, mono labels and square controls.
+//! whiteoffice.whitebearom.com: hairline cells, mono labels and square controls.
 
 use egui::{Color32, CornerRadius, FontId, Rect, RichText, Sense, Stroke, Ui, vec2};
 use whiteoffice_launcher_core::catalog::AppKind;

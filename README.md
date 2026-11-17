@@ -46,7 +46,7 @@ a bug.
 
 The project site lives in [`docs/`](docs) and is published from that folder with GitHub Pages:
 
-**<https://whiteoffile.whitebearom.com>**
+**<https://whiteoffice.whitebearom.com>**
 
 | Page | What it covers |
 |---|---|

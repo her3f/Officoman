@@ -15,8 +15,8 @@ use sha2::{Digest, Sha256};
 use crate::catalog::{WHITEOFFICE_TEAM_ID, AppKind, CraftApp, SUITE};
 use crate::details::{AppDetails, Feature, Shot};
 
-pub const CATALOG_URL: &str = "https://whiteoffile.whitebearom.com/launcher-catalog.toml";
-pub const SIGNATURE_URL: &str = "https://whiteoffile.whitebearom.com/launcher-catalog.toml.sig";
+pub const CATALOG_URL: &str = "https://whiteoffice.whitebearom.com/launcher-catalog.toml";
+pub const SIGNATURE_URL: &str = "https://whiteoffice.whitebearom.com/launcher-catalog.toml.sig";
 pub const PUBLIC_KEY_PEM: &str = include_str!("../assets/launcher-catalog-public-key.pem");
 pub const MAX_CATALOG_BYTES: usize = 1 << 20;
 pub const MAX_SIGNATURE_BYTES: usize = 128;
@@ -313,7 +313,7 @@ fn valid_record(r: &Record) -> bool {
     }
     if r.icon_sha256.len() != 64
         || !r.icon_sha256.bytes().all(|c| c.is_ascii_hexdigit())
-        || r.icon_url != format!("https://whiteoffile.whitebearom.com/launcher-app-icons/{}-{}.png", r.id, r.icon_sha256)
+        || r.icon_url != format!("https://whiteoffice.whitebearom.com/launcher-app-icons/{}-{}.png", r.id, r.icon_sha256)
     {
         return false;
     }
@@ -433,7 +433,7 @@ mod tests {
         r.repo = "storytold/examplecraft".into();
         r.mac_bundle_name = Some(r.name.clone());
         r.startup_wm_class = "io.github.her3f.examplecraft".into();
-        r.icon_url = format!("https://whiteoffile.whitebearom.com/launcher-app-icons/{}-{}.png", r.id, r.icon_sha256);
+        r.icon_url = format!("https://whiteoffice.whitebearom.com/launcher-app-icons/{}-{}.png", r.id, r.icon_sha256);
         r.details = None;
         r
     }
@@ -447,7 +447,7 @@ mod tests {
         r = future_app();
         r.id = "-option".into();
         r.repo = "storytold/-option".into();
-        r.icon_url = format!("https://whiteoffile.whitebearom.com/launcher-app-icons/{}-{}.png", r.id, r.icon_sha256);
+        r.icon_url = format!("https://whiteoffice.whitebearom.com/launcher-app-icons/{}-{}.png", r.id, r.icon_sha256);
         assert!(!valid_record(&r));
         r = future_app();
         r.icon_url = "https://other.example/icon.png".into();

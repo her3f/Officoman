@@ -1176,7 +1176,7 @@ fn about_dialog(ui: &mut Ui, d: &mut Dialog) -> bool {
             ui.label(crate::i18n::fmt(tl!("Version {version} ({build})"), &[("version", env!("CARGO_PKG_VERSION")), ("build", build)]));
             ui.label(tl!("A free,  word processor written from scratch in Rust.\nPart of the Crafting Apps from the White Office team."));
             ui.add_space(6.0);
-            ui.hyperlink_to(tl!("whiteoffile.whitebearom.com/apps/nib"), "https://whiteoffile.whitebearom.com/apps/nib.html");
+            ui.hyperlink_to(tl!("whiteoffice.whitebearom.com/apps/nib"), "https://whiteoffice.whitebearom.com/apps/nib.html");
             ui.add_space(6.0);
             ui.label(egui::RichText::new(tl!(" . Copyright (c) 2026 White Office Team and the Nib contributors.")).small().weak());
         }

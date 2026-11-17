@@ -12,7 +12,7 @@ from localize_site import build_locales
 from site_design import home, app_page, apps_page, downloads
 
 ROOT = Path(__file__).resolve().parent.parent
-SITE_URL = "https://whiteoffile.whitebearom.com"
+SITE_URL = "https://whiteoffice.whitebearom.com"
 SOURCE = Path(__file__).resolve().parent / "site"
 
 

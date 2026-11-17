@@ -33,7 +33,7 @@ kind = "official"
 publisher = "White Office"
 msi_publisher = "White Office"
 former_bundles = []
-site = "https://whiteoffile.whitebearom.com/apps/nib.html"
+site = "https://whiteoffice.whitebearom.com/apps/nib.html"
 
 [[apps]]
 id = "tally"
@@ -49,7 +49,7 @@ kind = "official"
 publisher = "White Office"
 msi_publisher = "White Office"
 former_bundles = []
-site = "https://whiteoffile.whitebearom.com/apps/tally.html"
+site = "https://whiteoffice.whitebearom.com/apps/tally.html"
 
 [[apps]]
 id = "podium"
@@ -65,7 +65,7 @@ kind = "official"
 publisher = "White Office"
 msi_publisher = "White Office"
 former_bundles = []
-site = "https://whiteoffile.whitebearom.com/apps/podium.html"
+site = "https://whiteoffice.whitebearom.com/apps/podium.html"
 
 [[apps]]
 id = "sheaf"
@@ -81,7 +81,7 @@ kind = "official"
 publisher = "White Office"
 msi_publisher = "White Office"
 former_bundles = []
-site = "https://whiteoffile.whitebearom.com/apps/sheaf.html"
+site = "https://whiteoffice.whitebearom.com/apps/sheaf.html"
 '''
 
 ICONS_BLOCK = '''pub fn app_icon_png(id: &str) -> Option<&'static [u8]> {

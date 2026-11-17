@@ -29,7 +29,7 @@ fn website_button_in_the_top_bar_opens_product_site() {
 #[test]
 fn home_screen_links() {
     for (label, url) in
-        [("Sheaf web page", "https://whiteoffile.whitebearom.com/apps/sheaf.html"), ("White Office website", "https://whiteoffile.whitebearom.com")]
+        [("Sheaf web page", "https://whiteoffice.whitebearom.com/apps/sheaf.html"), ("White Office website", "https://whiteoffice.whitebearom.com")]
     {
         let mut h = harness(|_| {});
         h.get_by_label("Sheaf web page");

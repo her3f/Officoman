@@ -379,7 +379,7 @@ filter	Installed	დაინსტალირებული
 # Tray (menu bar) menu and tooltip
 	Show White Office Launcher	White Office Launcher-ის ჩვენება
 	Check for Updates	განახლებების შემოწმება
-	Visit whiteoffile.whitebearom.com	whiteoffile.whitebearom.com-ის გახსნა
+	Visit whiteoffice.whitebearom.com	whiteoffice.whitebearom.com-ის გახსნა
 	White Office on GitHub	White Office GitHub-ზე
 	Join the White Office Discord	შემოუერთდით White Office-ის Discord-ს
 @plural	White Office Launcher · {n} update available|White Office Launcher · {n} updates available	White Office Launcher · ხელმისაწვდომია {n} განახლება|White Office Launcher · ხელმისაწვდომია {n} განახლება

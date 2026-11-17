@@ -6,7 +6,7 @@ Everything it lists is served from the same mirror, so the download URLs point a
 own domain rather than GitHub.
 
     python tools/make_feed.py                 # writes dist/release_info.json
-    python tools/make_feed.py --base https://whiteoffile.whitebearom.com/dl/
+    python tools/make_feed.py --base https://whiteoffice.whitebearom.com/dl/
 """
 from __future__ import annotations
 
@@ -56,7 +56,7 @@ def sha256(path: Path) -> str:
 
 def main() -> int:
     ap = argparse.ArgumentParser()
-    ap.add_argument("--base", default="https://whiteoffile.whitebearom.com/dl/")
+    ap.add_argument("--base", default="https://whiteoffice.whitebearom.com/dl/")
     args = ap.parse_args()
     DIST.mkdir(parents=True, exist_ok=True)
     base = args.base if args.base.endswith("/") else args.base + "/"

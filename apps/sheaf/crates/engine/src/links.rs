@@ -4,11 +4,11 @@
 use icu_properties::props::Script;
 use std::path::{Path, PathBuf};
 
-/// The app's name in White Office URLs (`whiteoffile.whitebearom.com/apps/{APP}`, `github.com/storytold/{APP}`).
+/// The app's name in White Office URLs (`whiteoffice.whitebearom.com/apps/{APP}`, `github.com/storytold/{APP}`).
 pub const APP: &str = "sheaf";
 
-pub const WEBSITE: &str = "https://whiteoffile.whitebearom.com";
-pub const APP_PAGE: &str = "https://whiteoffile.whitebearom.com/apps/sheaf.html";
+pub const WEBSITE: &str = "https://whiteoffice.whitebearom.com";
+pub const APP_PAGE: &str = "https://whiteoffice.whitebearom.com/apps/sheaf.html";
 
 /// A link and the registry command that opens it.
 #[derive(Clone, Copy, Debug)]

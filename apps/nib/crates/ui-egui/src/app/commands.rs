@@ -769,7 +769,7 @@ impl WordApp {
                 ));
             }
             "ui.discord" => {
-                self.canvas.open_url = Some("https://whiteoffile.whitebearom.com/".into());
+                self.canvas.open_url = Some("https://whiteoffice.whitebearom.com/".into());
                 json!({})
             }
             "ui.caretAnimation" => {

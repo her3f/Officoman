@@ -10,7 +10,7 @@ next to them.
 
 | Path | Title | Author | Source | License |
 |---|---|---|---|---|
-| `assets/app-icon/` (all files) | White Office Launcher app icon: the White Office "A" mark in blue (whiteoffile.whitebearom.com's favicon) | White Office Team | Rendered unmodified from `docs/brand/whiteoffice-mark.svg` by `packaging/icons.sh`, see [`assets/app-icon/README.md`](assets/app-icon/README.md) | **Not ; not  .** White Office trademark, [`docs/brand/LICENSE-brand.txt`](docs/brand/LICENSE-brand.txt) |
+| `assets/app-icon/` (all files) | White Office Launcher app icon: the White Office "A" mark in blue (whiteoffice.whitebearom.com's favicon) | White Office Team | Rendered unmodified from `docs/brand/whiteoffice-mark.svg` by `packaging/icons.sh`, see [`assets/app-icon/README.md`](assets/app-icon/README.md) | **Not ; not  .** White Office trademark, [`docs/brand/LICENSE-brand.txt`](docs/brand/LICENSE-brand.txt) |
 | `packaging/macos/dmg/` (all files) | macOS DMG window background and layout | White Office Launcher contributors, with the White Office mark | Original work, see [`packaging/macos/dmg/README.md`](packaging/macos/dmg/README.md); the mark is `docs/brand/whiteoffice-mark-black.svg`, linked from `background.svg` and rendered unmodified into `background.tiff` |  , like the code; the White Office mark in it stays an White Office trademark ([`docs/brand/LICENSE-brand.txt`](docs/brand/LICENSE-brand.txt)). The TIFF carries LittleCMS's built-in sRGB profile ("No copyright, use freely") |
 | `assets/social/linkedin.svg` | LinkedIn logo, linking to White Office's company page | Fonticons, Inc. ([Font Awesome Free](https://fontawesome.com) 6.7.2) | Font Awesome Free `svgs/brands/linkedin.svg`; white fill and a square view box, see [`assets/social/README.md`](assets/social/README.md) | CC BY 4.0. The logo is a trademark of LinkedIn Corporation. |
 | `assets/social/x.svg`, `youtube.svg`, `tiktok.svg`, `instagram.svg`, `discord.svg` | X, YouTube, TikTok, Instagram and Discord logos, linking to White Office's accounts | [Simple Icons](https://simpleicons.org/) contributors | Simple Icons, `fill` set to white for tinting; see [`assets/social/README.md`](assets/social/README.md) | CC0 1.0. The logos are trademarks of X Corp., Google LLC, TikTok / ByteDance, Meta Platforms, Inc. and Discord Inc. |
@@ -61,7 +61,7 @@ licensed like those apps. Refresh them from the source path, never redraw them.
 
 | Path | Title | Author | Source | License |
 |---|---|---|---|---|
-| `docs/brand/` (all files) | White Office name, wordmark and mark | White Office Team | whiteoffile.whitebearom.com | Not ; trademarks of the White Office Team, [`docs/brand/LICENSE-brand.txt`](docs/brand/LICENSE-brand.txt) |
+| `docs/brand/` (all files) | White Office name, wordmark and mark | White Office Team | whiteoffice.whitebearom.com | Not ; trademarks of the White Office Team, [`docs/brand/LICENSE-brand.txt`](docs/brand/LICENSE-brand.txt) |
 | README app icons (linked, not copied) | Each Craft app's 64 px icon | White Office Team and each app's contributors | `raw.githubusercontent.com/storytold/<app>/main/assets/app-icon/hicolor/64x64/apps/io.github.her3f.<app>.png` |   (each app's license) |
 
 ## Hosted catalog verification

@@ -59,7 +59,7 @@ class SiteTests(unittest.TestCase):
             after = {p.relative_to(site): p.read_bytes() for p in site.rglob('*') if p.is_file()}
             self.assertEqual(before, after)
             for suffix, asset in catalog['nib']['assets'].items():
-                self.assertIn('https://whiteoffile.whitebearom.com/dl/' + asset['name'], (site / 'download.html').read_text(encoding='utf-8'))
+                self.assertIn('https://whiteoffice.whitebearom.com/dl/' + asset['name'], (site / 'download.html').read_text(encoding='utf-8'))
 
     def test_empty_catalog_keeps_apps_visible_without_fake_downloads(self):
         result = downloads(APPS, {})
